@@ -60,13 +60,12 @@ export function LoginPage() {
   });
 
   return (
-    <div
-      className="flex min-h-full items-center justify-center px-4 py-10"
-      style={{ background: 'var(--color-panel-sunken)' }}
-    >
+    <div className="flex min-h-full items-center justify-center px-4 py-10">
       <div className="w-full max-w-[400px]">
         <div className="mb-6">
-          <div className="nb-rule-label">netlabor control plane</div>
+          <div className="nb-rule-label" style={{ color: 'var(--color-copper)' }}>
+            netlabor control plane
+          </div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight">Sign in</h1>
           <p className="mt-1 text-[13px]" style={{ color: 'var(--color-ink-dim)' }}>
             Use a local account or a configured single sign-on provider.
