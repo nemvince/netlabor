@@ -1,0 +1,151 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+
+const headings = [
+  { depth: 2, slug: 'surface-index', text: 'Surface index' },
+  { depth: 2, slug: 'why', text: 'Why the demos live on the concept pages' },
+];
+
+const surfaces = [
+  {
+    name: 'DeviceNode · Inspector',
+    href: '/concepts/nodes',
+    where: 'Canvas cards and the right rail',
+    components: 'DeviceNode, Inspector',
+    shows: 'Started, stopped, error, and selected cards; the project overview.',
+  },
+  {
+    name: 'LinkEdge · ConnectPortMenu',
+    href: '/concepts/links',
+    where: 'Canvas edges and connect mode',
+    components: 'LinkEdge, ConnectPortMenu',
+    shows: 'Port labels on an active edge; the port search with claimed ports removed.',
+  },
+  {
+    name: 'Palette',
+    href: '/concepts/projects',
+    where: 'Left rail',
+    components: 'Palette',
+    shows: 'The catalog grouped by category with search and favourites.',
+  },
+  {
+    name: 'EventLog · Toasts',
+    href: '/concepts/collaboration',
+    where: 'Bottom dock',
+    components: 'EventLog, ToastViewport',
+    shows: 'The SSE feed with four real envelopes; success, info, and error toasts.',
+  },
+  {
+    name: 'DrawingNode',
+    href: '/concepts/drawings',
+    where: 'Canvas annotations',
+    components: 'DrawingNode',
+    shows: 'A keyed frame, its label, and a note over a device card.',
+  },
+  {
+    name: 'Snapshots and jobs',
+    href: '/concepts/snapshots',
+    where: 'Snapshots dialog',
+    components: 'Table, Badge',
+    shows: 'Restore points with sizes and hashes, plus running, failed, and cancelled jobs.',
+  },
+  {
+    name: 'ApplianceBuildDialog',
+    href: '/appliances',
+    where: 'Images → OS repository & builds',
+    components: 'ApplianceBuildDialog',
+    shows: 'The build form in its blocked, no-artifact state.',
+  },
+  {
+    name: 'Template rows',
+    href: '/templates',
+    where: 'Templates library',
+    components: 'Table, Badge, requiredImageStates',
+    shows: 'Templates with present and missing required images.',
+  },
+  {
+    name: 'PrivilegeGrid',
+    href: '/administration',
+    where: 'Roles and API-key scopes',
+    components: 'PrivilegeGrid',
+    shows: 'The built-in roles as a read-only privilege matrix.',
+  },
+];
+---
+
+<DocsLayout
+  title="Workspace UI"
+  description="Where each workspace surface is rendered live inside the documentation, and which concept page owns it."
+  headings={headings}
+  wide
+>
+  <header class="docs-page-head">
+    <p class="docs-eyebrow">Reference</p>
+    <h1>Workspace UI</h1>
+    <p class="docs-lede">
+      Every workspace surface is embedded in the page that explains it, imported from
+      <code>apps/web/src</code> and fed typed fixture rows. This page is the index: pick a surface
+      to see it rendered where the prose talks about it. The primitive gallery stays at
+      <a href="/components">Components</a>.
+    </p>
+    <div class="docs-page-meta">
+      <span class="nb-stat"
+        ><span class="nb-stat-label">source</span
+        ><span class="nb-stat-value">apps/web/src/features/workspace</span></span
+      >
+      <span class="nb-stat"
+        ><span class="nb-stat-label">surfaces</span
+        ><span class="nb-stat-value">{surfaces.length}</span></span
+      >
+      <span class="nb-stat"
+        ><span class="nb-stat-label">islands</span
+        ><span class="nb-stat-value">0 here</span></span
+      >
+    </div>
+  </header>
+
+  <div class="docs-prose">
+    <h2 id="surface-index">Surface index</h2>
+    <p>
+      Each row names the real component, the page that embeds it, and the state the fixture shows.
+      Pages without a surface (apply, MCP, operations, architecture, getting started) ship no
+      JavaScript at all.
+    </p>
+  </div>
+
+  <div class="docs-table-scroll">
+    <table aria-label="Workspace surfaces and the pages that embed them">
+      <thead>
+        <tr><th>Surface</th><th>Page</th><th>Where it appears</th><th>Components</th><th>Shows</th></tr>
+      </thead>
+      <tbody>
+        {
+          surfaces.map((surface) => (
+            <tr>
+              <td><a href={surface.href}>{surface.name}</a></td>
+              <td><code>{surface.href}</code></td>
+              <td>{surface.where}</td>
+              <td><code>{surface.components}</code></td>
+              <td>{surface.shows}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="docs-prose">
+    <h2 id="why">Why the demos live on the concept pages</h2>
+    <p>
+      A gallery separates a component from the rule it enforces. The node card shows the status
+      lamp next to the status vocabulary; the port picker opens next to the paragraph that explains
+      conflict handling. Keeping one copy of each demo on its concept page also keeps the page's
+      JavaScript small: one island per surface, hydrated when it scrolls into view.
+    </p>
+    <p>
+      Fixture rows come from <code>apps/docs/src/demos/fixtures/workspace.ts</code>; the workspace
+      passes live rows from the query cache in exactly the same shape. No surface is redrawn or
+      screenshotted.
+    </p>
+  </div>
+</DocsLayout>

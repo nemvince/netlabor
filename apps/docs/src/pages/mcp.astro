@@ -1,0 +1,132 @@
+---
+import mcpData from '../data/mcp-tools.json';
+import DocsLayout from '../layouts/DocsLayout.astro';
+
+const headings = [
+  { depth: 2, slug: 'endpoint', text: 'Endpoint and authentication' },
+  { depth: 2, slug: 'tools', text: 'Tool catalogue' },
+  { depth: 2, slug: 'call', text: 'Calling a tool' },
+  { depth: 2, slug: 'console', text: 'Console automation' },
+  { depth: 2, slug: 'scoping', text: 'Scoping API keys' },
+];
+const curl = `curl -s http://127.0.0.1:8080/mcp \\
+  -H "Authorization: Bearer nbk_..." \\
+  -H "Content-Type: application/json" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'`;
+const call = `curl -s http://127.0.0.1:8080/mcp \\
+  -H "Authorization: Bearer nbk_..." \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"project_apply","arguments":{
+    "name":"mcp-smoke",
+    "nodes":[{"name":"sw1","template":"Ethernet switch"},{"name":"sw2","template":"Ethernet switch"}],
+    "links":[{"a":"sw1","b":"sw2"}]
+  }}}'`;
+const exec = `{
+  "id": "<node uuid>",
+  "commands": ["show ip interface brief"],
+  "timeoutMs": 8000,
+  "prompt": "Switch[>#]\\\\s*$",
+  "terminalLengthZero": true
+}`;
+---
+
+<DocsLayout
+  title="MCP & agents"
+  description="The stateless MCP endpoint, its tool catalogue, contract-derived schemas, and API-key scoping."
+  headings={headings}
+>
+  <header class="docs-page-head">
+    <p class="docs-eyebrow">Automation</p>
+    <h1>MCP &amp; agents</h1>
+    <p class="docs-lede">
+      {mcpData.tools.length} tools over Streamable HTTP. Names, schemas, and authorization come from the
+      same contract as the HTTP API; MCP calls run through the same middleware and audit path.
+    </p>
+  </header>
+
+  <div class="docs-prose">
+    <h2 id="endpoint">Endpoint and authentication</h2>
+    <p>
+      <code>POST /mcp</code> speaks JSON-RPC 2.0 over Streamable HTTP (stateless). It supports
+      protocol versions <code>2025-06-18</code>, <code>2025-03-26</code>, and
+      <code>2024-11-05</code>. Authenticate with an API key: <code>Authorization: Bearer nbk_…</code>.
+      Send <code>Accept: application/json, text/event-stream</code>.
+    </p>
+    <p>
+      A key needs <code>mcp.use</code> plus the privileges of the tools it should call. Effective
+      scopes are the intersection of the key's scopes and the owner's current privileges, so revoking
+      a grant narrows every key the user holds.
+    </p>
+    <div class="docs-demo__code" style="border:1px solid var(--color-rule); border-radius:2px;">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={curl}>Copy</button>
+      <pre><code>{curl}</code></pre>
+    </div>
+
+    <h2 id="tools">Tool catalogue</h2>
+    <p>
+      Read-only tools cover lists, gets, status, export, and stats. Destructive tools are deletes,
+      clears, and applies. The table is generated from
+      <code>apps/controller/src/mcp/tools.ts</code> and the contract summaries.
+    </p>
+  </div>
+
+  <div class="docs-table-scroll">
+    <table aria-label="MCP tools">
+      <thead><tr><th>Tool</th><th>Procedure</th><th>Access</th></tr></thead>
+      <tbody>
+        {
+          mcpData.tools.map((tool) => (
+            <tr>
+              <td><code>{tool.name}</code></td>
+              <td><code>{tool.procedurePath}</code></td>
+              <td>
+                {tool.destructive ? 'destructive' : tool.readOnly ? 'read-only' : 'mutating'}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="docs-prose">
+    <h2 id="call">Calling a tool</h2>
+    <p>
+      Arguments are the procedure input, unchanged. Tool results carry the same structured content as
+      the HTTP call. The example applies a two-switch lab; repeating it with the returned
+      <code>projectId</code> updates rather than duplicates.
+    </p>
+    <div class="docs-demo__code" style="border:1px solid var(--color-rule); border-radius:2px;">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={call}>Copy</button>
+      <pre><code>{call}</code></pre>
+    </div>
+
+    <h2 id="console">Console automation</h2>
+    <p>
+      <code>console_exec</code> runs commands against a serial or telnet console and returns the
+      transcript with <code>ok</code> and <code>timedOut</code>. VNC-only nodes have no command
+      console. <code>console_reset</code> clears a stuck proxy.
+    </p>
+    <div class="docs-demo__code" style="border:1px solid var(--color-rule); border-radius:2px;">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={exec}>Copy</button>
+      <pre><code>{exec}</code></pre>
+    </div>
+
+    <h2 id="scoping">Scoping API keys</h2>
+    <ul>
+      <li>Create keys in <strong>Profile → API keys</strong> or with <code>auth.apiKeys.create</code>; the plaintext is shown once.</li>
+      <li>Give a lab agent <code>project.read</code>, <code>node.read</code>, <code>link.read</code>, and <code>node.console</code> for read-and-inspect work.</li>
+      <li>Add <code>project.write</code>, <code>node.create</code>, <code>node.update</code>, <code>node.files</code>, <code>link.write</code>, and <code>drawing.write</code> for apply.</li>
+      <li>Project-restricted keys must pass <code>projectId</code> to apply; resolving a project by name needs global <code>project.write</code>.</li>
+      <li><code>sessionOnly</code> procedures never accept API keys, including key creation and session revocation.</li>
+    </ul>
+    <div class="docs-callout" data-tone="warn">
+      <span class="docs-callout__label">Destructive tools</span>
+      <p>
+        <code>project_apply</code> with <code>prune: true</code> deletes unlisted nodes, links, and
+        keyed drawings. Treat it like a delete in client confirmation policies.
+      </p>
+    </div>
+  </div>
+</DocsLayout>

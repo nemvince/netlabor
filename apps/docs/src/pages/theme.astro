@@ -1,0 +1,171 @@
+---
+import { readFileSync } from 'node:fs';
+import DocsLayout from '../layouts/DocsLayout.astro';
+
+// astro dev/build run with apps/docs as the working directory; the app stylesheet
+// lives one level up in apps/web.
+const css = readFileSync(new URL('../web/src/styles.css', `file://${process.cwd()}/`), 'utf8');
+
+const colorTokenPattern = /--color-([a-z-]+):\s*(#[0-9a-f]{6})/g;
+const tokens = [...css.matchAll(colorTokenPattern)].map((match) => ({
+  name: `--color-${match[1]}`,
+  value: match[2],
+  tone: match[1],
+}));
+
+const USAGE: Record<string, string> = {
+  'panel-sunken': 'Page background, inputs, code blocks',
+  panel: 'Panels, cards, rail',
+  'panel-raised': 'Hovered rows, buttons, inline code',
+  rule: 'Hairline separators',
+  'rule-strong': 'Control borders, scrollbar thumb',
+  ink: 'Primary text',
+  'ink-dim': 'Body text, secondary labels',
+  'ink-faint': 'metadata, hints, placeholders',
+  copper: 'Interactive affordance, active marker',
+  'copper-deep': 'Pressed states, deep accents',
+  'signal-up': 'Started, success, online',
+  'signal-warn': 'Locked, degraded, attention',
+  'signal-down': 'Error, stopped, destructive',
+  'signal-info': 'Information, links in stream',
+};
+
+const headings = [
+  { depth: 2, slug: 'palette', text: 'Palette' },
+  { depth: 2, slug: 'type', text: 'Type scale' },
+  { depth: 2, slug: 'space', text: 'Space and radii' },
+  { depth: 2, slug: 'primitives', text: 'Primitive specimens' },
+  { depth: 2, slug: 'rules', text: 'Usage rules' },
+];
+---
+
+<DocsLayout
+  title="Theme"
+  description="The Netlabor visual system rendered from the application's own theme tokens: graphite panels, copper affordances, signal colours, and two typefaces."
+  headings={headings}
+  wide
+>
+  <header class="docs-page-head">
+    <p class="docs-eyebrow">Design system</p>
+    <h1>Theme</h1>
+    <p class="docs-lede">
+      This page reads <code>apps/web/src/styles.css</code> at build time. The swatches, the
+      specimens, and the application use the same custom properties — there is no second palette to
+      drift. Dark only: <code>color-scheme: dark</code>.
+    </p>
+  </header>
+
+  <div class="docs-prose">
+    <h2 id="palette">Palette</h2>
+    <p>
+      Neutral charcoal panels with one copper accent and four signal lamps. State is never colour
+      alone: badges pair the colour with a dot and a word, and link states also change geometry.
+    </p>
+  </div>
+
+  <div class="docs-swatch-grid">
+    {
+      tokens.map((token) => (
+        <div class="docs-swatch">
+          <div class="docs-swatch__chip" style={`background: var(${token.name})`} />
+          <div class="docs-swatch__meta">
+            <span class="docs-swatch__name">{token.name.replace('--color-', '')}</span>
+            <span>{token.value}</span>
+          </div>
+          <div class="docs-swatch__meta" style="border-top: 1px solid var(--color-rule); color: var(--color-ink-faint); display:block; padding: 4px 8px; font-family: var(--font-sans); font-size: 10.5px;">
+            {USAGE[token.name.replace('--color-', '')] ?? 'Token'}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="docs-prose">
+    <h2 id="type">Type scale</h2>
+    <p>
+      <strong>Instrument Sans Variable</strong> for interface and prose;
+      <strong>IBM Plex Mono</strong> for machine values: ids, ports, addresses, commands, and every
+      number that has to line up. The app baseline is 13px with a 1.45 line height; documentation
+      prose relaxes the line height to 1.66 for longer reading.
+    </p>
+    <div class="docs-figure">
+      <div class="docs-figure__head"><span>type specimens</span><span>as rendered</span></div>
+      <div style="padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+        <p style="margin:0; font-size:26px; font-weight:600; letter-spacing:-0.02em;">Page title · 26px / 600</p>
+        <p style="margin:0; font-size:17px; font-weight:600;">Section heading · 17px / 600</p>
+        <p style="margin:0; font-size:14px; font-weight:600;">Subsection · 14px / 600</p>
+        <p style="margin:0; font-size:13px; color:var(--color-ink-dim);">Body copy · 13px / 1.45, ink-dim</p>
+        <p style="margin:0; font-size:12px; color:var(--color-ink-faint);">Secondary · 12px / ink-faint</p>
+        <p class="nb-rule-label" style="margin:0;">RULE LABEL · 0.7rem / 0.04em tracking</p>
+        <p class="tabular" style="margin:0; font-size:12px; color:var(--color-ink-dim);">10.99.3.7/32 · Ethernet0/0 · nbk_7Qm…4f2a</p>
+      </div>
+    </div>
+
+    <h2 id="space">Space and radii</h2>
+    <p>
+      One panel radius token, <code>--radius-panel: 2px</code>, and a 3px radius on small controls
+      and badges. Spacing is a 2px grid with 4/6/8/10/12/16/20/24 steps; dense table cells use
+      6–8px vertical padding. Nothing in the product is pill-shaped except presence avatars.
+    </p>
+    <div class="docs-specimen">
+      <span class="nb-rule-label">radius-panel</span>
+      <span style="width:56px;height:32px;background:var(--color-panel-raised);border:1px solid var(--color-rule-strong);border-radius:var(--radius-panel);"></span>
+      <span class="nb-rule-label">control 3px</span>
+      <span style="width:56px;height:32px;background:var(--color-panel-raised);border:1px solid var(--color-rule-strong);border-radius:3px;"></span>
+      <span class="nb-rule-label">hairline 1px</span>
+      <span style="width:56px;height:1px;background:var(--color-rule);"></span>
+    </div>
+
+    <h2 id="primitives">Primitive specimens</h2>
+    <p>
+      Buttons carry variants through <code>data-variant</code> and size through
+      <code>data-size</code>. Fields are <code>.nb-field</code> on input, select, and textarea;
+      selects get an explicit chevron and readable popup options.
+    </p>
+  </div>
+
+  <div class="docs-specimen" style="flex-direction: column; align-items: stretch; gap: 14px;">
+    <div class="docs-stack">
+      <button class="nb-button" data-variant="primary" type="button">Primary action</button>
+      <button class="nb-button" type="button">Secondary</button>
+      <button class="nb-button" data-variant="danger" type="button">Danger</button>
+      <button class="nb-button" data-variant="ghost" type="button">Ghost</button>
+      <button class="nb-button" data-size="sm" type="button">Small</button>
+      <button class="nb-button" type="button" disabled>Disabled</button>
+    </div>
+    <div class="docs-grid-2">
+      <label class="flex flex-col gap-1">
+        <span class="nb-rule-label">Text field</span>
+        <input class="nb-field" placeholder="Ethernet0/1" />
+      </label>
+      <label class="flex flex-col gap-1">
+        <span class="nb-rule-label">Select</span>
+        <select class="nb-field">
+          <option>ethernet</option>
+          <option>serial</option>
+          <option>atm</option>
+        </select>
+      </label>
+    </div>
+    <div>
+      <span class="nb-rule-label">Rule label · metadata row</span>
+      <div class="mt-1 flex flex-wrap items-center gap-3">
+        <span class="nb-stat"><span class="nb-stat-label">nodes</span><span class="nb-stat-value">12</span></span>
+        <span class="nb-stat"><span class="nb-stat-label">links</span><span class="nb-stat-value">14</span></span>
+        <span class="nb-stat"><span class="nb-stat-label">status</span><span class="nb-stat-value">opened</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="docs-prose">
+    <h2 id="rules">Usage rules</h2>
+    <ul>
+      <li>Copper is for interactive affordances and the active marker. It is not a success colour.</li>
+      <li>Signal colours always carry a second cue: a dot, an icon, a word, or a border pattern.</li>
+      <li>Body text on the sunken background must stay at <code>ink-dim</code> or brighter (≥ 7:1).</li>
+      <li>Machine values are mono and tabular so columns never jitter between polls.</li>
+      <li>Motion is limited to state transitions; <code>prefers-reduced-motion</code> collapses them.</li>
+      <li>Focus rings are a 2px copper outline with a 2px offset — never removed, never recoloured.</li>
+    </ul>
+  </div>
+</DocsLayout>

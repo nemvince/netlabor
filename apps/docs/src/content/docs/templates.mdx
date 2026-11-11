@@ -1,0 +1,100 @@
+---
+title: Templates
+description: Global device templates, per-project templates, image coverage, base configs, faults, and creating templates from builds.
+---
+
+import TemplateTable from '@docs/demos/surfaces/TemplateTable.tsx';
+
+A device template is the recipe a node is created from: emulator type, default properties, symbol,
+name format, required images, and injectable faults. Templates are either global library rows or
+scoped to one project.
+
+## The library table
+
+The templates page renders `TemplateRow`s in a dense table: symbol and name, emulator, category,
+name format, and one badge per required image. Coverage is computed by the app's own
+`requiredImageStates` against the library images, so the same row reads "present" or
+"missing" wherever it is rendered. In the fixture only the Debian base image exists, so the IOU
+template reports its missing image while the switch and VPCS rows need none.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">Template rows</span>
+    <span class="docs-demo__note">Real <code>Table</code>, <code>Badge</code>, and coverage helper. The dialog is not mounted: saving it writes templates.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <TemplateTable client:visible />
+  </div>
+</div>
+
+`TemplateDialog` itself is a server-writing form (it calls `templates.create` or `templates.update`
+on save), so the docs do not mount it; the table is the read-only half of the same surface, driven
+by real rows and the real coverage helper.
+
+## The template row
+
+| Field               | Purpose                                                        |
+| ------------------- | -------------------------------------------------------------- |
+| `name`              | Display name; not unique — use `templateId` for automation.     |
+| `nodeType`          | The emulator the node will run.                                 |
+| `category`          | Palette grouping (Routers, Switches, Firewalls, …).             |
+| `symbol`            | Symbol name rendered on the canvas.                             |
+| `defaultNameFormat` | Name pattern such as `{name}-{index}`.                          |
+| `properties`        | Defaults merged into the node's property bag.                   |
+| `requiredImages`    | Images that must be present before the node starts.             |
+| `faults`            | Fault definitions the node can inject.                          |
+| `builtin`           | Seeded catalog row; never overwritten by imports.               |
+| `projectId`         | `null` for the global library, otherwise a project template.    |
+| `computeId`, `poolId` | Optional placement constraints.                              |
+
+## Global versus project templates
+
+Global templates (`projectId: null`) are the shared library and appear in every project's palette.
+`templates.list` accepts an optional `projectId` and returns the global library plus that project's
+own templates. Project templates only appear to that project's members and are only accepted when
+creating nodes in that project.
+
+Roles: `editor` and `owner` may write templates, so a project lead can curate appliance templates.
+`image.write` remains with operators and admins for repository and build actions.
+
+## Image coverage
+
+`requiredImages` entries name an image kind and an optional image id or build. Before a node starts,
+the controller checks that each required image has a `present` replica on the node's compute. A miss
+fails with `IMAGE_MISSING` and the UI links to **Images** and **Sync**. Image coverage is also shown
+in the template details and in the missing-image hint on a node, using the same helper as the table
+above.
+
+## Base configs
+
+`templates.baseConfigs.list/read/write/delete` manage files stored with the template. When a node is
+created, base config files can be written into the node directory (for example
+`startup-config.cfg` for IOU, or a container config under `etc/`). Base configs are separate from
+node files: node files are per-node copies, base configs are the template's source.
+
+## Faults
+
+Templates carry fault definitions: delay, jitter, loss, corruption, duplication, and bandwidth
+limits on selected interfaces. `faults.inject` applies one to a node or link, `faults.clear` removes
+it, and `faults.list` shows active faults. Faults are visible as signal badges and survive until
+cleared or the node is recreated.
+
+## From a build
+
+`appliances.builds.template({ buildId, name, projectId })` creates a QEMU template whose disk comes
+from the published appliance image. Pass `projectId` for a project-scoped template, or omit it for
+the global library. The built image is then the template's `requiredImages` entry.
+
+## Copying into a project
+
+`templates.duplicate` clones a template (including base configs and faults). To move a global
+template into a project's scope, duplicate it with `projectId` set; to promote a project template,
+duplicate it into the global library. Nodes already created from the old template keep their own
+properties — they are snapshots of the template at creation time, not live references.
+
+## Imported appliances
+
+`bun run import:appliances --dir <path>` ingests GNS3 appliance bundles as builtin templates and
+library images. It is idempotent, hashes images into the blob store, maps QEMU options onto
+properties, and never overwrites a user template with the same name. Use `--dry-run` to inspect the
+mapping first.

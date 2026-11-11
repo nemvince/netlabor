@@ -1,0 +1,45 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+import { nav } from '../lib/nav.ts';
+
+const suggestions = nav.flatMap((group) =>
+  group.items
+    .filter((item) => item.href === '/' || item.href.includes('/concepts/'))
+    .slice(0, 2)
+    .map((item) => ({ href: item.href, label: item.label })),
+);
+---
+
+<DocsLayout
+  title="Page not found"
+  description="That path is not part of the Netlabor documentation."
+>
+  <header class="docs-page-head">
+    <p class="docs-eyebrow">404</p>
+    <h1>Page not found</h1>
+    <p class="docs-lede">
+      Nothing is published at this path. Pages move when the product changes; the rail on the left
+      always lists what exists.
+    </p>
+  </header>
+
+  <div class="docs-prose">
+    <p>
+      Start from the <a href="/">overview</a>, or jump into one of these:
+    </p>
+    <ul class="docs-card-grid">
+      {
+        suggestions.map((item) => (
+          <li>
+            <a class="docs-card" href={item.href}>
+              <span class="docs-card__title">{item.label}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      Press <kbd>⌘K</kbd> (or <kbd>/</kbd>) anywhere to search every page.
+    </p>
+  </div>
+</DocsLayout>

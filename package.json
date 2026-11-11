@@ -17,6 +17,9 @@
     "test:agent": "bun test apps/agent/test",
     "test:e2e": "bunx playwright test",
     "build": "bun run scripts/build.ts",
+    "docs:dev": "bun --cwd=apps/docs run dev",
+    "docs:build": "bun --cwd=apps/docs run build",
+    "docs:preview": "bun --cwd=apps/docs run preview",
     "db:migrate": "bun run scripts/migrate.ts",
     "smoke": "bun run scripts/smoke.ts",
     "import:appliances": "bun run scripts/import-appliances.ts",
@@ -24,12 +27,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.6",
-    "@playwright/test": "^1.65.0",
-    "@types/bun": "latest",
-    "typescript": "^7.0.2",
+    "@netlabor/db": "workspace:*",
+    "@netlabor/shared": "workspace:*",
     "@orpc/client": "^1.16.2",
     "@orpc/contract": "^1.16.2",
-    "@netlabor/db": "workspace:*",
-    "@netlabor/shared": "workspace:*"
+    "@playwright/test": "^1.65.0",
+    "@types/bun": "latest",
+    "typescript": "^7.0.2"
   }
 }

@@ -1,0 +1,150 @@
+---
+import errorData from '../data/errors.json';
+import apiData from '../data/procedures.json';
+import DocsLayout from '../layouts/DocsLayout.astro';
+
+const headings = [
+  { depth: 2, slug: 'authentication', text: 'Authentication and authorization' },
+  { depth: 2, slug: 'errors', text: 'Error model' },
+  ...apiData.namespaces.map((namespace) => ({
+    depth: 2,
+    slug: `ns-${namespace.namespace}`,
+    text: `${namespace.label} · ${namespace.count}`,
+  })),
+];
+---
+
+<DocsLayout
+  title="API reference"
+  description="Every oRPC procedure in the controller contract, with its summary, required privilege, and project scope."
+  headings={headings}
+>
+  <header class="docs-page-head">
+    <p class="docs-eyebrow">Generated reference</p>
+    <h1>API reference</h1>
+    <p class="docs-lede">
+      {apiData.total} procedures across {apiData.namespaces.length} namespaces. This page is rendered at
+      build time from <code>packages/contract/src/router.ts</code>; summaries and authorization metadata
+      come from each procedure definition, not from a hand-written list.
+    </p>
+    <div class="docs-page-meta">
+      <span class="nb-stat"><span class="nb-stat-label">source</span><span class="nb-stat-value">{apiData.source}</span></span>
+      <span class="nb-stat"><span class="nb-stat-label">transport</span><span class="nb-stat-value">oRPC · POST/GET /rpc</span></span>
+    </div>
+  </header>
+
+  <div class="docs-prose">
+    <h2 id="authentication">Authentication and authorization</h2>
+    <p>
+      Calls authenticate with the <code>nb_session</code> cookie (browser) or an
+      <code>Authorization: Bearer nbk_…</code> API key (automation). Cookie-authenticated mutations
+      must present an <code>Origin</code> matching the controller origin or the request
+      <code>Host</code>; API keys are exempt. Every procedure carries
+      <code>authz</code> metadata, and one middleware enforces it for HTTP and MCP alike.
+    </p>
+    <table>
+      <thead><tr><th>Mode</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><code>public</code></td><td>No session required. Only health, login, and public OIDC provider discovery.</td></tr>
+        <tr><td><code>session</code></td><td>An interactive user session. API keys are refused unless the procedure also has a privilege.</td></tr>
+        <tr><td><code>any</code></td><td>Session or API key, plus the listed privilege. The default.</td></tr>
+      </tbody>
+    </table>
+    <p>
+      A procedure with <code>project</code> metadata resolves a project id and adds project-grant
+      privileges to the check. <code>sessionOnly</code> procedures (password change, session
+      revocation, API-key creation) never accept an API key. <code>also</code> lists extra
+      privileges the caller must hold.
+    </p>
+
+    <h2 id="errors">Error model</h2>
+    <p>
+      Failures are <code>AppError</code> values with a stable application code, a human message, and
+      optional details. oRPC transports the code and message; the UI renders them verbatim and never
+      parses strings.
+    </p>
+  </div>
+
+  <div class="docs-table-scroll">
+    <table aria-label="Application error codes">
+      <thead><tr><th>Code</th><th>HTTP</th><th>Raised when</th></tr></thead>
+      <tbody>
+        {
+          errorData.codes.map((error) => (
+            <tr>
+              <td><code>{error.code}</code></td>
+              <td class="tabular">{error.status}</td>
+              <td>{error.code === 'BAD_REQUEST' ? 'Input or state fails a precondition.' :
+                   error.code === 'UNAUTHORIZED' ? 'No valid session or API key.' :
+                   error.code === 'FORBIDDEN' ? 'Authenticated but a privilege is missing.' :
+                   error.code === 'NOT_FOUND' ? 'The addressed row does not exist or is not visible.' :
+                   error.code === 'CONFLICT' ? 'A uniqueness or state conflict (locked, ambiguous name, port in use).' :
+                   error.code === 'TOO_MANY_REQUESTS' ? 'A rate limit was exceeded.' :
+                   error.code === 'AGENT_UNAVAILABLE' ? 'The compute hosting the operation is offline.' :
+                   error.code === 'AGENT_ERROR' ? 'The agent reported a failure.' :
+                   error.code === 'NODE_BUSY' ? 'The node must be stopped for this operation.' :
+                   error.code === 'NODE_NOT_RUNNING' ? 'The node must be running for this operation.' :
+                   error.code === 'IMAGE_MISSING' ? 'A required image is not present on the compute.' :
+                   error.code === 'BINARY_MISSING' ? 'An emulator binary is not installed.' :
+                   error.code === 'LICENSE_MISSING' ? 'An emulator license is not configured.' :
+                   error.code === 'CAPABILITY_UNSUPPORTED' ? 'The agent lacks the capability (for example sharkd).' :
+                   error.code === 'JOB_FAILED' ? 'A background job finished unsuccessfully.' :
+                   'Unexpected server failure.'}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="docs-prose">
+    {
+      apiData.namespaces.map((namespace) => (
+        <section>
+          <h2 id={`ns-${namespace.namespace}`}>
+            {namespace.label} · {namespace.count}
+          </h2>
+          <p>
+            <code>{namespace.namespace}.*</code> — {namespace.count}{' '}
+            {namespace.count === 1 ? 'procedure' : 'procedures'}.
+          </p>
+          <div class="docs-table-scroll">
+            <table aria-label={`${namespace.label} procedures`}>
+              <thead>
+                <tr><th>Procedure</th><th>Summary</th><th>Access</th></tr>
+              </thead>
+              <tbody>
+                {namespace.procedures.map((procedure) => (
+                  <tr>
+                    <td><code>{procedure.path}</code></td>
+                    <td>{procedure.summary}</td>
+                    <td>
+                      {procedure.mode === 'public'
+                        ? 'public'
+                        : procedure.mode === 'session'
+                          ? 'session'
+                          : procedure.privilege ?? 'authenticated'}
+                      {procedure.also.length > 0 ? ` + ${procedure.also.join(', ')}` : ''}
+                      {procedure.project ? <span class="docs-access-note"> · project {procedure.project === 'input.projectId' || procedure.project === 'input.id' ? 'from input' : procedure.project}</span> : null}
+                      {procedure.sessionOnly ? <span class="docs-access-note"> · session only</span> : null}
+                      {procedure.mcp ? <span class="docs-access-note"> · MCP {procedure.mcp}</span> : null}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
+    }
+
+    <h2>Conventions</h2>
+    <ul>
+      <li>Ids are UUIDs. Timestamps are ISO-8601 with an offset.</li>
+      <li>Mutations return the row they changed, or <code>{'{ ok: true }'}</code> for deletes.</li>
+      <li>Ellipsis-style listings are paginated with <code>limit</code> (max 500) and <code>offset</code>.</li>
+      <li>Streams use SSE: <code>projects.events</code> and <code>events.subscribe</code>.</li>
+      <li>Large transfers use dedicated HTTP routes rather than oRPC bodies: uploads, blobs, archives, pcaps.</li>
+    </ul>
+  </div>
+</DocsLayout>

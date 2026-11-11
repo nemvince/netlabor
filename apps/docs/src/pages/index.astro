@@ -1,0 +1,211 @@
+---
+import authzData from '../data/authz.json';
+import mcpData from '../data/mcp-tools.json';
+import apiData from '../data/procedures.json';
+import DocsLayout from '../layouts/DocsLayout.astro';
+
+const tracks = [
+  {
+    index: '01',
+    title: 'Use it',
+    body: 'Create a project, start a node, open a console, and connect two devices. The browser does the rest.',
+    links: [
+      ['Getting started', '/getting-started'],
+      ['Projects', '/concepts/projects'],
+      ['Consoles', '/concepts/consoles'],
+    ],
+  },
+  {
+    index: '02',
+    title: 'Build a lab',
+    body: 'Compose topologies from templates and appliance images, attach links with automatic ports, and annotate the canvas.',
+    links: [
+      ['Nodes & ports', '/concepts/nodes'],
+      ['Links', '/concepts/links'],
+      ['Appliance images', '/appliances'],
+    ],
+  },
+  {
+    index: '03',
+    title: 'Operate it',
+    body: 'Run computes, provision NAT and underlay, back up PostgreSQL and the blob store, and keep upgrades honest.',
+    links: [
+      ['Operations', '/operations'],
+      ['Administration', '/administration'],
+      ['Architecture', '/architecture'],
+    ],
+  },
+  {
+    index: '04',
+    title: 'Integrate',
+    body: 'Drive the whole lab from a manifest, or hand an MCP client a scoped API key and let it build the topology itself.',
+    links: [
+      ['Declarative apply', '/apply'],
+      ['MCP & agents', '/mcp'],
+      ['API reference', '/api'],
+    ],
+  },
+];
+
+const nodeTypes = [
+  ['qemu', 'Full VMs, Linux, BSD, appliances', 'KVM acceleration, VNC or serial'],
+  ['iou', 'Cisco IOU / IOL images', 'startup-config.cfg support'],
+  ['dynamips', 'Classic Cisco IOS images', 'idle-pc calibration'],
+  ['vpcs', 'Virtual PC Simulator', 'lightweight IP hosts'],
+  ['docker', 'Containerised routing stacks', 'privileged by default'],
+  ['cloud', 'cloud-init cloud images', 'server or desktop profile'],
+  ['nat', 'Egress to the host NAT bridge', 'one port, admin-provisioned'],
+  ['ethernet_switch', 'Kernel bridge switch', 'automatic ports'],
+  ['ethernet_hub', 'Shared-segment hub', 'automatic ports'],
+  ['atm_switch', 'ATM switch', 'ubridge relay'],
+  ['frame_relay_switch', 'Frame Relay switch', 'ubridge relay'],
+];
+---
+
+<DocsLayout
+  title="Overview"
+  description="Netlabor is a browser-first control plane for network labs: projects, topology, dataplane, identity, and persistence in one place."
+  wide
+>
+  <section class="docs-hero">
+    <p class="docs-eyebrow">network lab control plane</p>
+    <h1>Build network labs like software.</h1>
+    <p>
+      Netlabor is a browser-first control plane for network labs. It owns the project, the
+      topology, the dataplane, identity, and persistence. Emulators — QEMU, IOU, DynaMips, VPCS,
+      Docker — stay external processes that agents supervise. One controller is the only writer of
+      the database and the only issuer of agent tokens.
+    </p>
+    <div class="docs-hero__actions">
+      <a class="nb-button" data-variant="primary" href="/getting-started">Start a lab</a>
+      <a class="nb-button" href="/concepts/projects">Read the concepts</a>
+      <a class="nb-button" data-variant="ghost" href="/api">API reference</a>
+    </div>
+    <div class="docs-page-meta">
+      <span class="nb-stat">
+        <span class="nb-stat-label">procedures</span>
+        <span class="nb-stat-value">{apiData.total}</span>
+      </span>
+      <span class="nb-stat">
+        <span class="nb-stat-label">MCP tools</span>
+        <span class="nb-stat-value">{mcpData.tools.length}</span>
+      </span>
+      <span class="nb-stat">
+        <span class="nb-stat-label">privileges</span>
+        <span class="nb-stat-value">{authzData.privileges.length}</span>
+      </span>
+      <span class="nb-stat">
+        <span class="nb-stat-label">built-in roles</span>
+        <span class="nb-stat-value">{authzData.roles.length}</span>
+      </span>
+    </div>
+  </section>
+
+  <figure class="docs-figure">
+    <div class="docs-figure__head">
+      <span>topology → control plane</span>
+      <span>does not scale with lab size</span>
+    </div>
+    <pre class="docs-ascii" aria-label="Browser, controller, agent, and storage topology">
+browser ──┬── oRPC /rpc ─────────────────┐
+          ├── SSE · persisted events      │
+          └── WS /ws/console · /ws/vnc    │
+                                          ▼
+                                 ┌──────────────────┐         ┌────────────────┐
+                                 │ controller (Bun) │────────▶│ PostgreSQL 17  │
+                                 │ authz · audit    │         └────────────────┘
+                                 │ jobs · MCP · API │         ┌────────────────┐
+                                 └────────┬─────────┘────────▶│ blobs + images │
+                                          │ oRPC              └────────────────┘
+                                          ▼
+                                 ┌──────────────────┐
+                                 │ agent (root)     │   netns · veth · tap
+                                 │ QEMU · IOU · ... │   ubridge · consoles
+                                 └──────────────────┘   captures · markers
+</pre>
+    <figcaption>
+      The browser never talks to an emulator. Consoles and Wireshark streams are proxied by the
+      controller over single-use WebSocket tickets.
+    </figcaption>
+  </figure>
+
+  <div class="docs-card-grid">
+    {
+      tracks.map((track) => (
+        <div class="docs-card">
+          <span class="docs-card__index">{track.index}</span>
+          <span class="docs-card__title">{track.title}</span>
+          <span class="docs-card__body">{track.body}</span>
+          <span class="docs-card__links">
+            {track.links.map(([label, href], index) => (
+              <span>
+                {index > 0 ? ' · ' : ''}
+                <a href={href}>{label}</a>
+              </span>
+            ))}
+          </span>
+        </div>
+      ))
+    }
+  </div>
+
+  <h2>One model, eleven node kinds</h2>
+  <p class="docs-lede">
+    Every node runs through the same lifecycle — create, start, console, stop, snapshot — no
+    matter which emulator backs it. Ports are derived from the node type and its properties, and
+    link adapters/port numbers are stable across reconciliation.
+  </p>
+  <div class="docs-table-scroll">
+    <table>
+      <thead>
+        <tr><th>Node type</th><th>What it is</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        {
+          nodeTypes.map(([type, description, note]) => (
+            <tr>
+              <td><code>{type}</code></td>
+              <td>{description}</td>
+              <td>{note}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <h2>What the control plane guarantees</h2>
+  <div class="docs-card-grid">
+    <div class="docs-card">
+      <span class="docs-card__title">One contract</span>
+      <span class="docs-card__body">
+        The oRPC router is the source for the server, the typed browser client, OpenAPI, and MCP
+        tool schemas. Documentation is generated from the same file you deploy.
+      </span>
+    </div>
+    <div class="docs-card">
+      <span class="docs-card__title">Agents own the host</span>
+      <span class="docs-card__body">
+        Namespaces, TAP devices, ubridge, and emulator processes belong to the agent. A controller
+        restart never stops a running lab; agents reconcile from reported state.
+      </span>
+    </div>
+    <div class="docs-card">
+      <span class="docs-card__title">One authorization path</span>
+      <span class="docs-card__body">
+        Every procedure declares authz metadata and one middleware enforces it, including MCP
+        calls. Every mutation is audited with user, IP, action, resource, and a redacted diff.
+      </span>
+    </div>
+  </div>
+
+  <div class="docs-callout" data-tone="copper">
+    <span class="docs-callout__label">Where to look next</span>
+    <p>
+      New to the product? Read <a href="/getting-started">Getting started</a>, then the seven
+      <a href="/concepts/projects">Concepts</a> pages. Automating an agent? Start with
+      <a href="/apply">Declarative apply</a>; the full procedure catalogue is in the
+      <a href="/api">API reference</a>.
+    </p>
+  </div>
+</DocsLayout>

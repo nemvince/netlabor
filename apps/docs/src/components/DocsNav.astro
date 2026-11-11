@@ -1,0 +1,72 @@
+---
+import {
+  Bot,
+  Boxes,
+  Braces,
+  Cable,
+  Camera,
+  Component,
+  FileJson,
+  FolderKanban,
+  HardDriveDownload,
+  LayoutGrid,
+  LayoutTemplate,
+  type LucideIcon,
+  Network,
+  Palette,
+  Rocket,
+  Shapes,
+  ShieldCheck,
+  SquareTerminal,
+  Users,
+  Wrench,
+} from 'lucide-react';
+import { nav } from '../lib/nav.ts';
+
+const { path } = Astro.props as { path: string };
+
+const ICONS: Record<string, LucideIcon> = {
+  '/': LayoutGrid,
+  '/getting-started': Rocket,
+  '/concepts/projects': FolderKanban,
+  '/concepts/nodes': Boxes,
+  '/concepts/links': Cable,
+  '/concepts/consoles': SquareTerminal,
+  '/concepts/drawings': Shapes,
+  '/concepts/snapshots': Camera,
+  '/concepts/collaboration': Users,
+  '/appliances': HardDriveDownload,
+  '/templates': LayoutTemplate,
+  '/apply': FileJson,
+  '/mcp': Bot,
+  '/api': Braces,
+  '/administration': ShieldCheck,
+  '/operations': Wrench,
+  '/architecture': Network,
+  '/components': Component,
+  '/theme': Palette,
+};
+---
+
+<nav aria-label="Documentation">
+  {
+    nav.map((group) => (
+      <div class="docs-nav-group">
+        <p class="docs-nav-group__label">{group.label}</p>
+        {group.items.map((item) => {
+          const Icon = ICONS[item.href];
+          return (
+            <a
+              class="nb-rail-link"
+              href={item.href}
+              aria-current={item.href === path ? 'page' : undefined}
+            >
+              {Icon ? <Icon size={13} strokeWidth={1.75} aria-hidden /> : null}
+              <span>{item.label}</span>
+            </a>
+          );
+        })}
+      </div>
+    ))
+  }
+</nav>

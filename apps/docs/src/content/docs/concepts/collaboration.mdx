@@ -1,0 +1,86 @@
+---
+title: Collaboration
+description: Presence, cursors, selections, live drag previews, project locking, and the last-write-wins model.
+---
+
+import EventFeed from '@docs/demos/surfaces/EventFeed.tsx';
+import ToastSurface from '@docs/demos/surfaces/ToastSurface.tsx';
+
+Collaboration is split in two: ephemeral presence over a WebSocket, and durable mutations over the
+API with the project SSE stream.
+
+## The event log
+
+The bottom dock's `EventLog` is the visible half of the durable channel. It reads
+`/projects/:id/events`, shows the connection status, the persisted event count, and one row per
+envelope with its time, id, type, and a `key=value` summary of the payload. Clear empties the local
+list only — the stream keeps flowing and the next event repopulates it.
+
+The four fixtures below are the envelopes a real project produces while a node is created, a link
+comes up, a node fails, and a fault is applied.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">EventLog</span>
+    <span class="docs-demo__note">Four persisted envelopes: node, link, status, and fault. Clear is live.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <EventFeed client:visible />
+  </div>
+</div>
+
+## What collaborators see
+
+Presence adds cursors, avatars, and drag previews; the event log adds the durable changes. Feedback
+that a change landed uses the same toast queue as every other mutation, so a conflict and a join
+notice look the same whether they came from the API or the stream.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">ToastViewport</span>
+    <span class="docs-demo__note">The real toast store: click to enqueue, messages auto-dismiss after 4.5s.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <ToastSurface client:visible />
+  </div>
+</div>
+
+## Presence channel
+
+`/ws/collab/:projectId` is a cookie-authenticated, same-origin WebSocket. The in-memory hub tracks
+participants, cursors, selections, and live node-drag previews. Presence messages never touch
+PostgreSQL and are discarded when the last connection closes.
+
+The workspace shows collaborator avatars in the top bar and colours cursors per participant. A
+participant appears when they open the project and disappears on disconnect; no historical presence
+is kept. The event log's status lamp is the SSE connection, not presence — a project can be `live`
+with no other participants.
+
+## Durable changes
+
+Node, link, and drawing mutations go through the normal procedures. Each mutation publishes an
+event on `projects.events` (SSE), and every open editor refreshes from the same persisted row. This
+means two editors converge on the database's state rather than on each other's messages.
+
+The model is deliberately last-write-wins. There is no CRDT and no per-field merge: the most recent
+successful update wins, and the event stream tells everyone what changed. Node-drag previews are
+ephemeral and are not written until the drag ends.
+
+## Locking
+
+`projects.lock` is the coarse read-only switch. It refuses topology edits for everyone, including
+the locker, while consoles, power actions, and captures keep working. Use it for exams or
+demonstrations where the topology must not move.
+
+## Membership
+
+Access is the union of global role privileges and project grants. A project grant adds the granted
+role's privileges inside that project; the project owner holds the `owner` role implicitly. Sharing
+is managed from the workspace's **Share** dialog or through `grants.*`. Removing a grant takes
+effect on the next authorization check, not on the next login.
+
+## API keys in shared contexts
+
+API keys are per user, not per project. A key's effective scopes are the intersection of its own
+scopes and the user's current privileges, so revoking a user's grant also narrows their keys.
+Project-restricted automation should pass `projectId` explicitly where a procedure accepts it.

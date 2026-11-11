@@ -1,0 +1,417 @@
+---
+import { Badge } from '@web/components/Badge.tsx';
+import { EmptyState } from '@web/components/EmptyState.tsx';
+import { Notice } from '@web/components/Notice.tsx';
+import { Page, PageHeader, RuleRow, Section } from '@web/components/Page.tsx';
+import { PrivilegeGrid } from '@web/components/PrivilegeGrid.tsx';
+import { Sparkline } from '@web/components/Sparkline.tsx';
+import { SymbolGlyph } from '@web/components/SymbolGlyph.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '@web/components/Table.tsx';
+import { Server } from 'lucide-react';
+import CopyDemo from '../demos/CopyDemo.tsx';
+import DialogDemo from '../demos/DialogDemo.tsx';
+import FormDemo from '../demos/FormDemo.tsx';
+import ImagePickerDemo from '../demos/ImagePickerDemo.tsx';
+import KeyValueDemo from '../demos/KeyValueDemo.tsx';
+import TabsDemo from '../demos/TabsDemo.tsx';
+import ToastDemo from '../demos/ToastDemo.tsx';
+import DocsLayout from '../layouts/DocsLayout.astro';
+
+const headings = [
+  { depth: 2, slug: 'status', text: 'Status and feedback' },
+  { depth: 2, slug: 'structure', text: 'Structure and data' },
+  { depth: 2, slug: 'forms', text: 'Forms' },
+  { depth: 2, slug: 'overlays', text: 'Overlays and actions' },
+  { depth: 2, slug: 'data', text: 'Data display' },
+];
+
+const snippets = {
+  badge: `<Badge tone="up">started</Badge>
+<Badge tone="warn">locked</Badge>
+<Badge tone="down">error</Badge>`,
+  notice: `<Notice tone="warn">Every compute hosting a node must be online.</Notice>
+<Notice tone="error">AGENT_UNAVAILABLE: compute eu-1 is offline.</Notice>`,
+  empty: `<EmptyState
+  icon={Server}
+  title="No computes registered"
+  description="Add a compute to place nodes and images."
+  action={<button className="nb-button" data-variant="primary">Add compute</button>}
+/>`,
+  page: `<Page>
+  <PageHeader title="Nodes" description="One topology, one namespace per compute." />
+  <Section title="Lifecycle" description="Start, stop, suspend, reload.">
+    <RuleRow label="Status"><Badge tone="up">started</Badge></RuleRow>
+  </Section>
+</Page>`,
+  table: `<Table label="Nodes">
+  <THead><Tr><Th>Node</Th><Th>Type</Th><Th align="right">Ports</Th></Tr></THead>
+  <TBody>
+    <Tr><Td>r1</Td><Td mono>iou</Td><Td align="right" mono>4</Td></Tr>
+    <Tr><Td>sw1</Td><Td mono>ethernet_switch</Td><Td align="right" mono>8</Td></Tr>
+  </TBody>
+</Table>`,
+  field: `<Field label="Node name" htmlFor="name" hint="Unique inside the project.">
+  <Input id="name" value={name} onChange={(event) => setName(event.target.value)} />
+</Field>
+<Field label="Emulator" htmlFor="kind">
+  <Select id="kind" value={kind} onChange={(event) => setKind(event.target.value)}>
+    <option value="qemu">qemu</option>
+    <option value="iou">iou</option>
+  </Select>
+</Field>`,
+  keyvalue: `<KeyValueEditor
+  value={value}
+  onChange={setValue}
+  addLabel="Add property"
+  ariaLabel="Node properties"
+/>`,
+  dialog: `const [open, setOpen] = useState(false);
+
+<Dialog open={open} onOpenChange={setOpen} title="New link" description="Ports are automatic.">
+  <Field label="Endpoint A" htmlFor="a"><Input id="a" /></Field>
+  <DialogFooter>
+    <button className="nb-button" onClick={() => setOpen(false)}>Cancel</button>
+    <button className="nb-button" data-variant="primary">Create link</button>
+  </DialogFooter>
+</Dialog>`,
+  confirm: `<ConfirmDialog
+  open={open}
+  onOpenChange={setOpen}
+  title="Delete node"
+  description="sw2 and its links are removed."
+  confirmLabel="Delete node"
+  pending={pending}
+  onConfirm={remove}
+/>`,
+  toast: `toast.success('Project apply finished: 12 nodes, 14 links');
+toast.error('AGENT_UNAVAILABLE: compute eu-1 is offline');
+
+// once, at the app root
+<ToastViewport />`,
+  copy: `<CopyButton value="nbk_7Qm3rT9xL2vB8nK4fA6dJ1sH5cP0eW2u" label="Copy API key" />`,
+  spark: `<Sparkline
+  values={samples} max={100}
+  color="var(--color-signal-info)"
+  label="cpu" valueLabel="42%"
+/>`,
+  privileges: `<PrivilegeGrid
+  selected={['project.read', 'node.read', 'link.read']}
+  disabled
+/>`,
+  glyph: `<SymbolGlyph svg={routerSvg} title="Router" />`,
+  tabs: `// ARIA tabs pattern: roving tabindex, ArrowLeft/ArrowRight
+<div role="tablist" onKeyDown={onKeyDown}>
+  <button role="tab" aria-selected={active === 0} tabIndex={active === 0 ? 0 : -1}>Console</button>
+</div>
+<div role="tabpanel" hidden={active !== 0}>…</div>`,
+  image: `<ImagePicker
+  label="Disk image"
+  kind="qemu"
+  value={imageId}
+  onChange={setImageId}
+/>`,
+};
+
+const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="12" width="18" height="7" rx="1.5"/><path d="M7 12V8h10v4M12 5v3"/><circle cx="7" cy="15.5" r="1"/><circle cx="12" cy="15.5" r="1"/><circle cx="17" cy="15.5" r="1"/></svg>`;
+---
+
+<DocsLayout
+  title="Components"
+  description="Live gallery of the application's React components, rendered from apps/web/src/components."
+  headings={headings}
+  wide
+>
+  <header class="docs-page-head">
+    <p class="docs-eyebrow">Live gallery</p>
+    <h1>Components</h1>
+    <p class="docs-lede">
+      These are the real components, imported from <code>apps/web/src/components</code> and
+      rendered with the application's own stylesheet. Static specimens are build-time HTML and ship
+      zero JavaScript; the interactive ones below are the only hydrated islands on this page.
+      The workspace-level surfaces — node cards, link edges, palette, port picker, event log, and
+      inspector — have their own live page: <a href="/ui">Workspace UI</a>.
+    </p>
+    <div class="docs-page-meta">
+      <span class="nb-stat"><span class="nb-stat-label">source</span><span class="nb-stat-value">apps/web/src/components</span></span>
+      <span class="nb-stat"><span class="nb-stat-label">islands</span><span class="nb-stat-value">7</span></span>
+    </div>
+  </header>
+
+  <div class="docs-prose">
+    <div class="docs-callout" data-tone="copper">
+      <span class="docs-callout__label">Copy the shape, not the pixels</span>
+      <p>
+        Snippets show the component API as the app uses it. Props are typed in the source files;
+        the gallery deliberately keeps examples small.
+      </p>
+    </div>
+
+    <h2 id="status">Status and feedback</h2>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Badge</span>
+      <span class="docs-demo__note">Signal dot plus a word — colour is never the only cue.</span>
+    </div>
+    <div class="docs-demo__stage docs-demo__stage--center">
+      <Badge tone="neutral">closed</Badge>
+      <Badge tone="up">started</Badge>
+      <Badge tone="warn">locked</Badge>
+      <Badge tone="down">error</Badge>
+      <Badge tone="info">pending</Badge>
+      <Badge tone="copper">owner</Badge>
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.badge}>Copy</button>
+      <pre><code>{snippets.badge}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Notice</span>
+      <span class="docs-demo__note">Inline strip for state and errors; errors say what happened.</span>
+    </div>
+    <div class="docs-demo__stage flex flex-col gap-2">
+      <Notice tone="info">Project opened on two computes. Console ports are allocated per node.</Notice>
+      <Notice tone="success">Snapshot <code>before-ospf</code> created.</Notice>
+      <Notice tone="warn">Every compute hosting a node must be online before the project opens.</Notice>
+      <Notice tone="error">AGENT_UNAVAILABLE: compute eu-1 is offline.</Notice>
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.notice}>Copy</button>
+      <pre><code>{snippets.notice}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">EmptyState</span>
+      <span class="docs-demo__note">Names what is missing and offers the action that fills it.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <EmptyState
+        icon={Server}
+        title="No computes registered"
+        description="Register a compute to place nodes, images, and captures on it."
+      />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.empty}>Copy</button>
+      <pre><code>{snippets.empty}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-prose"><h2 id="structure">Structure and data</h2></div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Page · PageHeader · Section · RuleRow</span>
+      <span class="docs-demo__note">The page frame: one max width, dense rhythm, hairline header rule.</span>
+    </div>
+    <div class="docs-demo__stage" style="padding: 0;">
+      <Page wide={false}>
+        <PageHeader
+          title="Nodes"
+          description="One topology, one namespace per compute, one row per emulator."
+        />
+        <Section title="Lifecycle" description="Power actions act on the whole selection.">
+          <div class="nb-panel">
+            <RuleRow label="Status"><Badge tone="up">started</Badge></RuleRow>
+            <RuleRow label="Console"><span class="tabular">telnet · port 5001</span></RuleRow>
+            <RuleRow label="Compute"><span class="tabular">eu-1 · underlay 10.99.1.3</span></RuleRow>
+          </div>
+        </Section>
+      </Page>
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.page}>Copy</button>
+      <pre><code>{snippets.page}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Table</span>
+      <span class="docs-demo__note">Dense hairline table; rows carry the rules, the panel carries the edge.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <Table label="Node inventory">
+        <THead>
+          <Tr><Th>Node</Th><Th>Type</Th><Th>Console</Th><Th align="right">Ports</Th></Tr>
+        </THead>
+        <TBody>
+          <Tr><Td>r1</Td><Td mono>iou</Td><Td mono>telnet</Td><Td mono align="right">6</Td></Tr>
+          <Tr><Td>sw1</Td><Td mono>ethernet_switch</Td><Td>none</Td><Td mono align="right">8</Td></Tr>
+          <Tr><Td>pc1</Td><Td mono>vpcs</Td><Td mono>telnet</Td><Td mono align="right">1</Td></Tr>
+        </TBody>
+      </Table>
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.table}>Copy</button>
+      <pre><code>{snippets.table}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-prose"><h2 id="forms">Forms</h2></div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Field · Input · Select · Textarea · CheckboxOption</span>
+      <span class="docs-demo__note">Hydrated: values update live.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <FormDemo client:load />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.field}>Copy</button>
+      <pre><code>{snippets.field}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">KeyValueEditor</span>
+      <span class="docs-demo__note">Typed values: numbers, booleans, and null survive the text field.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <KeyValueDemo client:load />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.keyvalue}>Copy</button>
+      <pre><code>{snippets.keyvalue}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-prose"><h2 id="overlays">Overlays and actions</h2></div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Dialog · ConfirmDialog</span>
+      <span class="docs-demo__note">Hydrated: open, close, Escape, focus trap, pending confirm.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <DialogDemo client:load />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.dialog}>Copy</button>
+      <pre><code>{snippets.dialog}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Toast · ToastViewport</span>
+      <span class="docs-demo__note">Hydrated: fires real notifications from the app store.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <ToastDemo client:load />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.toast}>Copy</button>
+      <pre><code>{snippets.toast}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">CopyButton</span>
+      <span class="docs-demo__note">Hydrated: clipboard write with a 1.6 s in-place confirmation.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <CopyDemo client:load />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.copy}>Copy</button>
+      <pre><code>{snippets.copy}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Tabs pattern</span>
+      <span class="docs-demo__note">Hydrated: roving tabindex, ArrowLeft/ArrowRight.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <TabsDemo client:load />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.tabs}>Copy</button>
+      <pre><code>{snippets.tabs}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-prose"><h2 id="data">Data display</h2></div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">Sparkline</span>
+      <span class="docs-demo__note">Static SVG; the caller fixes the domain so polls stay comparable.</span>
+    </div>
+    <div class="docs-demo__stage docs-grid-2">
+      <Sparkline values={[12, 18, 14, 26, 31, 28, 42, 38, 44, 51]} max={100} color="var(--color-signal-info)" label="cpu" valueLabel="51%" />
+      <Sparkline values={[80, 74, 77, 69, 62, 58, 61, 55, 47, 42]} max={100} color="var(--color-copper)" label="memory" valueLabel="42%" />
+      <div style="grid-column: 1 / -1;">
+        <Sparkline values={[2, 3, 3, 4, 6, 5, 7, 9, 8, 11]} max={16} color="var(--color-signal-up)" label="links up" valueLabel="11" />
+      </div>
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.spark}>Copy</button>
+      <pre><code>{snippets.spark}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">PrivilegeGrid</span>
+      <span class="docs-demo__note">Static, read-only: grouped checkboxes for roles, grants, and API-key scopes.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <PrivilegeGrid
+        selected={['project.read', 'node.read', 'node.control', 'link.read', 'link.capture', 'mcp.use']}
+        disabled
+      />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.privileges}>Copy</button>
+      <pre><code>{snippets.privileges}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">SymbolGlyph</span>
+      <span class="docs-demo__note">Sanitised inline SVG so <code>currentColor</code> follows the theme.</span>
+    </div>
+    <div class="docs-demo__stage docs-demo__stage--center">
+      <span style="width:64px;height:64px;color:var(--color-copper);">
+        <SymbolGlyph svg={routerSvg} title="Router symbol" style={{ width: '64px', height: '64px' }} />
+      </span>
+      <span style="width:40px;height:40px;color:var(--color-ink-dim);">
+        <SymbolGlyph svg={routerSvg} style={{ width: '40px', height: '40px' }} />
+      </span>
+      <span style="width:40px;height:40px;">
+        <SymbolGlyph svg={null} style={{ width: '40px', height: '40px' }} />
+      </span>
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.glyph}>Copy</button>
+      <pre><code>{snippets.glyph}</code></pre>
+    </div>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">ImagePicker</span>
+      <span class="docs-demo__note">Hydrated island (client-only) with a seeded query cache and a memory router.</span>
+    </div>
+    <div class="docs-demo__stage" style="min-height: 92px;">
+      <ImagePickerDemo client:only="react" />
+    </div>
+    <div class="docs-demo__code">
+      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.image}>Copy</button>
+      <pre><code>{snippets.image}</code></pre>
+    </div>
+  </div>
+</DocsLayout>

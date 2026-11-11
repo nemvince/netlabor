@@ -1,0 +1,110 @@
+---
+title: Links, filters & capture
+description: How anchors become kernel bridges or ubridge relays, and how filters, pcaps, and live markers work.
+---
+
+import MiniCanvas from '@docs/demos/surfaces/MiniCanvas.tsx';
+import PortPickerSurface from '@docs/demos/surfaces/PortPickerSurface.tsx';
+
+A link is an unordered pair of endpoints. Each endpoint names a node, an adapter, and a port, plus
+the owning interface name derived from those values. The controller decides the dataplane; the
+browser only edits the pair.
+
+## The edge on the canvas
+
+`LinkEdge` draws each link between the handles on the two cards, routed by the link's style:
+orthogonal when the row says so, straight or bezier otherwise. The edge carries the link status —
+this fixture link is `active` between a started switch and a started desktop — and prints both port
+labels when `showPorts` is set or while the edge is hovered. Capture and marker state reuse the same
+edge: a capture adds its marker chip, and a `marker.hit` flashes it.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">LinkEdge</span>
+    <span class="docs-demo__note">sw1 · Ethernet0/0 → r1 · Ethernet0/0, orthogonal, active, port labels always on.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <MiniCanvas
+      client:visible
+      nodeNames={['sw1', 'r1']}
+      linkIds={['0e000000-0000-4000-8000-000000000001']}
+      showPorts
+      height={300}
+      label="Two device cards joined by one orthogonal link with port labels"
+    />
+  </div>
+</div>
+
+## Choosing a port
+
+Ports are selected from the node's derived port list. Explicit ports are optional: supply both
+`aPort` and `bPort` or neither. A port already used by another link is a conflict (`CONFLICT` or
+`BAD_REQUEST` depending on the call); declarative apply matches an existing link before allocating.
+
+The workspace's `ConnectPortMenu` filters the same list. It opens where the node was clicked,
+excludes every port already claimed by any link in the project, searches by name or `adapter/port`,
+and supports <kbd>↑</kbd>/<kbd>↓</kbd>, <kbd>Enter</kbd>, and <kbd>Esc</kbd>. The switch below has
+`Ethernet0` claimed by the fixture link, so the picker offers the other seven ports.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">ConnectPortMenu</span>
+    <span class="docs-demo__note">Anchored, searchable, claimed ports removed; choosing one closes the menu and reports the port.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <PortPickerSurface client:visible />
+  </div>
+</div>
+
+## Link types and statuses
+
+`ethernet`, `serial`, `atm`, and `frame_relay`. A link's status is `pending`, `active`,
+`suspended`, or `error`. `pending` almost always means one endpoint is not started. Serial links
+between IOU nodes use the same model with a serial port type.
+
+## Dataplane selection
+
+- **Kernel bridge** — both anchors are kernel interfaces on the same compute. The agent creates a
+  bridge and attaches both interfaces.
+- **ubridge relay** — anything else. The agent runs `ubridge` inside the project namespace and
+  wires UDP NIOs, TAP NIOs, or a kernel bridge plus relay TAP.
+- **Cross-compute** — UDP tunnels over the `10.99.0.0/16` underlay.
+
+Interface names are deterministic, so an agent restart can recreate the same topology without being
+told which names it used before. `kernelDataplane=false` in the agent's capabilities means
+kernel-mode links are unavailable; relays still work.
+
+## Filters
+
+`links.filters.set` and `links.filters.clear` attach tc/netem-style impairments to a link: delay,
+jitter, loss, corruption, duplication, and bandwidth limits. Filters apply to the link's interface
+inside the namespace and survive a node stop/start for the same link row. Clearing removes the qdisc.
+
+Filters are visible in the link dialog and on the link's context menu. A filtered link keeps its
+status; the impairment is reported in the link's metadata rather than by changing its state.
+
+## Capture and packet analysis
+
+`links.capture.start` begins a pcap capture on the link; `stop` ends it and returns the artifact
+metadata; `status` reports whether a capture is running. Captures are written on the agent and
+downloaded through a controller HTTP route, not through an oRPC body.
+
+With `sharkd`/`tshark` available, `packet.analyze` parses a capture into a packet list and
+`packet.fields` returns the field tree for one packet. The workspace's Wireshark tab uses the same
+backend over `/ws/wireshark/:linkId`. Without the binaries the calls fail with
+`CAPABILITY_UNSUPPORTED`.
+
+## Markers
+
+Markers are ubridge `mark` filters that write a pcap per marker. The agent tails those files and
+emits `marker.hit` events carrying the tag, link, direction, and length; the canvas animates the
+link when a hit arrives. ubridge's UDP marker sink is also bound per project for kernels that report
+it. `links.markers.*` manages the filter set, and the link markers panel shows recent hits.
+
+Markers are diagnostic, not lossless: they sample traffic matching the filter and never alter it.
+
+## Related
+
+- [Nodes & ports](/concepts/nodes) — where the port list comes from.
+- [Workspace UI](/ui) — the index of every embedded surface.
+- [Capture and packet analysis](/concepts/links#capture-and-packet-analysis) — pcap and tshark paths.

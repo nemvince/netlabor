@@ -1,0 +1,71 @@
+---
+title: Consoles
+description: Telnet, VNC, and HTTP consoles, the single-use tickets behind them, and console automation.
+---
+
+Consoles are proxied. The browser never reaches an emulator or an agent port directly; it opens a
+controller WebSocket that is authorised by the session and a single-use HMAC ticket. Consoles open
+from the node's Console action and from the inspector; this page covers the kinds, the port and
+ticket exchange, and scripted console use.
+
+## Console kinds
+
+| Kind        | Path                         | Used for                                  |
+| ----------- | ---------------------------- | ----------------------------------------- |
+| `telnet`    | `/ws/console/:nodeId`        | IOU, DynaMips, VPCS, serial QEMU           |
+| `vnc`       | `/ws/vnc/:nodeId`            | QEMU desktops, appliance images           |
+| `http`      | management network           | Web-managed appliances in containers      |
+| `https`     | management network           | TLS variants of the same                  |
+| `none`      | —                            | Nodes with no interactive console         |
+
+The console type comes from the template or the node properties. QEMU nodes choose between serial
+and VNC through `consoleType`; `consoleAutoStart` decides whether the console listener is started
+with the node.
+
+## Ports and tickets
+
+Console proxies bind external ports on the agent host and forward into the project namespace. The
+controller allocates those ports and records them in `port_allocations`. When a browser asks to
+connect, the controller issues a single-use HMAC ticket valid for 60 seconds; the WebSocket handler
+verifies the ticket and the session before bridging bytes. Because tickets are single-use, a
+reconnect asks for a fresh one.
+
+For VNC, the browser speaks RFB through the proxy. For telnet, the controller strips telnet
+negotiation from the terminal stream and forwards raw bytes; the xterm tab renders them.
+
+## HTTP consoles
+
+HTTP/HTTPS console nodes get a dedicated management network per container: a veth pair from the
+project namespace into the container (`mgmt0` inside). This keeps the management plane reachable
+without giving the node a general uplink. The console surface embeds the management URL; the
+target itself must be served by the container.
+
+## Console automation
+
+`nodes.console.exec` runs commands against a serial or telnet console and returns a transcript:
+
+```json
+{
+  "id": "<node uuid>",
+  "commands": ["show ip interface brief"],
+  "timeoutMs": 8000,
+  "prompt": "Switch[>#]\\\\s*$",
+  "terminalLengthZero": true
+}
+```
+
+`prompt` is an optional JavaScript regular expression; omit it for the usual `>`/`#` prompt.
+`terminalLengthZero` sends the IOS `terminal length 0` preamble. The result carries `ok` and
+`timedOut` plus the transcript. VNC-only nodes do not expose a command console.
+
+`nodes.resetConsole` clears a stuck proxy. Console exec requires a running node with a serial or
+telnet console; a stopped node returns `NODE_NOT_RUNNING`.
+
+## Troubleshooting
+
+- Empty tab: verify the node has a `consolePort`, the agent's console listener is bound, and the
+  ticket is fresh.
+- Garbled output: the console type and the emulator's console mode disagree — a raw serial stream
+  being opened as telnet, or the reverse.
+- VNC black screen: the guest has no running X server or the display manager never started. Check
+  the node's serial log.

@@ -25,3 +25,9 @@ packages/db/src/migrations/*.js
 # Dynamips writes instance logs and JIT caches into its working directory
 /*_log.txt
 /ilt_*
+
+# Astro dev/build cache
+.astro/
+# Generated documentation reference data (scripts/generate-api.ts)
+apps/docs/src/data/*.json
+apps/docs/public/search-index.json

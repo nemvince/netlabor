@@ -1,0 +1,106 @@
+---
+title: Appliance images
+description: The global OS repository, online builds, offline attachment, desktop and package selection, lifecycle, and turning a build into a template.
+---
+
+import ApplianceBuildSurface from '@docs/demos/surfaces/ApplianceBuildSurface.tsx';
+
+Appliance images are built once, centrally, then attached to lab nodes with no uplink of their own.
+The controller keeps a global OS repository; a compute builds; the library stores the result.
+
+## The build dialog
+
+`ApplianceBuildDialog` is the form behind **Images → OS repository & builds → New appliance build**.
+It offers only OS entries with a verified artifact, a desktop profile and package list, the build
+VM's disk, memory, and CPU budget, and the compute that runs the build. Start build is disabled
+until a base image has been downloaded or adopted — the product's own rule, not a docs shortcut.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">ApplianceBuildDialog</span>
+    <span class="docs-demo__note">Seeded OS repository and computes. No entry has a verified artifact yet, so the dialog shows its real blocked state and cannot queue work.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <ApplianceBuildSurface client:visible />
+  </div>
+</div>
+
+The form reads `OsImageRow[]` and `ComputeRow[]`; it writes nothing until the job is queued, and the
+docs fixtures stop that at the disabled submit. The same component is used in the app after
+`appliances.os.list` and `computes.list`.
+
+## The OS repository
+
+Two entries are seeded and refreshed on start (their upstream URLs are updated, downloads and
+user rows are not touched):
+
+| Name                            | Release            | Upstream                                                          |
+| ------------------------------- | ------------------ | ----------------------------------------------------------------- |
+| `debian-13-genericcloud-amd64`  | Debian 13 (trixie) | `cloud.debian.org/.../debian-13-genericcloud-amd64.qcow2`         |
+| `ubuntu-24.04-cloudimg-amd64`   | Ubuntu 24.04 LTS   | `cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img` |
+
+Netlabor never fabricates an artifact. There are two ways to populate an entry:
+
+- **Download** — `appliances.os.download({ id })` streams the upstream image into the blob store,
+  validates it with `qemu-img info`, and creates the library `images` row (kind `qemu`). Returns a
+  job.
+- **Adopt** — `appliances.os.adopt({ id, imageId })` points the entry at an image you uploaded
+  yourself. This is the air-gapped path; nothing is fetched.
+
+## Builds run online
+
+`appliances.builds.create({ name, osImageId, desktop, packages, diskGb, memoryMb, cpus })` boots
+the base image in a throwaway QEMU VM on a compute with **QEMU user networking**, so the guest is
+online while it provisions. cloud-init runs one generated script that:
+
+1. updates apt;
+2. installs the chosen desktop and your package list;
+3. enables the display manager and `graphical.target`;
+4. prints progress markers to the serial console;
+5. ends with `NETLABOR_BUILD_OK` or `NETLABOR_BUILD_FAILED` and powers the VM off.
+
+| Desktop | Packages                                                        | Display manager |
+| ------- | --------------------------------------------------------------- | --------------- |
+| `none`  | none                                                            | —               |
+| `xfce`  | `xfce4`, `xfce4-terminal`, `lightdm`, `lightdm-gtk-greeter`     | `lightdm`       |
+| `gnome` | `gnome-core`, `gnome-terminal`, `gdm3`                          | `gdm3`          |
+| `kde`   | `kde-plasma-desktop`, `sddm`                                    | `sddm`          |
+| `lxqt`  | `lxqt`, `sddm`                                                  | `sddm`          |
+
+Package names are validated against a strict apt-name pattern before they reach the script.
+
+<div class="docs-callout" data-tone="warn">
+  <span class="docs-callout__label">Disk interface caveat</span>
+  <p>
+    A build VM and a node attach the disk as IDE by default. The Debian 13 cloud image's BIOS GRUB
+    cannot load its kernel from <code>virtio-blk</code>; Ubuntu boots either way. Keep
+    <code>disks.hda.interface</code> unset or <code>ide</code> on templates built from a Debian base.
+  </p>
+</div>
+
+## Publish and attach offline
+
+On success the agent moves the qcow2 into its image store, the controller pulls it back, registers a
+library image under the build name, and marks that compute's replica `present`. From then on the
+image replicates like any other (`images.sync`).
+
+`appliances.builds.template({ buildId, name, projectId })` creates a QEMU device template whose
+`requiredImages` point at the built image. Nodes created from it get their disk from that image and
+attach only to project links — a finished appliance runs **offline** inside the lab namespace with
+no uplink of its own.
+
+## Lifecycle and logs
+
+Builds are visible on **Images → OS repository & builds** and through `appliances.builds.list` /
+`get`. Progress and the tail of the serial console are reported by the agent; the `appliance.build`
+job carries the same stream. Builds that outlive a controller restart are marked failed at startup,
+and a build VM that loses its process without a marker is reported as `build interrupted`.
+`appliances.builds.cancel` stops a running build.
+
+## Workflow summary
+
+1. Populate the OS entry (download, or adopt an uploaded image).
+2. Build with a desktop and package list.
+3. Publish: the artifact becomes a library image with a replica on the build compute.
+4. Create a template from the build, or attach the image to an existing QEMU template.
+5. Start nodes: no uplink is required.

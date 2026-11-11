@@ -1,0 +1,73 @@
+---
+title: Drawings
+description: Annotations, shapes, text, notes, images, layers, and the stable keys used by declarative apply.
+---
+
+import MiniCanvas from '@docs/demos/surfaces/MiniCanvas.tsx';
+
+Drawings are canvas annotations stored as rows, not as part of a node. They do not touch the
+dataplane and survive project close/open.
+
+## Drawing cards on the canvas
+
+`DrawingNode` renders each drawing from its row: fill, stroke, stroke width, dash, and opacity come
+from `style`; text and notes use the row's text with the mono font for notes. A selected drawing gets
+the dashed copper outline. The fixtures below are a keyed frame (`applyKey: pod-a-frame`), its keyed
+label, and an unkeyed note — the frame and label belong to declarative apply, the note does not.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">DrawingNode</span>
+    <span class="docs-demo__note">Rect and text drawings with <code>style.applyKey</code>, plus an unkeyed note, over a device card.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <MiniCanvas
+      client:visible
+      nodeNames={['sw1']}
+      drawingIds={[
+        '0f100000-0000-4000-8000-000000000001',
+        '0f100000-0000-4000-8000-000000000002',
+        '0f100000-0000-4000-8000-000000000003',
+      ]}
+      selectedDrawings={['0f100000-0000-4000-8000-000000000001']}
+      height={300}
+      label="A keyed annotation frame and label around a switch card, with an unkeyed note"
+    />
+  </div>
+</div>
+
+The drawing row carries its own geometry (`x`, `y`, `width`, `height`, `rotation`), stacking
+(`z`, `layer`), and content (`text`, sanitized `svg`, or `filePath` for an image). Nothing on the
+canvas mutates the row directly; the annotation tool and the inspector call `drawings.*`.
+
+## Types
+
+`rect`, `ellipse`, `line`, `text`, `note`, and `image`. Every drawing has position, size, rotation,
+`z`, `layer`, an optional `text`, an optional sanitized `svg`, and an optional `filePath` for images
+from the project file tree.
+
+Styles are partial and stored in `style`: `fill`, `stroke`, `strokeWidth`, `dash`, `opacity`,
+`fontSize`, `fontWeight`, `textAlign`, and — since declarative apply — `applyKey`.
+
+## Layers and stacking
+
+`layer` is a free-form string (default `"default"`); the canvas toolbar filters by layer. `z`
+orders drawings and nodes within the canvas. Locking a project freezes drawing edits like every
+other topology mutation.
+
+## Editing
+
+The canvas toolbar's annotation tool creates a drawing; the inspector edits geometry and style; the
+selection can be aligned and distributed like nodes. Images use `filePath` and are served from the
+project file tree, so exporting a project carries its drawings and their image files together.
+
+SVG content is sanitized on write (`sanitizeSvg`) and again on render by `SymbolGlyph`, which strips
+scripts, `foreignObject`, event handlers, and non-local `href`s.
+
+## Declarative identity
+
+Hand-drawn drawings have no key and are never matched or pruned by `projects.apply`. A drawing
+created by apply carries `style.applyKey`; reapplying the manifest updates that row in place, and
+`prune: true` deletes keyed drawings that the manifest no longer lists. This keeps one rule simple:
+if you want apply to manage an annotation, give it a key. The note above has no key, so no manifest
+can update or remove it.

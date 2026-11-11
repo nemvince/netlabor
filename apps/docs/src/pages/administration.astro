@@ -1,0 +1,142 @@
+---
+import authzData from '../data/authz.json';
+import PrivilegeRoles from '../demos/surfaces/PrivilegeRoles.tsx';
+import DocsLayout from '../layouts/DocsLayout.astro';
+
+const headings = [
+  { depth: 2, slug: 'model', text: 'Users, groups, roles, grants' },
+  { depth: 2, slug: 'privileges', text: 'Privilege matrix' },
+  { depth: 2, slug: 'roles', text: 'Role configuration' },
+  { depth: 2, slug: 'audit', text: 'Audit log' },
+  { depth: 2, slug: 'oidc', text: 'OIDC' },
+  { depth: 2, slug: 'settings', text: 'Settings and secrets' },
+  { depth: 2, slug: 'keys', text: 'API keys and sessions' },
+];
+const roles = authzData.roles;
+---
+
+<DocsLayout
+  title="Administration"
+  description="Users, groups, built-in roles, project grants, the privilege matrix, audit, OIDC, settings, and API keys."
+  headings={headings}
+  wide
+>
+  <header class="docs-page-head">
+    <p class="docs-eyebrow">Identity</p>
+    <h1>Administration</h1>
+    <p class="docs-lede">
+      Authorization is privilege-based. Roles are named bundles of privileges; grants add a role's
+      privileges inside one project. This matrix is generated from
+      <code>packages/contract/src/authz.ts</code>.
+    </p>
+  </header>
+
+  <div class="docs-prose">
+    <h2 id="model">Users, groups, roles, grants</h2>
+    <p>
+      A user has global roles and any number of group memberships. Groups carry global roles, so
+      membership grants the same privileges. Project grants attach a project role to a user or group
+      for one project. Global role names are
+      <code>{authzData.globalRoles.join(', ')}</code>; project grants may use
+      <code>{authzData.projectRoles.join(', ')}</code>. <code>owner</code> exists only on project
+      grants, and the project's creator holds it implicitly.
+    </p>
+    <p>
+      Every check is the union of global privileges and the matching project grant's privileges. An
+      API key cannot exceed its owner's current privileges.
+    </p>
+
+    <h2 id="privileges">Privilege matrix</h2>
+    <p>
+      {authzData.privileges.length} privileges in {new Set(authzData.privileges.map((p) => p.split('.')[0] ?? p)).size} resource groups.
+      The <strong>Admin</strong> role holds every privilege by definition.
+    </p>
+  </div>
+
+  <div class="docs-table-scroll">
+    <table aria-label="Privileges per built-in role">
+      <thead>
+        <tr>
+          <th>Privilege</th>
+          {roles.map((role) => <th>{role.name}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {
+          authzData.privileges.map((privilege) => (
+            <tr>
+              <td><code>{privilege}</code></td>
+              {roles.map((role) => (
+                <td class="tabular" style="text-align:center;">
+                  {role.privileges.includes(privilege) ? '●' : '·'}
+                </td>
+              ))}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="docs-prose">
+    <p class="docs-lede" style="font-size:12px;">
+      ● granted · · not granted. Project grants use the same bundles with the same matrix.
+    </p>
+
+    <h2 id="roles">Role configuration</h2>
+    <p>
+      The role editor uses the same matrix as checkboxes, grouped by resource prefix and rendered
+      read-only for a built-in role. Switch roles below: the grid is the real
+      <code>PrivilegeGrid</code> from <code>apps/web/src/components</code>, fed the built-in role
+      bundles from <code>packages/contract/src/authz.ts</code>. Custom roles and API-key scopes use
+      the same component with an editable <code>onToggle</code>.
+    </p>
+  </div>
+
+  <div class="docs-demo">
+    <div class="docs-demo__head">
+      <span class="docs-demo__name">PrivilegeGrid</span>
+      <span class="docs-demo__note">Read-only, grouped by resource; the role buttons are docs chrome around the real component.</span>
+    </div>
+    <div class="docs-demo__stage">
+      <PrivilegeRoles client:visible roles={roles} />
+    </div>
+  </div>
+
+  <div class="docs-prose">
+    <h2 id="audit">Audit log</h2>
+    <p>
+      Every mutation is written with the user, IP, action, resource, and a redacted diff. Secrets and
+      password fields are redacted before the row is stored. <code>audit.read</code> is held by
+      administrators and auditors; the UI exposes filters by user, action, and time. Audit rows are
+      append-only through the API — there is no delete procedure.
+    </p>
+
+    <h2 id="oidc">OIDC</h2>
+    <p>
+      Providers are managed with <code>auth.oidc.*</code> and require <code>settings.write</code>.
+      Discovery uses <code>openid-client</code>; PKCE, state, and nonce are stored in a signed
+      10-minute cookie. Claims map to groups, and optional auto-provisioning creates users on first
+      login. Issuers must use https, except loopback issuers used for local mock providers;
+      <code>NB_ALLOW_INSECURE_OIDC</code> exists only for that case.
+    </p>
+
+    <h2 id="settings">Settings and secrets</h2>
+    <p>
+      Global settings are typed key/value rows read with <code>settings.get</code> and written with
+      <code>settings.update</code>. Secrets (IOU license files, credentials, tokens) are stored with
+      AES-GCM using <code>NB_SECRET_KEY</code> and referenced by id; they are never returned in
+      plaintext through list calls. Changing <code>NB_SECRET_KEY</code> without re-encrypting makes
+      existing secrets unreadable.
+    </p>
+
+    <h2 id="keys">API keys and sessions</h2>
+    <p>
+      Sessions are random 32-byte tokens stored as SHA-256, delivered as the HttpOnly
+      <code>nb_session</code> cookie, and revocable per session. API keys use the
+      <code>nbk_</code> prefix, are stored hashed, and are scoped to a privilege subset. The
+      plaintext is returned exactly once at creation. Prefer one key per integration and revoke it
+      when the integration ends; scopes are intersected with the owner's privileges at check time.
+    </p>
+  </div>
+</DocsLayout>

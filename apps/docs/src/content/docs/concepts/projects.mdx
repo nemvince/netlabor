@@ -1,0 +1,127 @@
+---
+title: Projects
+description: A project is one topology, one dataplane, and one membership boundary. Learn its lifecycle, locking, files, templates, and archive formats.
+---
+
+import PaletteSurface from '@docs/demos/surfaces/PaletteSurface.tsx';
+
+A project is the unit of isolation. It owns exactly one topology, the dataplane that realises it,
+its files, and the people allowed to see it. Nodes, links, drawings, markers, faults, snapshots, and
+project-scoped templates all hang off a project row.
+
+## The palette starts the project
+
+A new project is an empty canvas plus the left rail. The `Palette` lists the global template library
+and the project's own templates, grouped by category, searchable by name, type, or category, with
+favourites pinned into their own group. Dropping a row places a node at that point; double-clicking
+adds it at the viewport centre. The rail is disabled while the project is locked or closed.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">Palette</span>
+    <span class="docs-demo__note">Four catalog templates; search and favourites are live, selecting a row reports what would be placed instead of mutating a project.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <PaletteSurface client:visible />
+  </div>
+</div>
+
+The rail reads `TemplateRow[]`; image coverage is folded into each row, so a template whose required
+image is missing is marked before the drop. Nothing is created until the row is dropped, and the
+drop calls `nodes.create` with the template id — the same procedure an API client uses.
+
+## The project row
+
+| Field       | Meaning                                                                        |
+| ----------- | ------------------------------------------------------------------------------ |
+| `status`    | `closed` or `opened`. Closed projects have no namespaces or slots.             |
+| `locked`    | Read-only topology: edits are refused while the dataplane keeps running.       |
+| `ownerId`   | The creator. The owner always holds the `owner` project role.                  |
+| `poolId`    | Optional underlay pool constraining the slot and `10.99.<idx>.<slot>` address. |
+| `variables` | String map available to manifests and template instantiation.                  |
+| `scene`     | Free-form canvas state: viewport, layer visibility, display preferences.       |
+| `autoOpen`  | Open the project when a member enters the workspace.                           |
+| `autoClose` | Close it after the configured idle period (`NB_AUTO_CLOSE_IDLE_MINUTES`).      |
+| `autoStart` | Start every node when the project opens.                                       |
+
+New projects are `closed` and unlocked, with no dataplane. `project.read` sees every project you
+own, hold a grant on, or — for global roles — every project the role matches. `projects.list`
+supports `search`, `status`, `includeClosed`, and pagination.
+
+## Opening and closing
+
+Opening a project does three things:
+
+1. allocates a slot per compute that hosts nodes: a host veth endpoint
+   `169.254.<slot>.1/30`, the namespace endpoint `169.254.<slot>.2/30`, and a project address
+   `10.99.<idx>.<slot>/32`;
+2. creates the namespace `nb-<first10hex(projectId)>` and applies the nftables isolation table;
+3. starts `ubridge` inside the namespace with the sockets consoles, links, and captures use.
+
+Every compute that hosts a node must be online. If one is not, `projects.open` fails with
+`AGENT_UNAVAILABLE` instead of leaving a half-open project. Closing reverses the steps and
+terminates emulators; files and rows remain.
+
+<div class="docs-callout" data-tone="info">
+  <span class="docs-callout__label">Opening is not starting</span>
+  <p>
+    Open allocates the dataplane; start launches emulators. With <code>autoStart</code>, opening a
+    project also starts every stopped node. Link dataplanes are created lazily as endpoints start.
+  </p>
+</div>
+
+## Locking
+
+`projects.lock` / `projects.unlock` switch topology editing off and on without touching the
+dataplane. While locked, node, link, drawing, and marker mutations are refused, but starting,
+stopping, consoles, and captures still work. Use it to freeze a shared lab during a class or an
+exercise. `project.write` is required.
+
+## Files
+
+Each project has a file tree that survives close/open and travels in exports:
+
+- `projects.files.list` walks a path (default: the root) and returns entries with size and kind.
+- `projects.files.read` returns text, or `encoding: 'base64'` for raw bytes; needs `node.files`.
+- `projects.files.write` writes text content; needs `node.files`.
+- `projects.files.delete` removes a path; needs `project.write`.
+
+Paths are validated as safe relative paths. Node-level files live separately: a QEMU disk, a
+startup config, or a container bind mount is addressed through `nodes.files.*` and is written on
+the compute's node directory.
+
+## Project templates and archives
+
+Three related mechanisms are easy to confuse:
+
+| Mechanism             | Procedure pair                        | What it captures                                        |
+| --------------------- | ------------------------------------- | ------------------------------------------------------- |
+| Project template      | `projects.templates.create` / `apply` | A reusable blueprint row that can create a new project. |
+| Archive export/import | `projects.export` / `projects.import` | A `netlabor.project/1` archive with topology and files. |
+| Duplicate             | `projects.duplicate`                  | A job that clones an existing project.                  |
+
+Exports are streamed archives (`netlabor.project/1`). Imports and duplicates run as jobs, so the
+request returns a `JobRow` and progress is reported through the job event stream. Import does not
+reuse the archive `applyManifest` implementation internally; it is a full replacement of the
+project contents.
+
+## Deleting
+
+`projects.delete` removes the dataplane, the rows, and the project's files. It needs
+`project.delete`, which only global administrators and project owners hold. Deletion is a hard
+delete — take a snapshot or export first if the topology matters.
+
+## Limits and defaults
+
+- `NB_MAX_NODES_PER_PROJECT` caps node creation; exceeding it returns `BAD_REQUEST`.
+- `NB_AUTO_CLOSE_IDLE_MINUTES` drives `autoClose` and defaults to 10 minutes when unset.
+- Project names are not unique. Address a project by `id`; declarative tools that accept a name
+  reject ambiguous matches.
+
+## Related
+
+- [Nodes & ports](/concepts/nodes) — what a project contains.
+- [Links, filters & capture](/concepts/links) — how nodes are wired.
+- [Workspace UI](/ui) — the index of every embedded surface.
+- [Snapshots & archives](/concepts/snapshots) — durable copies.
+- [Declarative apply](/apply) — create or update a project from one manifest.

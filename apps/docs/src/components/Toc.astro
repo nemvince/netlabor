@@ -1,0 +1,20 @@
+---
+import type { Heading } from '../lib/headings.ts';
+
+const { headings } = Astro.props as { headings: Heading[] };
+---
+
+<aside class="docs-toc" aria-label="On this page">
+  <p class="docs-toc__label">On this page</p>
+  <ol>
+    {
+      headings.map((heading) => (
+        <li>
+          <a href={`#${heading.slug}`} data-depth={heading.depth}>
+            {heading.text}
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</aside>

@@ -1,0 +1,148 @@
+---
+title: Nodes & ports
+description: Emulator-backed devices, their properties, port derivation, lifecycle, files, and placement on computes.
+---
+
+import InspectorSurface from '@docs/demos/surfaces/InspectorSurface.tsx';
+import MiniCanvas from '@docs/demos/surfaces/MiniCanvas.tsx';
+
+A node is one device in a project: a row that names an emulator type, a compute, a template, and a
+property bag the agent turns into a process. Nodes are always created from a template or an explicit
+`nodeType`; the template supplies defaults and the node's symbol.
+
+## The card on the canvas
+
+Every device is drawn by the workspace's `DeviceNode` from a `NodeRow`. The card carries the node
+type in the top strip, the symbol and name, a status lamp, and one lamp per derived port; a selected
+card gets the copper border and shadow. The three fixtures below are a started switch (selected), a
+stopped desktop, and a router in `error`.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">DeviceNode</span>
+    <span class="docs-demo__note">sw1 started and selected · r1 stopped · core1 in error. Static canvas: drag, connect, and zoom are off.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <MiniCanvas
+      client:visible
+      nodeNames={['sw1', 'r1', 'core1']}
+      selectedNodes={['sw1']}
+      height={300}
+      label="Three device cards: a started switch, a stopped desktop, and a router in error"
+    />
+  </div>
+</div>
+
+The lamp beside the name is the node's status: green while `started` (with a glow), grey for
+`stopped`, red for `error`, amber for `suspended`. The row of small rectangles in the header is the
+derived port list — lit only while the node is started, capped at eight with a `+n` remainder. The
+footer states the exact port count, so a card never claims more ports than the link model offers.
+
+## The inspector
+
+Selecting nothing shows the project overview in the right rail: node and link counters, the
+per-status breakdown, project variables, and the compute slots the dataplane occupies. Selecting a
+node switches the same rail to the properties, ports, files, and console tabs. The overview below is
+mounted against a seeded, fetch-free query cache; the callbacks are inert.
+
+The fixtures come from a project that is opened on one compute with two started nodes, one stopped,
+and one in error.
+
+<div class="docs-demo">
+  <div class="docs-demo__head">
+    <span class="docs-demo__name">Inspector · no selection</span>
+    <span class="docs-demo__note">Real component, seeded <code>auth.me</code> and <code>projects.stats</code>; no controller calls.</span>
+  </div>
+  <div class="docs-demo__stage">
+    <InspectorSurface client:visible />
+  </div>
+</div>
+
+## Node kinds
+
+| `nodeType`           | Backing process                  | Console             |
+| -------------------- | -------------------------------- | ------------------- |
+| `qemu`               | `qemu-system-x86_64` with KVM    | serial or VNC       |
+| `iou`                | Cisco IOU/IOL                    | telnet              |
+| `dynamips`           | DynaMips                         | telnet              |
+| `vpcs`               | VPCS                             | telnet              |
+| `docker`             | Docker Engine or a Podman socket | none, or HTTP/HTTPS |
+| `cloud`              | Cloud-init QEMU node             | serial or VNC       |
+| `nat`                | Host NAT bridge attachment       | none                |
+| `ethernet_switch`    | Kernel bridge                    | none                |
+| `ethernet_hub`       | Shared segment                   | none                |
+| `atm_switch`         | ubridge relay                    | none                |
+| `frame_relay_switch` | ubridge relay                    | none                |
+
+`cloud` is a QEMU node with cloud-init enabled; the template decides server (serial) or desktop
+(VNC + XFCE) presentation.
+
+## Properties
+
+Properties are typed per emulator in `packages/contract/src/schemas/nodes.ts` and stored as JSONB.
+Representative fields:
+
+- **QEMU** — `ram`, `cpus`, `adapters`, `adapterType`, `disks` (hda–hdd with image id and
+  interface), `cdromImageId`, `machineType`, `cpuModel`, `options`, `linkedClone`, and the
+  cloud-init block (`cloudInitUser`, `cloudInitPassword`, `cloudInitNetworkMode`, custom
+  user-data/meta-data/network-config).
+- **IOU** — `imageId`, `iourcSecretId`, `ethernetAdapters`, `serialAdapters`, `startupConfig`,
+  `privateConfig`, `licenseCheck`.
+- **DynaMips** — platform, image, NVRAM, and idle-PC values per adapter.
+- **Docker** — image reference, `extraVolumes`, `privileged`, command and environment.
+
+The inspector edits these fields; `nodes.update` accepts a partial `properties` object and merges it
+into the stored bag. Removing a key is done by sending `null` for that key where the schema allows
+it.
+
+## Port derivation
+
+Ports are not stored as a separate mutable table: `portsForNode(nodeType, properties)` derives them
+from the node type and property bag (`packages/catalog/src/ports.ts`). Switches and hubs derive a
+fixed set; routers derive from adapter counts; labels can be adjusted with `firstPortName`,
+`portNameFormat`, and `portSegmentSize`.
+
+Each port carries a name, an adapter number, a port number, and a type (`ethernet`, `serial`, `atm`,
+`frame_relay`). Links store the adapter and port numbers, not the display name, so renaming a port
+label does not break the dataplane. Interface names inside the namespace derive from
+`sha256(owner:adapter:port)`, which lets reconciliation recreate identical names after an agent
+restart. Because the lamps on the card come from the same derivation, a port you can see is a port
+you can link.
+
+## Lifecycle
+
+`nodes.start`, `nodes.stop`, `nodes.suspend`, and `nodes.reload` map to `setNodePower`. A start:
+
+1. re-asserts the project slot on the node's compute (the agent may have restarted);
+2. verifies every required image is present on that compute, failing with `IMAGE_MISSING`;
+3. asks the agent to launch the emulator and returns the resulting status;
+4. ensures link dataplanes exist for the project.
+
+Stopping drops the link dataplanes first, then asks the agent to terminate the process. Suspending
+keeps the process but pauses it. Reload restarts with the same spec.
+
+Statuses are `stopped`, `started`, `suspended`, and `error`. Transitions are published as node
+events, so every open workspace follows the same state and every status lamp changes together.
+
+## Files
+
+`nodes.files.*` addresses the node directory on its compute: QEMU disks, kernel/initrd images,
+startup configs, container bind sources, and cloud-init seeds. Writes require a stopped node and
+`node.files`; a started node returns `NODE_BUSY`. Project-level files (`projects.files.*`) are
+separate and travel with exports.
+
+IOU reads `startup-config.cfg` when it exists. Docker `extraVolumes` entries that are absolute
+container paths bind the matching path under the node directory; entries containing `:` are passed
+through as explicit bind specifications.
+
+## Placement
+
+A node belongs to exactly one compute. Images must have a `present` replica there before starting;
+`images.sync` replicates them. Moving a node between computes or changing its emulator type is not
+an in-place edit — create a new node (apply refuses these changes with `CONFLICT`).
+
+## Related
+
+- [Links, filters & capture](/concepts/links) — connecting these ports.
+- [Templates](/templates) — the properties ports are derived from.
+- [Workspace UI](/ui) — the index of every embedded surface.
