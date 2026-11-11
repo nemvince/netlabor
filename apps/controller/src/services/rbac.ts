@@ -384,10 +384,12 @@ export async function getSettings(db: SQL): Promise<SettingsPatch> {
 
 export async function updateSettings(db: SQL, patch: SettingsPatch): Promise<SettingsPatch> {
   for (const [key, value] of Object.entries(patch)) {
+    // Bind JSON text: Bun binds JS numbers as int params, and Postgres cannot
+    // cast an int parameter to jsonb, so a numeric setting used to 500.
     await db.unsafe(
       `INSERT INTO settings (key, value) VALUES ($1, $2::jsonb)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-      [key, value ?? null],
+      [key, JSON.stringify(value ?? null)],
     );
   }
   return getSettings(db);
@@ -411,7 +413,7 @@ export async function setPreferences(
   await db.unsafe(
     `INSERT INTO user_preferences (user_id, value) VALUES ($1, $2::jsonb)
      ON CONFLICT (user_id) DO UPDATE SET value = EXCLUDED.value`,
-    [userId, value],
+    [userId, JSON.stringify(value)],
   );
   return value;
 }
