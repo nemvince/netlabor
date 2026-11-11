@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/shared" },
+    { "path": "./packages/contract" },
+    { "path": "./packages/catalog" },
+    { "path": "./packages/db" },
+    { "path": "./apps/controller" },
+    { "path": "./apps/agent" },
+    { "path": "./apps/web" }
+  ]
+}

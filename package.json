@@ -1,0 +1,35 @@
+{
+  "name": "netlabor",
+  "version": "0.1.0",
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run scripts/dev.ts",
+    "typecheck": "bunx tsc -b --pretty false",
+    "lint": "bunx biome check .",
+    "test": "bun test",
+    "test:integration": "bun test --preload ./test/preload.ts",
+    "test:agent": "bun test apps/agent/test",
+    "test:e2e": "bunx playwright test",
+    "build": "bun run scripts/build.ts",
+    "db:migrate": "bun run scripts/migrate.ts",
+    "smoke": "bun run scripts/smoke.ts",
+    "import:appliances": "bun run scripts/import-appliances.ts",
+    "gen:migrations": "bun run scripts/gen-migrations.ts"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.6",
+    "@playwright/test": "^1.65.0",
+    "@types/bun": "latest",
+    "typescript": "^7.0.2",
+    "@orpc/client": "^1.16.2",
+    "@orpc/contract": "^1.16.2",
+    "@netlabor/db": "workspace:*",
+    "@netlabor/shared": "workspace:*"
+  }
+}

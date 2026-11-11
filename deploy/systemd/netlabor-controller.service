@@ -1,0 +1,26 @@
+[Unit]
+Description=Netlabor controller (API, UI, database owner)
+Documentation=https://github.com/netlabor/netlabor
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=netlabor-controller
+Group=netlabor-controller
+EnvironmentFile=/etc/netlabor/controller.env
+ExecStart=/opt/netlabor/netlabor-controller
+Restart=always
+RestartSec=3
+StateDirectory=netlabor
+WorkingDirectory=/opt/netlabor
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/netlabor
+CapabilityBoundingSet=
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

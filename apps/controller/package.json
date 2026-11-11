@@ -1,0 +1,24 @@
+{
+  "name": "@netlabor/controller",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@netlabor/catalog": "workspace:*",
+    "@netlabor/contract": "workspace:*",
+    "@netlabor/db": "workspace:*",
+    "@netlabor/shared": "workspace:*",
+    "@orpc/client": "^1.16.2",
+    "@orpc/openapi": "^1.16.2",
+    "@orpc/server": "^1.16.2",
+    "jose": "^6.2.16",
+    "openid-client": "^6.8.9",
+    "tar-stream": "^3.2.2",
+    "zod": "^4.6.7",
+    "@orpc/contract": "^1.16.2"
+  }
+}

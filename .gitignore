@@ -1,0 +1,27 @@
+node_modules
+out
+dist
+*.tgz
+coverage
+*.lcov
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+.env
+.env.*
+!.env.example
+.eslintcache
+.cache
+*.tsbuildinfo
+.tsbuild
+.idea
+.DS_Store
+e2e/assets/*
+!e2e/assets/.gitkeep
+test-results
+playwright-report
+packages/db/src/migrations/*.js
+
+# Dynamips writes instance logs and JIT caches into its working directory
+/*_log.txt
+/ilt_*

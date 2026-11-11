@@ -1,0 +1,29 @@
+[Unit]
+Description=Netlabor compute agent (namespaces, ubridge, emulators)
+Documentation=https://github.com/netlabor/netlabor
+# The agent needs root (or CAP_NET_ADMIN, CAP_NET_RAW, CAP_SYS_ADMIN) to create
+# network namespaces, TAPs, bridges, and nftables rules. PrivateMounts MUST stay
+# off: network namespaces need shared mount propagation.
+After=network-online.target docker.service
+Wants=network-online.target
+RequiresMountsFor=/var/lib/netlabor
+
+[Service]
+Type=simple
+User=root
+Group=root
+EnvironmentFile=/etc/netlabor/agent.env
+ExecStart=/opt/netlabor/netlabor-agent
+Restart=always
+RestartSec=3
+StateDirectory=netlabor
+RuntimeDirectory=netlabor
+RuntimeDirectoryMode=0700
+WorkingDirectory=/opt/netlabor
+KillMode=control-group
+LimitNOFILE=1048576
+PrivateMounts=no
+NoNewPrivileges=false
+
+[Install]
+WantedBy=multi-user.target

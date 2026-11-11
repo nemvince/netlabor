@@ -1,0 +1,430 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/instrument-sans';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+/*
+ * Netlabor visual system: patch-panel instrument, not SaaS dashboard.
+ * Graphite panels, copper accent for interactive affordances, signal colours
+ * for node/link state, mono for all machine-generated values.
+ *
+ * Contrast rules: every interactive border is >= 3:1 against its panel, body
+ * text >= 7:1 against the sunken background, and state is never colour-only.
+ */
+@theme {
+  /* Oxidised rack metal, engraved labels, phosphor lamps. */
+  --color-panel: #16211c;
+  --color-panel-raised: #1f2c26;
+  --color-panel-sunken: #0c1411;
+  --color-rule: #33463d;
+  --color-rule-strong: #52685e;
+  --color-ink: #e9f0e8;
+  --color-ink-dim: #b4c2b9;
+  --color-ink-faint: #899b90;
+  --color-copper: #d19155;
+  --color-copper-deep: #a26534;
+  --color-signal-up: #82d59a;
+  --color-signal-warn: #e8bc6a;
+  --color-signal-down: #e47c6b;
+  --color-signal-info: #83b8de;
+
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --radius-panel: 2px;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-panel-sunken);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2 {
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-copper);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: color-mix(in oklab, var(--color-copper) 45%, transparent);
+  }
+  .nb-skip-link {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
+    transform: translateY(-200%);
+    background: var(--color-panel);
+    border: 1px solid var(--color-copper);
+    padding: 6px 10px;
+    border-radius: var(--radius-panel);
+    color: var(--color-ink);
+  }
+  .nb-skip-link:focus-visible {
+    transform: translateY(0);
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+  }
+  code,
+  kbd,
+  samp,
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  /* Thin, legible scrollbars instead of invisible default ones. */
+  * {
+    scrollbar-color: var(--color-rule-strong) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------------------------------------------------------------- fields --- */
+
+.nb-field {
+  width: 100%;
+  background: var(--color-panel-sunken);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-panel);
+  padding: 0.38rem 0.55rem;
+  color: var(--color-ink);
+  min-height: 30px;
+}
+.nb-field::placeholder {
+  color: var(--color-ink-faint);
+}
+.nb-field:hover {
+  border-color: color-mix(in oklab, var(--color-rule-strong) 70%, white);
+}
+.nb-field:focus {
+  border-color: var(--color-copper);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-copper);
+}
+.nb-field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Selects: visible control, readable popup, explicit chevron. */
+select.nb-field {
+  appearance: none;
+  padding-right: 1.9rem;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b8c3ba' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  cursor: pointer;
+}
+select.nb-field option {
+  background: var(--color-panel-raised);
+  color: var(--color-ink);
+}
+select.nb-field:focus {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23d2965f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+textarea.nb-field {
+  min-height: 72px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--color-copper);
+}
+input[type='range'] {
+  accent-color: var(--color-copper);
+}
+
+/* --------------------------------------------------------------- buttons --- */
+
+.nb-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel-raised);
+  color: var(--color-ink);
+  padding: 0.32rem 0.6rem;
+  min-height: 24px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.nb-button:hover {
+  border-color: var(--color-copper);
+  background: color-mix(in oklab, var(--color-panel-raised) 80%, var(--color-copper) 8%);
+}
+.nb-button[data-variant='primary'] {
+  background: var(--color-copper);
+  border-color: var(--color-copper);
+  color: #1a1209;
+}
+.nb-button[data-variant='primary']:hover {
+  background: color-mix(in oklab, var(--color-copper) 85%, white);
+}
+.nb-button[data-size='sm'] {
+  padding: 0.18rem 0.45rem;
+  font-size: 0.72rem;
+}
+.nb-button[data-variant='danger'] {
+  background: var(--color-signal-down);
+  border-color: var(--color-signal-down);
+  color: #1b0d0b;
+}
+.nb-button[data-variant='danger']:hover {
+  background: color-mix(in oklab, var(--color-signal-down) 85%, white);
+  border-color: color-mix(in oklab, var(--color-signal-down) 85%, white);
+}
+.nb-button[data-variant='ghost'] {
+  background: transparent;
+  border-color: transparent;
+  color: var(--color-ink-dim);
+  padding: 0.18rem 0.3rem;
+}
+.nb-button[data-variant='ghost']:hover {
+  border-color: var(--color-rule-strong);
+  background: var(--color-panel-raised);
+  color: var(--color-ink);
+}
+.nb-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nb-panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-panel);
+}
+
+.nb-rule-label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--color-ink-faint);
+}
+
+/* Instrument strip: labelled measurements instead of dot-joined metadata. */
+.nb-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding-left: 0.85rem;
+  border-left: 1px solid var(--color-rule);
+}
+.nb-stat-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: var(--color-ink-faint);
+}
+.nb-stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.72rem;
+  color: var(--color-ink-dim);
+}
+
+/* --------------------------------------------------------------- symbols --- */
+
+.nb-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ink);
+  flex: none;
+}
+.nb-glyph > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* ---------------------------------------------------------------- canvas --- */
+
+.nb-canvas .react-flow {
+  --xy-background-color: var(--color-panel-sunken);
+  --xy-edge-stroke: var(--color-ink-faint);
+  --xy-edge-stroke-selected: var(--color-copper);
+  --xy-connectionline-stroke: var(--color-copper);
+  --xy-handle-background-color: var(--color-panel-sunken);
+  --xy-handle-border-color: var(--color-copper);
+  --xy-selection-background-color: color-mix(in oklab, var(--color-copper) 14%, transparent);
+  --xy-selection-border: 1px dashed var(--color-copper);
+  --xy-controls-button-background-color: var(--color-panel);
+  --xy-controls-button-background-color-hover: var(--color-panel-raised);
+  --xy-controls-button-color: var(--color-ink-dim);
+  --xy-controls-button-color-hover: var(--color-ink);
+  --xy-controls-button-border-color: var(--color-rule);
+  --xy-minimap-background-color: var(--color-panel);
+  --xy-minimap-mask-background-color: color-mix(
+    in oklab,
+    var(--color-panel-sunken) 78%,
+    transparent
+  );
+}
+.nb-canvas .react-flow__controls {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.nb-canvas .react-flow__controls-button {
+  border-bottom: 1px solid var(--color-rule);
+}
+.nb-canvas .react-flow__minimap {
+  border: 1px solid var(--color-rule-strong);
+  border-radius: 2px;
+}
+.nb-canvas .react-flow__attribution {
+  background: transparent;
+  color: var(--color-ink-faint);
+  font-size: 9px;
+}
+.nb-canvas .react-flow__attribution a {
+  color: var(--color-ink-faint);
+}
+.nb-canvas .react-flow__node {
+  font-family: var(--font-sans);
+}
+
+/* Ports stay out of the way until the node is hovered or selected. */
+.nb-canvas .react-flow__handle {
+  width: 6px;
+  height: 6px;
+  min-width: 6px;
+  min-height: 6px;
+  border-radius: 50%;
+  border: 1px solid var(--color-copper);
+  background: var(--color-panel-sunken);
+  opacity: 0.25;
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+}
+.nb-canvas .react-flow__node:hover .react-flow__handle,
+.nb-canvas .react-flow__node.selected .react-flow__handle,
+.nb-canvas .react-flow__handle.connectingfrom,
+.nb-canvas .react-flow__handle.connectingto {
+  opacity: 1;
+  transform: scale(1.15);
+}
+.nb-canvas .react-flow__handle:hover {
+  background: var(--color-copper);
+}
+.nb-canvas .react-flow__node.selected .react-flow__node-device > div {
+  border-color: var(--color-copper) !important;
+}
+.nb-canvas .react-flow__edge.selected .react-flow__edge-path {
+  filter: drop-shadow(0 0 3px color-mix(in oklab, var(--color-copper) 60%, transparent));
+}
+.nb-canvas .react-flow__node.selected {
+  outline: none;
+}
+.nb-canvas textarea,
+.nb-canvas input {
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------- utility --- */
+
+/* Dense rail row: one line, icon + label, active marker on the left edge. */
+.nb-rail-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 30px;
+  padding: 0 0.75rem;
+  font-size: 12.5px;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  color: var(--color-ink-dim);
+}
+.nb-rail-link:hover {
+  background: var(--color-panel-raised);
+  color: var(--color-ink);
+}
+.nb-rail-link[aria-current='page'] {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-copper) 14%, transparent),
+    transparent 72%
+  );
+  border-left-color: var(--color-copper);
+  color: var(--color-ink);
+}
+.nb-rail-link[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  right: 0.7rem;
+  width: 4px;
+  height: 4px;
+  background: var(--color-copper);
+}
+.nb-rail-collapsed .nb-rail-link[aria-current='page']::after {
+  display: none;
+}
+
+/* Marker hit pulse: a short-lived halo over the link path. */
+@keyframes nb-marker-pulse {
+  0% {
+    stroke-opacity: 1;
+  }
+  60% {
+    stroke-opacity: 0.55;
+  }
+  100% {
+    stroke-opacity: 0;
+  }
+}
+.nb-marker-pulse-path {
+  animation-name: nb-marker-pulse;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+.nb-dock-close {
+  color: var(--color-ink-faint);
+}
+
+.nb-dock-close[data-active='true'] {
+  background: var(--color-panel-sunken);
+}
+
+.nb-dock-close:hover {
+  background: color-mix(in oklab, var(--color-copper) 18%, transparent);
+  color: var(--color-copper);
+}

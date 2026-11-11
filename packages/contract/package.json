@@ -1,0 +1,15 @@
+{
+  "name": "@netlabor/contract",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@orpc/contract": "^1.16.2",
+    "@netlabor/shared": "workspace:*",
+    "zod": "^4.6.7"
+  }
+}

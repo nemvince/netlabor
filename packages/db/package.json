@@ -1,0 +1,15 @@
+{
+  "name": "@netlabor/db",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@netlabor/contract": "workspace:*",
+    "@netlabor/shared": "workspace:*",
+    "zod": "^4.6.7"
+  }
+}
