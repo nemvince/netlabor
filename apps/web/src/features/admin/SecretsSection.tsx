@@ -116,7 +116,14 @@ function CreateSecretDialog({ onOpenChange }: { onOpenChange: (open: boolean) =>
  * Encrypted secret inventory. IOU reads its iourc license from a secret by
  * ID; the list exposes the ID because that is the value node properties use.
  */
-export function SecretsSection({ canWrite }: { canWrite: boolean }) {
+export function SecretsSection({
+  canWrite,
+  bare = false,
+}: {
+  canWrite: boolean;
+  /** Render the inventory without the Section chrome, for a settings card. */
+  bare?: boolean;
+}) {
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<SecretRow | null>(null);
 
@@ -131,24 +138,20 @@ export function SecretsSection({ canWrite }: { canWrite: boolean }) {
     },
   });
 
-  return (
-    <Section
-      title="Secrets"
-      description="IOU nodes read their iourc license from an encrypted secret. Create a secret with the iourc contents, then paste its ID into the iourc secret ID property of an IOU template or node."
-      actions={
-        canWrite ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => setCreating(true)}
-          >
-            <Plus size={14} aria-hidden />
-            Create secret
-          </button>
-        ) : null
-      }
+  const createButton = canWrite ? (
+    <button
+      type="button"
+      className="nb-button"
+      data-variant="primary"
+      onClick={() => setCreating(true)}
     >
+      <Plus size={14} aria-hidden />
+      Create secret
+    </button>
+  ) : null;
+
+  const body = (
+    <>
       {secrets.isPending ? (
         <Loading label="Loading secrets…" />
       ) : secrets.isError ? (
@@ -245,6 +248,27 @@ export function SecretsSection({ canWrite }: { canWrite: boolean }) {
           if (deleteTarget) remove.mutate({ id: deleteTarget.id });
         }}
       />
+    </>
+  );
+
+  if (bare) {
+    return (
+      <div className="flex flex-col gap-2">
+        {createButton && (secrets.data?.length ?? 0) > 0 ? (
+          <div className="flex justify-end">{createButton}</div>
+        ) : null}
+        {body}
+      </div>
+    );
+  }
+
+  return (
+    <Section
+      title="Secrets"
+      description="IOU nodes read their iourc license from an encrypted secret. Create a secret with the iourc contents, then paste its ID into the iourc secret ID property of an IOU template or node."
+      actions={createButton}
+    >
+      {body}
     </Section>
   );
 }

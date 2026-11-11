@@ -8,6 +8,7 @@ import { Loading, Page, PageHeader } from '../../components/Page.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
+import { SettingsNav } from '../../features/settings/SettingsNav.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp, shortId } from '../../lib/format.ts';
@@ -82,6 +83,7 @@ export function AuditAdminPage() {
           </button>
         }
       />
+      <SettingsNav />
 
       <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_1fr_220px]">
         <Field label="Action" htmlFor="audit-action">

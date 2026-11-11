@@ -64,18 +64,24 @@ const PRIMARY: NavItem[] = [
   { to: '/tools', label: 'Tools', icon: Wrench },
 ];
 
-const ADMIN: NavItem[] = [
-  { to: '/admin/users', label: 'People', icon: Users, requires: ['user.read', 'user.write'] },
+/**
+ * Settings-shaped destinations share one rail group and one taxonomy:
+ * You (profile, keys) · Access (users, roles, SSO) · Controller (audit,
+ * controller settings). Routes and privileges match the pages exactly.
+ */
+const SETTINGS_ITEMS: NavItem[] = [
+  { to: '/profile', label: 'Profile & preferences', icon: UserRound },
+  { to: '/admin/api-keys', label: 'API keys', icon: KeyRound },
+  { to: '/admin/users', label: 'Users', icon: Users, requires: ['user.read', 'user.write'] },
   { to: '/admin/roles', label: 'Roles', icon: ShieldCheck, requires: ['user.read', 'user.write'] },
+  { to: '/admin/oidc', label: 'Single sign-on', icon: Globe, requires: ['settings.write'] },
   { to: '/admin/audit', label: 'Audit', icon: ScrollText, requires: ['audit.read'] },
-  { to: '/admin/oidc', label: 'Access', icon: Globe, requires: ['settings.write'] },
   {
     to: '/admin/settings',
-    label: 'Settings',
+    label: 'Controller',
     icon: SlidersHorizontal,
     requires: ['settings.read', 'settings.write'],
   },
-  { to: '/admin/api-keys', label: 'API keys', icon: KeyRound },
 ];
 
 function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
@@ -177,13 +183,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   });
 
   const primaryItems = me ? PRIMARY.filter((item) => item.requires?.some(can) ?? true) : PRIMARY;
-  const adminItems = me ? ADMIN.filter((item) => item.requires?.some(can) ?? false) : [];
-  const accountItems: NavItem[] = me
-    ? [
-        { to: '/profile', label: 'Profile & preferences', icon: UserRound },
-        ...ADMIN.filter((item) => !item.requires),
-      ]
-    : [];
+  const settingsItems = me ? SETTINGS_ITEMS.filter((item) => item.requires?.some(can) ?? true) : [];
 
   return (
     <div
@@ -231,9 +231,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               <NavLink key={item.to} item={item} collapsed={railCollapsed} />
             ))}
             <NavSection
-              label="admin"
-              items={adminItems}
-              storageKey="nb.rail.admin"
+              label="Settings"
+              items={settingsItems}
+              storageKey="nb.rail.settings"
               collapsed={railCollapsed}
             />
           </nav>
@@ -279,18 +279,18 @@ export function AppShell({ children }: { children: ReactNode }) {
                       boxShadow: '0 12px 32px rgba(0,0,0,0.45)',
                     }}
                   >
-                    {accountItems.map((item) => (
-                      <DropdownMenu.Item key={item.to} asChild>
+                    {me ? (
+                      <DropdownMenu.Item asChild>
                         <Link
-                          to={item.to}
+                          to="/profile"
                           className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12.5px] outline-none data-[highlighted]:bg-[var(--color-panel-raised)]"
                           style={{ color: 'var(--color-ink-dim)' }}
                         >
-                          <item.icon size={13} aria-hidden />
-                          {item.label}
+                          <UserRound size={13} aria-hidden />
+                          Profile & preferences
                         </Link>
                       </DropdownMenu.Item>
-                    ))}
+                    ) : null}
                     <DropdownMenu.Separator
                       className="my-1 h-px"
                       style={{ background: 'var(--color-rule)' }}

@@ -16,6 +16,7 @@ import { Loading, Page, PageHeader, Section } from '../../components/Page.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
+import { SettingsNav } from '../../features/settings/SettingsNav.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp, shortId } from '../../lib/format.ts';
@@ -369,7 +370,7 @@ export function OidcAdminPage() {
   return (
     <Page>
       <PageHeader
-        title="Access"
+        title="Single sign-on"
         description="OpenID Connect providers. Configure allowed redirect URIs on the provider before enabling one."
         actions={
           <button
@@ -383,6 +384,7 @@ export function OidcAdminPage() {
           </button>
         }
       />
+      <SettingsNav />
 
       <div className="mt-5">
         {providers.isPending ? (
