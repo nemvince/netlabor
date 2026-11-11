@@ -208,7 +208,7 @@ export function ProjectTopBar({
                     style={{
                       background: participant.color,
                       borderColor: 'var(--color-panel)',
-                      color: '#121413',
+                      color: '#111417',
                       zIndex: participant.id === selfCollabId ? 2 : 1,
                     }}
                     title={`${participant.name}${participant.id === selfCollabId ? ' (you)' : ''}`}

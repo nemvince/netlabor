@@ -21,6 +21,11 @@ export type FlowNode = Node<FlowNodeData, 'device' | 'drawing'>;
 export type LinkEdgeData = Record<string, unknown> & {
   link: LinkRow;
   markerFlash?: MarkerFlash;
+  /** Perpendicular px offset so parallel links between the same pair separate. */
+  offset?: number;
+  /** Edge is hovered: highlight + show port labels unless always-on. */
+  hovered?: boolean;
+  showPorts?: boolean;
 };
 export type FlowEdge = Edge<LinkEdgeData, 'link'>;
 

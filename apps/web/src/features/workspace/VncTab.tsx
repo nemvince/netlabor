@@ -92,7 +92,7 @@ export function VncTab({ nodeId, label }: { nodeId: string; label: string }) {
       }
 
       const surface = rfb;
-      surface.background = '#121413';
+      surface.background = '#111417';
       surface.scaleViewport = true;
       surface.resizeSession = true;
       surface.focusOnClick = true;

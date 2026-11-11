@@ -24,14 +24,14 @@ interface FilterDraft {
 }
 
 const LINK_COLORS = [
-  { name: 'Copper', value: '#d19155' },
-  { name: 'Blue', value: '#83b8de' },
-  { name: 'Green', value: '#82d59a' },
-  { name: 'Amber', value: '#e8bc6a' },
-  { name: 'Red', value: '#e47c6b' },
-  { name: 'Violet', value: '#c49ad8' },
-  { name: 'Teal', value: '#7bc9c4' },
-  { name: 'Neutral', value: '#b4c2b9' },
+  { name: 'Copper', value: '#ef9a45' },
+  { name: 'Blue', value: '#5fb0f2' },
+  { name: 'Green', value: '#5fd98a' },
+  { name: 'Amber', value: '#f2c94c' },
+  { name: 'Red', value: '#f2705f' },
+  { name: 'Violet', value: '#c98ade' },
+  { name: 'Teal', value: '#4ec9c4' },
+  { name: 'Neutral', value: '#ccd3d8' },
 ];
 
 const EMPTY_DRAFT: FilterDraft = {
@@ -333,7 +333,7 @@ export function LinkDialog({
               <input
                 type="color"
                 aria-label="Custom link colour"
-                value={styleColor === '' ? '#d19155' : styleColor}
+                value={styleColor === '' ? '#ef9a45' : styleColor}
                 onChange={(event) => setStyleColor(event.target.value)}
                 style={{ width: 26, height: 22, padding: 0, background: 'transparent' }}
               />

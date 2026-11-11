@@ -5,6 +5,7 @@ import {
   AlignEndVertical,
   AlignStartHorizontal,
   AlignStartVertical,
+  Cable,
   ClipboardPaste,
   Columns3,
   Copy,
@@ -44,7 +45,9 @@ interface CanvasToolbarProps {
   gridVisible: boolean;
   snapEnabled: boolean;
   minimapVisible: boolean;
+  portLabelsAlways: boolean;
   onToggleMinimap: () => void;
+  onTogglePortLabels: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onCopy: () => void;
@@ -162,7 +165,9 @@ export function CanvasToolbar({
   gridVisible,
   snapEnabled,
   minimapVisible,
+  portLabelsAlways,
   onToggleMinimap,
+  onTogglePortLabels,
   onUndo,
   onRedo,
   onCopy,
@@ -342,6 +347,9 @@ export function CanvasToolbar({
             </ViewToggle>
             <ViewToggle checked={minimapVisible} onCheckedChange={onToggleMinimap}>
               <MapIcon size={13} aria-hidden /> Minimap
+            </ViewToggle>
+            <ViewToggle checked={portLabelsAlways} onCheckedChange={onTogglePortLabels}>
+              <Cable size={13} aria-hidden /> Always show port numbers
             </ViewToggle>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>

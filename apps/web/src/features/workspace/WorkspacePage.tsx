@@ -212,6 +212,8 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
   const inspectorWidth = useWorkspaceStore((state) => state.inspectorWidth);
   const paletteOpen = useWorkspaceStore((state) => state.paletteOpen);
   const minimapVisible = useWorkspaceStore((state) => state.minimapVisible);
+  const portLabelsAlways = useWorkspaceStore((state) => state.portLabelsAlways);
+  const setPortLabelsAlways = useWorkspaceStore((state) => state.setPortLabelsAlways);
   const setMinimapVisible = useWorkspaceStore((state) => state.setMinimapVisible);
   const setPaletteOpen = useWorkspaceStore((state) => state.setPaletteOpen);
   const inspectorOpen = useWorkspaceStore((state) => state.inspectorOpen);
@@ -294,7 +296,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         if (oldest) processedMarkerHits.current.delete(oldest);
       }
       void (async () => {
-        let color = '#c98a52';
+        let color = '#ef9a45';
         let duration = 1000;
         try {
           const cached = markerCache.current.get(hit.linkId);
@@ -854,8 +856,8 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
       text: type === 'rect' ? null : type === 'note' ? 'Note' : 'Text',
       style:
         type === 'note'
-          ? { stroke: '#e0b45c', fill: 'transparent', fontSize: 12, textAlign: 'left' as const }
-          : { stroke: '#748077', fill: 'transparent', fontSize: 14, textAlign: 'left' as const },
+          ? { stroke: '#f2c94c', fill: 'transparent', fontSize: 12, textAlign: 'left' as const }
+          : { stroke: '#8b959d', fill: 'transparent', fontSize: 14, textAlign: 'left' as const },
     };
     try {
       const created = await client.drawings.create(input);
@@ -1232,6 +1234,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                 gridVisible={gridVisible}
                 snapEnabled={snapEnabled}
                 minimapVisible={minimapVisible}
+                portLabelsAlways={portLabelsAlways}
                 onSelectionChange={setSelection}
                 onNodeDragStop={handleNodeDragStop}
                 connectMode={connectMode}
@@ -1291,7 +1294,9 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                 gridVisible={gridVisible}
                 snapEnabled={snapEnabled}
                 minimapVisible={minimapVisible}
+                portLabelsAlways={portLabelsAlways}
                 onToggleMinimap={() => setMinimapVisible(!minimapVisible)}
+                onTogglePortLabels={() => setPortLabelsAlways(!portLabelsAlways)}
                 onUndo={() => void undo()}
                 onRedo={() => void redo()}
                 onCopy={copySelection}

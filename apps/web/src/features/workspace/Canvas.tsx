@@ -14,7 +14,7 @@ import {
   useViewport,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { type DragEvent, useCallback, useEffect, useRef } from 'react';
+import { type DragEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { DeviceNode } from './DeviceNode.tsx';
 import { DrawingNode } from './DrawingNode.tsx';
 import { LinkEdge } from './LinkEdge.tsx';
@@ -46,6 +46,7 @@ interface CanvasProps {
   gridVisible: boolean;
   snapEnabled: boolean;
   minimapVisible: boolean;
+  portLabelsAlways: boolean;
   onSelectionChange: (selection: Selection) => void;
   onNodeDragStop: (node: NodeRow, x: number, y: number) => void;
   onNodeDragMove: (nodeId: string, x: number, y: number) => void;
@@ -119,6 +120,8 @@ function buildFlowEdges(
   selection: Selection,
   markerFlashes: Record<string, MarkerFlash>,
   layerFilter: string,
+  hoveredEdgeId: string | null,
+  portLabelsAlways: boolean,
 ): FlowEdge[] {
   const visible = (layer: string) => layerFilter === 'all' || layer === layerFilter;
   const visibleIds = new Set([
@@ -126,23 +129,42 @@ function buildFlowEdges(
     ...drawings.filter((drawing) => visible(drawing.layer)).map((drawing) => drawing.id),
   ]);
   const byId = new Map(nodes.map((node) => [node.id, node]));
-  return links
-    .filter((link) => visibleIds.has(link.nodeAId) && visibleIds.has(link.nodeBId))
-    .map<FlowEdge>((link) => {
-      const a = byId.get(link.nodeAId);
-      const b = byId.get(link.nodeBId);
-      const sides = edgeSides(a ?? { x: 0, y: 0 }, b ?? { x: 0, y: 0 });
-      return {
-        id: link.id,
-        type: 'link',
-        source: link.nodeAId,
-        target: link.nodeBId,
-        sourceHandle: nodeHandleId(sides.source),
-        targetHandle: nodeHandleId(sides.target),
-        data: { link, ...(markerFlashes[link.id] ? { markerFlash: markerFlashes[link.id] } : {}) },
-        selected: selection.links.includes(link.id),
-      };
-    });
+  // Links sharing a node pair (either direction) each get a lateral offset so
+  // their straight lines run side by side instead of on top of each other.
+  const pairIndex = new Map<string, number>();
+  const pairCount = new Map<string, number>();
+  const visibleLinks = links.filter(
+    (link) => visibleIds.has(link.nodeAId) && visibleIds.has(link.nodeBId),
+  );
+  for (const link of visibleLinks) {
+    const pair = [link.nodeAId, link.nodeBId].sort().join(':');
+    pairCount.set(pair, (pairCount.get(pair) ?? 0) + 1);
+  }
+  return visibleLinks.map<FlowEdge>((link) => {
+    const a = byId.get(link.nodeAId);
+    const b = byId.get(link.nodeBId);
+    const sides = edgeSides(a ?? { x: 0, y: 0 }, b ?? { x: 0, y: 0 });
+    const pair = [link.nodeAId, link.nodeBId].sort().join(':');
+    const index = pairIndex.get(pair) ?? 0;
+    pairIndex.set(pair, index + 1);
+    const offset = pairCount.get(pair) === 1 ? 0 : (index - (pairCount.get(pair)! - 1) / 2) * 12;
+    return {
+      id: link.id,
+      type: 'link',
+      source: link.nodeAId,
+      target: link.nodeBId,
+      sourceHandle: nodeHandleId(sides.source),
+      targetHandle: nodeHandleId(sides.target),
+      data: {
+        link,
+        offset,
+        ...(portLabelsAlways ? { showPorts: true } : {}),
+        ...(hoveredEdgeId === link.id ? { hovered: true } : {}),
+        ...(markerFlashes[link.id] ? { markerFlash: markerFlashes[link.id] } : {}),
+      },
+      selected: selection.links.includes(link.id),
+    };
+  });
 }
 
 /** Topology surface: custom device/drawing nodes and status-carrying link edges. */
@@ -158,6 +180,7 @@ export function Canvas({
   gridVisible,
   snapEnabled,
   minimapVisible,
+  portLabelsAlways,
   onSelectionChange,
   onNodeDragStop,
   onNodeDragMove,
@@ -189,6 +212,7 @@ export function Canvas({
 
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState<FlowNode>([]);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState<FlowEdge>([]);
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: refs keep cursor updates out of topology rebuilds.
   useEffect(() => {
@@ -218,9 +242,18 @@ export function Canvas({
 
   useEffect(() => {
     setFlowEdges(
-      buildFlowEdges(links, nodes, drawings, selectionRef.current, markerFlashes, layerFilter),
+      buildFlowEdges(
+        links,
+        nodes,
+        drawings,
+        selectionRef.current,
+        markerFlashes,
+        layerFilter,
+        hoveredEdgeId,
+        portLabelsAlways,
+      ),
     );
-  }, [links, nodes, drawings, markerFlashes, layerFilter, setFlowEdges]);
+  }, [links, nodes, drawings, markerFlashes, layerFilter, hoveredEdgeId, portLabelsAlways, setFlowEdges]);
 
   useEffect(() => {
     if (fittedRef.current || nodes.length === 0) return;
@@ -298,6 +331,8 @@ export function Canvas({
           onNodeContextMenu(row, event.clientX, event.clientY);
         }}
         onEdgeClick={(_, edge) => onLinkOpen(edge.id)}
+        onEdgeMouseEnter={(_, edge) => setHoveredEdgeId(edge.id)}
+        onEdgeMouseLeave={() => setHoveredEdgeId(null)}
         onEdgeContextMenu={(event, edge) => {
           const row = links.find((candidate) => candidate.id === edge.id);
           if (!row) return;
@@ -324,14 +359,14 @@ export function Canvas({
               variant={BackgroundVariant.Lines}
               gap={20}
               lineWidth={1}
-              color="rgba(233, 240, 232, 0.035)"
+              color="rgba(244, 246, 248, 0.05)"
             />
             <Background
               id="grid-major"
               variant={BackgroundVariant.Lines}
               gap={100}
               lineWidth={1}
-              color="rgba(209, 145, 85, 0.07)"
+              color="rgba(239, 154, 69, 0.1)"
             />
           </>
         ) : null}
@@ -377,7 +412,7 @@ export function Canvas({
                 </svg>
                 <span
                   className="mt-3 rounded-[2px] px-1 py-[1px] text-[9px] font-semibold whitespace-nowrap"
-                  style={{ background: participant.color, color: '#121413' }}
+                  style={{ background: participant.color, color: '#111417' }}
                 >
                   {participant.name}
                 </span>

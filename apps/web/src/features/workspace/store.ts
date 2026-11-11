@@ -72,6 +72,9 @@ interface WorkspaceState {
   setConsoleSplit: (split: 1 | 2 | 4) => void;
   minimapVisible: boolean;
   setMinimapVisible: (visible: boolean) => void;
+  /** Always render link port labels at line ends, not just on hover. */
+  portLabelsAlways: boolean;
+  setPortLabelsAlways: (visible: boolean) => void;
   paletteOpen: boolean;
   setPaletteOpen: (open: boolean) => void;
   inspectorOpen: boolean;
@@ -161,6 +164,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         setConsoleSplit: (consoleSplit) => set({ consoleSplit }),
         minimapVisible: true,
         setMinimapVisible: (minimapVisible) => set({ minimapVisible }),
+        portLabelsAlways: false,
+        setPortLabelsAlways: (portLabelsAlways) => set({ portLabelsAlways }),
         paletteOpen: true,
         setPaletteOpen: (open) => set({ paletteOpen: open }),
         inspectorOpen: false,
@@ -206,6 +211,7 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         consoleSplit: state.consoleSplit,
         paletteOpen: state.paletteOpen,
         minimapVisible: state.minimapVisible,
+        portLabelsAlways: state.portLabelsAlways,
         inspectorOpen: state.inspectorOpen,
         dockHeight: state.dockHeight,
         paletteWidth: state.paletteWidth,

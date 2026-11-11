@@ -38,23 +38,37 @@ function LinkEdgeComponent({
   const payload = data as LinkEdgeData | undefined;
   if (!payload) return null;
   const { link } = payload;
+  // Shift both endpoints perpendicular to the line so links between the same
+  // node pair run side by side instead of stacking.
+  const dx = targetX - sourceX;
+  const dy = targetY - sourceY;
+  const len = Math.hypot(dx, dy) || 1;
+  const offset = payload.offset ?? 0;
+  const ox = (-dy / len) * offset;
+  const oy = (dx / len) * offset;
+  const sx = sourceX + ox;
+  const sy = sourceY + oy;
+  const tx = targetX + ox;
+  const ty = targetY + oy;
   const pathOptions = {
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
+    sourceX: sx,
+    sourceY: sy,
+    targetX: tx,
+    targetY: ty,
     sourcePosition,
     targetPosition,
   };
   const [path, labelX, labelY] =
     link.style.type === 'straight'
-      ? getStraightPath({ sourceX, sourceY, targetX, targetY })
+      ? getStraightPath({ sourceX: sx, sourceY: sy, targetX: tx, targetY: ty })
       : link.style.type === 'orthogonal'
         ? getSmoothStepPath({ ...pathOptions, borderRadius: 8, offset: 20 })
         : getBezierPath(pathOptions);
 
+  const hovered = payload.hovered === true;
   const color = link.style.color ?? STATUS_COLOR[link.status];
   const width = link.style.width ?? 1.75;
+  const emphasized = selected || hovered;
   const dash =
     link.style.dash ??
     (link.status === 'pending' || link.status === 'suspended' ? '5 4' : undefined);
@@ -70,6 +84,26 @@ function LinkEdgeComponent({
   if (filters.bpf) filterParts.push('bpf');
   const recording = link.capture?.active === true;
   const flash = payload.markerFlash;
+  const showPorts = hovered || payload.showPorts === true;
+  // Port labels sit a fixed distance along the line from each endpoint.
+  const ux = dx / len;
+  const uy = dy / len;
+  const portLabels = showPorts
+    ? [
+        {
+          key: 'a',
+          x: sx + ux * 22,
+          y: sy + uy * 22,
+          text: `${link.adapterA}/${link.portA}`,
+        },
+        {
+          key: 'b',
+          x: tx - ux * 22,
+          y: ty - uy * 22,
+          text: `${link.adapterB}/${link.portB}`,
+        },
+      ]
+    : [];
 
   return (
     <>
@@ -78,8 +112,8 @@ function LinkEdgeComponent({
         path={path}
         interactionWidth={22}
         style={{
-          stroke: selected ? 'var(--color-copper)' : color,
-          strokeWidth: selected ? width + 1 : width,
+          stroke: emphasized ? 'var(--color-copper)' : color,
+          strokeWidth: emphasized ? width + 1 : width,
           strokeDasharray: dash,
           opacity: link.status === 'pending' ? 0.75 : 1,
         }}
@@ -101,6 +135,20 @@ function LinkEdgeComponent({
         />
       ) : null}
       <EdgeLabelRenderer>
+        {portLabels.map((port) => (
+          <div
+            key={port.key}
+            className="pointer-events-none absolute rounded-[2px] px-1 text-[9px] leading-[14px] whitespace-nowrap"
+            style={{
+              transform: `translate(${port.x}px, ${port.y}px) translate(-50%, -50%)`,
+              color: emphasized ? 'var(--color-copper)' : 'var(--color-ink-dim)',
+              background: 'color-mix(in oklab, var(--color-panel-sunken) 88%, transparent)',
+              fontFamily: 'var(--font-mono)',
+            }}
+          >
+            {port.text}
+          </div>
+        ))}
         <div
           className="pointer-events-none absolute flex items-center gap-1.5 rounded-[2px] border px-1.5 py-[1px] text-[9px] whitespace-nowrap"
           style={{

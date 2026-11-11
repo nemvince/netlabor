@@ -37,7 +37,7 @@ interface MarkerDraft {
 const EMPTY_DRAFT: MarkerDraft = {
   name: '',
   bpf: 'icmp',
-  color: '#c98a52',
+  color: '#ef9a45',
   highlightDuration: '1000',
   direction: 'both',
 };
