@@ -7,7 +7,8 @@ export const LinkStyle = z.object({
   color: z.string().optional(),
   width: z.number().optional(),
   dash: z.string().nullable().optional(),
-  type: z.enum(['straight', 'bezier', 'orthogonal']).default('orthogonal'),
+  // GNS3/Packet Tracer draw point-to-point straight lines; that's the default.
+  type: z.enum(['straight', 'bezier', 'orthogonal']).default('straight'),
   label: z.string().optional(),
   labelPosition: z.enum(['top', 'bottom', 'center']).optional(),
   sourceArrow: z.boolean().optional(),

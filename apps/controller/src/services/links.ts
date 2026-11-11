@@ -64,7 +64,7 @@ function toLinkRow(record: LinkRecord): LinkRow {
     portB: record.port_b,
     suspend: record.suspend,
     status: record.status,
-    style: parseJsonColumn(record.style, { type: 'orthogonal' as const }),
+    style: parseJsonColumn(record.style, { type: 'straight' as const }),
     filters: parseJsonColumn(record.filters, {}),
     capture: capture as CaptureState | null,
     dataplane: dataplane as LinkDataplane | null,
@@ -464,7 +464,7 @@ export async function createLink(
       input.nodeBId,
       input.adapterB,
       input.portB,
-      { type: 'orthogonal', ...(input.style ?? {}) },
+      { type: 'straight', ...(input.style ?? {}) },
     ],
   );
   await deps.events.publish({

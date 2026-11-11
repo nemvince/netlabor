@@ -9,6 +9,7 @@ import {
   migration_0003_jsonb_normalize,
   migration_0004_template_tombstones,
   migration_0005_appliances,
+  migration_0006_link_style_straight,
 } from './migrations.generated.ts';
 
 export interface Migration {
@@ -22,4 +23,5 @@ export const MIGRATIONS: Migration[] = [
   { version: '0003_jsonb_normalize.sql', sql: migration_0003_jsonb_normalize },
   { version: '0004_template_tombstones.sql', sql: migration_0004_template_tombstones },
   { version: '0005_appliances.sql', sql: migration_0005_appliances },
+  { version: '0006_link_style_straight.sql', sql: migration_0006_link_style_straight },
 ];
