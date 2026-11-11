@@ -8,8 +8,8 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "zod": "^4.6.7",
+    "@netlabor/contract": "workspace:*",
     "@netlabor/shared": "workspace:*",
-    "@netlabor/contract": "workspace:*"
+    "zod": "^4.6.7"
   }
 }
