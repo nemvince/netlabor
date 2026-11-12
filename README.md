@@ -1,7 +1,7 @@
 # netlabor
 
 Browser-first network lab control plane, AGPL-3.0-or-later. Architecture and
-operations live in `docs/architecture.md` and `docs/operations.md`.
+operations live in `apps/docs/src/content/docs/` (the Astro site in `apps/docs`).
 
 ## Development
 
