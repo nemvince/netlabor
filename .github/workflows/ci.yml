@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: netlabor
           POSTGRES_PASSWORD: netlabor
@@ -45,6 +45,9 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Typecheck docs
+        run: bun run docs:check
+
       - name: Lint
         run: bun run lint
 
@@ -69,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: netlabor
           POSTGRES_PASSWORD: netlabor
@@ -164,7 +167,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: netlabor
           POSTGRES_PASSWORD: netlabor

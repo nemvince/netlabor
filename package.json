@@ -19,6 +19,7 @@
     "build": "bun run scripts/build.ts",
     "docs:dev": "bun --cwd=apps/docs run dev",
     "docs:build": "bun --cwd=apps/docs run build",
+    "docs:check": "bun --cwd=apps/docs run check",
     "docs:preview": "bun --cwd=apps/docs run preview",
     "db:migrate": "bun run scripts/migrate.ts",
     "smoke": "bun run scripts/smoke.ts",

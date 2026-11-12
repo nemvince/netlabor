@@ -5,7 +5,7 @@ description: Environment variables, first start, computes, NAT, backups, upgrade
 
 ## Host prerequisites
 
-Controller: Bun 1.4 or the compiled binary, PostgreSQL 17, a 32-byte base64 `NB_SECRET_KEY`, and
+Controller: Bun 1.4 or the compiled binary, PostgreSQL 18, a 32-byte base64 `NB_SECRET_KEY`, and
 `NB_PUBLIC_URL` matching the browser origin. Mutations are also accepted when `Origin` matches the
 request `Host`, so a lab reachable by hostname or LAN address still works; behind a proxy set
 `NB_PUBLIC_URL` to the proxy origin.

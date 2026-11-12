@@ -16,6 +16,9 @@ bun run test:integration   # needs NB_TEST_DATABASE_URL and a test database
 bun run test:agent         # needs root and the dataplane tools
 bun run test:e2e           # Playwright against a running stack
 bun run build              # compiled controller/agent binaries and web bundle
+bun run docs:dev           # Astro docs site with live reload
+bun run docs:check         # astro check over the docs site
+bun run docs:build         # static docs site into apps/docs/dist
 bun run db:migrate         # apply migrations to NB_DATABASE_URL
 bun run smoke              # login/project/node checks against a running stack
 bun run scripts/load.ts    # 100-VPCS start/stop and orphan check
