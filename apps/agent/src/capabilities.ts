@@ -57,16 +57,16 @@ async function hasKernelDataplane(): Promise<{ ok: boolean; ubridgeFeatures: str
 export async function probeCapabilities(config: AgentConfig): Promise<AgentCapabilities> {
   const [qemu, dynamips, iou, vpcs, sharkd, tshark, tcpdump, ubridge, natBridge] =
     await Promise.all([
-    probeBinary(['qemu-system-x86_64', 'qemu-system-aarch64']),
-    probeBinary(['dynamips'], ['-h']),
-    probeBinary(['iouyap', 'ioubin']),
-    probeBinary(['vpcs'], ['-h']),
-    probeBinary(['sharkd'], ['-v']),
-    probeBinary(['tshark'], ['-v']),
-    probeBinary(['tcpdump'], ['--version']),
-    probeBinary([config.ubridgePath, 'ubridge'], ['-v']),
-    hasHostInterface(config.natBridge),
-  ]);
+      probeBinary(['qemu-system-x86_64', 'qemu-system-aarch64']),
+      probeBinary(['dynamips'], ['-h']),
+      probeBinary(['iouyap', 'ioubin']),
+      probeBinary(['vpcs'], ['-h']),
+      probeBinary(['sharkd'], ['-v']),
+      probeBinary(['tshark'], ['-v']),
+      probeBinary(['tcpdump'], ['--version']),
+      probeBinary([config.ubridgePath, 'ubridge'], ['-v']),
+      hasHostInterface(config.natBridge),
+    ]);
   const kernel = await hasKernelDataplane();
   const kernelRelease = await readKernelRelease();
 
@@ -130,7 +130,8 @@ async function hasHostInterface(name: string): Promise<boolean> {
   return (await proc.exited) === 0;
 }
 
-async function readKernelRelease(): Promise<string> {  try {
+async function readKernelRelease(): Promise<string> {
+  try {
     return (await Bun.file('/proc/sys/kernel/osrelease').text()).trim();
   } catch {
     return 'unknown';

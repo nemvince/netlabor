@@ -21,7 +21,11 @@ export default function FormDemo() {
         </Select>
       </Field>
       <Field label="Notes" htmlFor="demo-notes">
-        <Textarea id="demo-notes" value={notes} onChange={(event) => setNotes(event.target.value)} />
+        <Textarea
+          id="demo-notes"
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+        />
       </Field>
       <CheckboxOption
         label="Managed by automation"

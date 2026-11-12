@@ -46,9 +46,9 @@ export function QemuDisksPanel({
     hdc: '512',
     hdd: '512',
   });
-  const [results, setResults] = useState<Partial<Record<Disk, { path: string; sizeBytes: number }>>>(
-    {},
-  );
+  const [results, setResults] = useState<
+    Partial<Record<Disk, { path: string; sizeBytes: number }>>
+  >({});
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ disk: Disk; action: 'create' | 'delete' } | null>(null);
@@ -141,7 +141,9 @@ export function QemuDisksPanel({
       ) : null}
       {error ? <Notice tone="error">{error}</Notice> : null}
       {canListFiles && files.isError ? (
-        <Notice tone="warn">Existing disk files could not be listed: {messageOf(files.error)}</Notice>
+        <Notice tone="warn">
+          Existing disk files could not be listed: {messageOf(files.error)}
+        </Notice>
       ) : null}
 
       {DISKS.map((disk) => {

@@ -1,9 +1,21 @@
 import { type KeyboardEvent, useId, useRef, useState } from 'react';
 
 const TABS = [
-  { id: 'console', label: 'Console', body: 'Serial or VNC console, proxied over a single-use WebSocket ticket.' },
-  { id: 'files', label: 'Files', body: 'Node files are addressable only while the node is stopped.' },
-  { id: 'stats', label: 'Stats', body: 'Polled counters stay comparable because the caller fixes the value domain.' },
+  {
+    id: 'console',
+    label: 'Console',
+    body: 'Serial or VNC console, proxied over a single-use WebSocket ticket.',
+  },
+  {
+    id: 'files',
+    label: 'Files',
+    body: 'Node files are addressable only while the node is stopped.',
+  },
+  {
+    id: 'stats',
+    label: 'Stats',
+    body: 'Polled counters stay comparable because the caller fixes the value domain.',
+  },
 ];
 
 export default function TabsDemo() {

@@ -232,10 +232,15 @@ export function websocketHandlers(runtime: WebsocketRuntime) {
             const rows = Math.max(1, Math.min(65_535, Number(parsed.rows ?? 24)));
             ws.data.upstream.socket?.write(
               new Uint8Array([
-                255, 250, 31,
-                (cols >> 8) & 255, cols & 255,
-                (rows >> 8) & 255, rows & 255,
-                255, 240,
+                255,
+                250,
+                31,
+                (cols >> 8) & 255,
+                cols & 255,
+                (rows >> 8) & 255,
+                rows & 255,
+                255,
+                240,
               ]),
             );
           } catch {

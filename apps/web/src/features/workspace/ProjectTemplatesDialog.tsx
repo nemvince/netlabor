@@ -218,7 +218,11 @@ export function ProjectTemplatesDialog({
           <div className="flex items-center gap-1.5 text-[12px] font-medium">
             <LayoutTemplate size={13} aria-hidden /> Capture this project
           </div>
-          <Field label="Template name" htmlFor="template-name" error={form.formState.errors.name?.message}>
+          <Field
+            label="Template name"
+            htmlFor="template-name"
+            error={form.formState.errors.name?.message}
+          >
             <Input id="template-name" {...form.register('name')} />
           </Field>
           <Field

@@ -89,8 +89,7 @@ const context = {
   logger,
   startedAt,
   capabilities,
-  onCaptureStopped: (projectId: string, linkId: string) =>
-    sharkdPool.closeLink(projectId, linkId),
+  onCaptureStopped: (projectId: string, linkId: string) => sharkdPool.closeLink(projectId, linkId),
 };
 const router = createAgentRouter(context);
 const rpcHandler = new RPCHandler(router, {

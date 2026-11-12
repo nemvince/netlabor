@@ -52,9 +52,14 @@ const images: ImageRow[] = [
 ];
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { enabled: false, retry: false, staleTime: Number.POSITIVE_INFINITY } },
+  defaultOptions: {
+    queries: { enabled: false, retry: false, staleTime: Number.POSITIVE_INFINITY },
+  },
 });
-queryClient.setQueryData(orpc.images.list.queryOptions({ input: { limit: 200, offset: 0 } }).queryKey, images);
+queryClient.setQueryData(
+  orpc.images.list.queryOptions({ input: { limit: 200, offset: 0 } }).queryKey,
+  images,
+);
 
 function Picker() {
   const [value, setValue] = useState<string | null>(images[0]?.id ?? null);
@@ -70,7 +75,8 @@ function Picker() {
         hint="Name, kind, sha prefix, and size — never a bare UUID."
       />
       <p className="tabular text-[11px] text-[var(--color-ink-faint)]">
-        selected: {selected ? `${selected.name} · ${(selected.sizeBytes / 1024 ** 3).toFixed(1)} GB` : 'none'}
+        selected:{' '}
+        {selected ? `${selected.name} · ${(selected.sizeBytes / 1024 ** 3).toFixed(1)} GB` : 'none'}
       </p>
     </div>
   );

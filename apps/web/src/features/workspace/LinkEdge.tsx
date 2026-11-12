@@ -180,10 +180,7 @@ function LinkEdgeComponent({
             </span>
           ) : null}
           {filterParts.length > 0 ? (
-            <span
-              className="border-l pl-1.5"
-              style={{ borderColor: 'var(--color-rule)' }}
-            >
+            <span className="border-l pl-1.5" style={{ borderColor: 'var(--color-rule)' }}>
               {filterParts.join(' ')}
             </span>
           ) : null}

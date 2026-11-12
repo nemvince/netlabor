@@ -34,11 +34,7 @@ export async function cookieHeader(page: Page): Promise<string> {
  * Returns `null` when the call fails or the caller lacks the privilege; specs
  * treat that as a missing prerequisite rather than a failure.
  */
-export async function rpcJson<T>(
-  page: Page,
-  procedure: string,
-  input: unknown,
-): Promise<T | null> {
+export async function rpcJson<T>(page: Page, procedure: string, input: unknown): Promise<T | null> {
   try {
     const response = await page.request.post(`/rpc/${procedure}`, {
       headers: { cookie: await cookieHeader(page) },

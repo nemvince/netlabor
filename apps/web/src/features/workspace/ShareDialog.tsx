@@ -197,11 +197,7 @@ export function ShareDialog({
           )}
           <div className="grid grid-cols-[120px_1fr_170px] gap-2">
             <Field label="Member type" htmlFor="grant-subject-type">
-              <Select
-                id="grant-subject-type"
-                disabled={pending}
-                {...form.register('subjectType')}
-              >
+              <Select id="grant-subject-type" disabled={pending} {...form.register('subjectType')}>
                 <option value="user">User</option>
                 <option value="group">Group</option>
               </Select>
@@ -226,12 +222,12 @@ export function ShareDialog({
                 ))}
               </Select>
             </Field>
-            <Field
-              label="Role"
-              htmlFor="grant-role"
-              error={form.formState.errors.roleId?.message}
-            >
-              <Select id="grant-role" disabled={!canReadPeople || pending} {...form.register('roleId')}>
+            <Field label="Role" htmlFor="grant-role" error={form.formState.errors.roleId?.message}>
+              <Select
+                id="grant-role"
+                disabled={!canReadPeople || pending}
+                {...form.register('roleId')}
+              >
                 <option value="">Choose a role</option>
                 {assignableRoles.map((role) => (
                   <option key={role.id} value={role.id}>

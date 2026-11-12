@@ -46,10 +46,7 @@ export function SettingsCard({
           <SettingsIcon icon={icon} />
           <div className="min-w-0">
             <h2 className="text-[13.5px] font-semibold">{title}</h2>
-            <p
-              className="mt-0.5 max-w-2xl text-[12px]"
-              style={{ color: 'var(--color-ink-faint)' }}
-            >
+            <p className="mt-0.5 max-w-2xl text-[12px]" style={{ color: 'var(--color-ink-faint)' }}>
               {description}
             </p>
           </div>

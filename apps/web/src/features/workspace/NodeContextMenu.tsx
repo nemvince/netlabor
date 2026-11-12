@@ -52,7 +52,8 @@ export function NodeContextMenu({
   const started = node.status === 'started';
   const suspended = node.status === 'suspended';
   const supportsSuspend = node.nodeType === 'qemu' || node.nodeType === 'dynamips';
-  const consoleAvailable = node.consoleType !== 'none' && node.consoleType !== 'http' && node.consoleType !== 'https';
+  const consoleAvailable =
+    node.consoleType !== 'none' && node.consoleType !== 'http' && node.consoleType !== 'https';
   const webConsole = node.consoleType === 'http' || node.consoleType === 'https';
   const left = Math.max(8, Math.min(x, window.innerWidth - 260));
   const top = Math.max(8, Math.min(y, window.innerHeight - 360));
@@ -137,7 +138,12 @@ export function NodeContextMenu({
             ) : (
               <>
                 <Item icon={Square} label="Stop" disabled={false} onClick={() => run('stop')} />
-                <Item icon={RotateCw} label="Reload" disabled={false} onClick={() => run('reload')} />
+                <Item
+                  icon={RotateCw}
+                  label="Reload"
+                  disabled={false}
+                  onClick={() => run('reload')}
+                />
                 {supportsSuspend && started ? (
                   <Item
                     icon={Pause}
@@ -180,7 +186,9 @@ export function NodeContextMenu({
             <Item
               icon={node.isolated ? Wifi : Ban}
               label={node.isolated ? 'Unisolate' : 'Isolate'}
-              hint={node.isolated ? 'Reconnect the node to its links' : 'Detach the node from its links'}
+              hint={
+                node.isolated ? 'Reconnect the node to its links' : 'Detach the node from its links'
+              }
               disabled={false}
               onClick={() => run(node.isolated ? 'unisolate' : 'isolate')}
             />
@@ -190,12 +198,7 @@ export function NodeContextMenu({
         {canUpdate ? (
           <>
             <Divider />
-            <Item
-              icon={Copy}
-              label="Duplicate"
-              disabled={false}
-              onClick={() => run('duplicate')}
-            />
+            <Item icon={Copy} label="Duplicate" disabled={false} onClick={() => run('duplicate')} />
             <Item
               icon={Trash2}
               label="Delete node"
@@ -209,7 +212,6 @@ export function NodeContextMenu({
     </div>
   );
 }
-
 
 function Divider() {
   return <div className="my-1 h-px" style={{ background: 'var(--color-rule)' }} />;

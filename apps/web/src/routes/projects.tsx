@@ -295,7 +295,7 @@ export function ProjectsPage() {
                             aria-label={isOpened ? `Close ${project.name}` : `Open ${project.name}`}
                             disabled={pending}
                             onClick={() => {
-                                                            if (isOpened) closeProject.mutate({ id: project.id });
+                              if (isOpened) closeProject.mutate({ id: project.id });
                               else openProject.mutate({ id: project.id });
                             }}
                           >
@@ -320,7 +320,7 @@ export function ProjectsPage() {
                             }
                             disabled={pending}
                             onClick={() => {
-                                                            if (project.locked) unlockProject.mutate({ id: project.id });
+                              if (project.locked) unlockProject.mutate({ id: project.id });
                               else lockProject.mutate({ id: project.id });
                             }}
                           >

@@ -56,8 +56,7 @@ export function BottomDock({
   const activeTab = dockTabs.find((tab) => tab.id === activeDockTab);
   const consoleTabs = dockTabs.filter((tab) => tab.kind === 'console');
   // Split view lays out the first N console tabs side by side instead of one.
-  const splitView =
-    activeTab?.kind === 'console' && consoleSplit > 1 && consoleTabs.length > 1;
+  const splitView = activeTab?.kind === 'console' && consoleSplit > 1 && consoleTabs.length > 1;
   // Closing the dock must also leave the full-screen surface; otherwise the
   // fixed-position panel keeps covering the workspace while "collapsed".
   useEffect(() => {
@@ -159,23 +158,16 @@ export function BottomDock({
           );
         })}
         {activeTab?.kind === 'console' && consoleTabs.length > 1 ? (
-          <span
-            className="ml-auto flex items-center gap-px pr-1"
-            title="Console layout"
-          >
+          <span className="ml-auto flex items-center gap-px pr-1" title="Console layout">
             {SPLITS.map((split) => (
               <button
                 key={split}
                 type="button"
                 className="nb-dock-close flex h-[22px] w-6 items-center justify-center rounded-[1px] text-[10px]"
-                data-active={
-                  (splitView ? consoleSplit : 1) === split ? 'true' : undefined
-                }
+                data-active={(splitView ? consoleSplit : 1) === split ? 'true' : undefined}
                 aria-label={`Show ${split} console${split === 1 ? '' : 's'} side by side`}
                 aria-pressed={(splitView ? consoleSplit : 1) === split}
-                title={
-                  split === 1 ? 'Single console' : `${split} consoles side by side`
-                }
+                title={split === 1 ? 'Single console' : `${split} consoles side by side`}
                 onClick={() => {
                   setConsoleSplit(split);
                   setDockOpen(true);
@@ -238,8 +230,7 @@ export function BottomDock({
             className="absolute inset-0 grid min-h-0 gap-px"
             style={{
               gridTemplateColumns: `repeat(${Math.min(consoleSplit, 2)}, minmax(0, 1fr))`,
-              gridTemplateRows:
-                consoleSplit === 4 ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)',
+              gridTemplateRows: consoleSplit === 4 ? 'repeat(2, minmax(0, 1fr))' : 'minmax(0, 1fr)',
             }}
           >
             {consoleTabs.slice(0, consoleSplit).map((tab) => (

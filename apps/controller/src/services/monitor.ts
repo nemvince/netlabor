@@ -52,7 +52,8 @@ export class ComputeMonitor {
               agentApiVersion: info.apiVersion,
               controllerApiVersion: '1',
             });
-            if (compute.status !== 'error') await this.markStatus(compute.id, compute.name, 'error');
+            if (compute.status !== 'error')
+              await this.markStatus(compute.id, compute.name, 'error');
             continue;
           }
           await setComputeStatus(this.deps.db, compute.id, 'online', {

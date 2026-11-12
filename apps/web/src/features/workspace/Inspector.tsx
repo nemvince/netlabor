@@ -343,10 +343,7 @@ export function Inspector({
                     ))}
                   </Select>
                 </Field>
-                <details
-                  className="border-t pt-2"
-                  style={{ borderColor: 'var(--color-rule)' }}
-                >
+                <details className="border-t pt-2" style={{ borderColor: 'var(--color-rule)' }}>
                   <summary
                     className="cursor-pointer text-[11px]"
                     style={{ color: 'var(--color-ink-soft)' }}
@@ -399,7 +396,9 @@ export function Inspector({
                 {PROPERTY_FIELDS[node.nodeType]?.length ? (
                   <section className="border-t pt-2" style={{ borderColor: 'var(--color-rule)' }}>
                     <div className="mb-1.5">
-                      <span className="nb-rule-label">{node.nodeType === 'vpcs' ? 'PC specs' : 'Runtime'}</span>
+                      <span className="nb-rule-label">
+                        {node.nodeType === 'vpcs' ? 'PC specs' : 'Runtime'}
+                      </span>
                     </div>
                     <GroupedPropertyFields
                       fields={PROPERTY_FIELDS[node.nodeType] ?? []}

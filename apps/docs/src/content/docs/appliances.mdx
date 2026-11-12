@@ -18,7 +18,10 @@ until a base image has been downloaded or adopted — the product's own rule, no
 <div class="docs-demo">
   <div class="docs-demo__head">
     <span class="docs-demo__name">ApplianceBuildDialog</span>
-    <span class="docs-demo__note">Seeded OS repository and computes. No entry has a verified artifact yet, so the dialog shows its real blocked state and cannot queue work.</span>
+    <span class="docs-demo__note">
+      Seeded OS repository and computes. No entry has a verified artifact yet, so the dialog shows
+      its real blocked state and cannot queue work.
+    </span>
   </div>
   <div class="docs-demo__stage">
     <ApplianceBuildSurface client:visible />
@@ -34,10 +37,10 @@ docs fixtures stop that at the disabled submit. The same component is used in th
 Two entries are seeded and refreshed on start (their upstream URLs are updated, downloads and
 user rows are not touched):
 
-| Name                            | Release            | Upstream                                                          |
-| ------------------------------- | ------------------ | ----------------------------------------------------------------- |
-| `debian-13-genericcloud-amd64`  | Debian 13 (trixie) | `cloud.debian.org/.../debian-13-genericcloud-amd64.qcow2`         |
-| `ubuntu-24.04-cloudimg-amd64`   | Ubuntu 24.04 LTS   | `cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img` |
+| Name                           | Release            | Upstream                                                                |
+| ------------------------------ | ------------------ | ----------------------------------------------------------------------- |
+| `debian-13-genericcloud-amd64` | Debian 13 (trixie) | `cloud.debian.org/.../debian-13-genericcloud-amd64.qcow2`               |
+| `ubuntu-24.04-cloudimg-amd64`  | Ubuntu 24.04 LTS   | `cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img` |
 
 Netlabor never fabricates an artifact. There are two ways to populate an entry:
 
@@ -59,13 +62,13 @@ online while it provisions. cloud-init runs one generated script that:
 4. prints progress markers to the serial console;
 5. ends with `NETLABOR_BUILD_OK` or `NETLABOR_BUILD_FAILED` and powers the VM off.
 
-| Desktop | Packages                                                        | Display manager |
-| ------- | --------------------------------------------------------------- | --------------- |
-| `none`  | none                                                            | —               |
-| `xfce`  | `xfce4`, `xfce4-terminal`, `lightdm`, `lightdm-gtk-greeter`     | `lightdm`       |
-| `gnome` | `gnome-core`, `gnome-terminal`, `gdm3`                          | `gdm3`          |
-| `kde`   | `kde-plasma-desktop`, `sddm`                                    | `sddm`          |
-| `lxqt`  | `lxqt`, `sddm`                                                  | `sddm`          |
+| Desktop | Packages                                                    | Display manager |
+| ------- | ----------------------------------------------------------- | --------------- |
+| `none`  | none                                                        | —               |
+| `xfce`  | `xfce4`, `xfce4-terminal`, `lightdm`, `lightdm-gtk-greeter` | `lightdm`       |
+| `gnome` | `gnome-core`, `gnome-terminal`, `gdm3`                      | `gdm3`          |
+| `kde`   | `kde-plasma-desktop`, `sddm`                                | `sddm`          |
+| `lxqt`  | `lxqt`, `sddm`                                              | `sddm`          |
 
 Package names are validated against a strict apt-name pattern before they reach the script.
 
@@ -74,7 +77,8 @@ Package names are validated against a strict apt-name pattern before they reach 
   <p>
     A build VM and a node attach the disk as IDE by default. The Debian 13 cloud image's BIOS GRUB
     cannot load its kernel from <code>virtio-blk</code>; Ubuntu boots either way. Keep
-    <code>disks.hda.interface</code> unset or <code>ide</code> on templates built from a Debian base.
+    <code>disks.hda.interface</code> unset or <code>ide</code> on templates built from a Debian
+    base.
   </p>
 </div>
 

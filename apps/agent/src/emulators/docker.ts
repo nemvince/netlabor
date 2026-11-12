@@ -221,10 +221,7 @@ export function dockerVolumeSpec(entry: string, nodeDir: string): string {
   return `${host}:${entry}`;
 }
 
-async function dockerBinds(
-  ctx: NodeContext,
-  value: unknown,
-): Promise<string[] | null> {
+async function dockerBinds(ctx: NodeContext, value: unknown): Promise<string[] | null> {
   const entries = splitLines(value);
   if (!entries) return null;
   const binds: string[] = [];

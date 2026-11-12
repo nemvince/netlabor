@@ -196,11 +196,7 @@ async function imagePathsFor(
 }
 
 /** Fail fast on start when a node image is not replicated to its compute. */
-async function requireNodeImages(
-  deps: AppDeps,
-  node: NodeRow,
-  spec: AgentNodeSpec,
-): Promise<void> {
+async function requireNodeImages(deps: AppDeps, node: NodeRow, spec: AgentNodeSpec): Promise<void> {
   const imageIds = collectImageIds(node.properties);
   const missing = [...imageIds].filter((id) => !spec.images[id]);
   if (missing.length === 0) return;

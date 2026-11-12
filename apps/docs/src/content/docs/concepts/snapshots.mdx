@@ -19,7 +19,10 @@ completed snapshot, a running restore, a failed export, and a cancelled import.
 <div class="docs-demo">
   <div class="docs-demo__head">
     <span class="docs-demo__name">Snapshots and jobs</span>
-    <span class="docs-demo__note">Real <code>Table</code> and <code>Badge</code> primitives with <code>SnapshotRow</code> and <code>JobRow</code> fixtures.</span>
+    <span class="docs-demo__note">
+      Real <code>Table</code> and <code>Badge</code> primitives with <code>SnapshotRow</code> and{' '}
+      <code>JobRow</code> fixtures.
+    </span>
   </div>
   <div class="docs-demo__stage">
     <SnapshotTable client:visible />
@@ -71,9 +74,9 @@ topology.
 
 ## Choosing
 
-| Need                                  | Use                        |
-| ------------------------------------- | -------------------------- |
-| Roll back a lab after a class          | `snapshots.create`         |
-| Move a lab to another installation     | `projects.export` + import |
-| Start a variation without touching it  | `projects.duplicate`       |
-| Keep a topology as a reusable project  | `projects.templates.create` |
+| Need                                  | Use                         |
+| ------------------------------------- | --------------------------- |
+| Roll back a lab after a class         | `snapshots.create`          |
+| Move a lab to another installation    | `projects.export` + import  |
+| Start a variation without touching it | `projects.duplicate`        |
+| Keep a topology as a reusable project | `projects.templates.create` |

@@ -2,14 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { SessionRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  KeyRound,
-  Monitor,
-  SlidersHorizontal,
-  Smartphone,
-  UserRound,
-  Wrench,
-} from 'lucide-react';
+import { KeyRound, Monitor, SlidersHorizontal, Smartphone, UserRound, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -22,11 +15,7 @@ import { Loading, Page, PageHeader, RuleRow } from '../components/Page.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../components/Table.tsx';
 import { toast } from '../components/Toast.tsx';
 import { useMe } from '../features/auth/use-me.ts';
-import {
-  CardRows,
-  SettingsCard,
-  SettingsIcon,
-} from '../features/settings/SettingsCard.tsx';
+import { CardRows, SettingsCard, SettingsIcon } from '../features/settings/SettingsCard.tsx';
 import { SettingsNav } from '../features/settings/SettingsNav.tsx';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
@@ -399,8 +388,8 @@ export function ProfilePage() {
             {preferencesError ? <Notice tone="error">{preferencesError}</Notice> : null}
             {preferenceFields.length === 0 ? (
               <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
-                No ui.* preferences are set for this account. Add them under Advanced to override the
-                controller's console defaults.
+                No ui.* preferences are set for this account. Add them under Advanced to override
+                the controller's console defaults.
               </p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">

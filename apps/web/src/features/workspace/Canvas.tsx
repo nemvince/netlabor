@@ -93,7 +93,7 @@ function buildFlowNodes(
           projectLocked,
           ...(remoteColors.length > 0 ? { remoteColors } : {}),
         },
-      draggable: !projectLocked && !node.locked,
+        draggable: !projectLocked && !node.locked,
         selected: selection.nodes.includes(node.id),
         zIndex: node.z,
       };
@@ -253,7 +253,16 @@ export function Canvas({
         portLabelsAlways,
       ),
     );
-  }, [links, nodes, drawings, markerFlashes, layerFilter, hoveredEdgeId, portLabelsAlways, setFlowEdges]);
+  }, [
+    links,
+    nodes,
+    drawings,
+    markerFlashes,
+    layerFilter,
+    hoveredEdgeId,
+    portLabelsAlways,
+    setFlowEdges,
+  ]);
 
   useEffect(() => {
     if (fittedRef.current || nodes.length === 0) return;
@@ -374,16 +383,16 @@ export function Canvas({
         {minimapVisible ? (
           <MiniMap
             position="bottom-right"
-          pannable
-          zoomable
-          nodeColor={(node) => {
-            const payload = node.data as { kind?: string; node?: NodeRow } | undefined;
-            if (payload?.kind !== 'device' || !payload.node) return 'var(--color-rule-strong)';
-            if (payload.node.status === 'started') return 'var(--color-signal-up)';
-            if (payload.node.status === 'error') return 'var(--color-signal-down)';
-            if (payload.node.status === 'suspended') return 'var(--color-signal-warn)';
-            return 'var(--color-ink-faint)';
-          }}
+            pannable
+            zoomable
+            nodeColor={(node) => {
+              const payload = node.data as { kind?: string; node?: NodeRow } | undefined;
+              if (payload?.kind !== 'device' || !payload.node) return 'var(--color-rule-strong)';
+              if (payload.node.status === 'started') return 'var(--color-signal-up)';
+              if (payload.node.status === 'error') return 'var(--color-signal-down)';
+              if (payload.node.status === 'suspended') return 'var(--color-signal-warn)';
+              return 'var(--color-ink-faint)';
+            }}
           />
         ) : null}
       </ReactFlow>

@@ -60,9 +60,14 @@ export class TelnetFilter {
 /** Encode a NAWS window-size frame (client -> server). */
 export function nawsFrame(cols: number, rows: number): Uint8Array {
   return Uint8Array.from([
-    IAC, SB, 31,
-    (cols >> 8) & 255, cols & 255,
-    (rows >> 8) & 255, rows & 255,
-    IAC, SE,
+    IAC,
+    SB,
+    31,
+    (cols >> 8) & 255,
+    cols & 255,
+    (rows >> 8) & 255,
+    rows & 255,
+    IAC,
+    SE,
   ]);
 }

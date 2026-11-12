@@ -74,7 +74,11 @@ export async function readProjectFile(
     if (info.isDirectory()) throw new AppError('BAD_REQUEST', 'path is a directory');
     if (encoding === 'base64') {
       const data = await readFile(absolute);
-      return { path: relative, content: Buffer.from(data).toString('base64'), sizeBytes: info.size };
+      return {
+        path: relative,
+        content: Buffer.from(data).toString('base64'),
+        sizeBytes: info.size,
+      };
     }
     const content = await readFile(absolute, 'utf8');
     return { path: relative, content, sizeBytes: info.size };
@@ -95,9 +99,7 @@ export async function writeProjectFile(
   const absolute = safePath(config, projectId, relative);
   await mkdir(path.dirname(absolute), { recursive: true });
   const data =
-    encoding === 'base64'
-      ? Buffer.from(content, 'base64')
-      : new TextEncoder().encode(content);
+    encoding === 'base64' ? Buffer.from(content, 'base64') : new TextEncoder().encode(content);
   await writeFile(absolute, data);
   return { path: relative, content, sizeBytes: data.byteLength };
 }

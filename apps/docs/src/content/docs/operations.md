@@ -85,14 +85,14 @@ the agents. There is no rolling upgrade: the controller compares agent API versi
 
 ## Troubleshooting
 
-| Symptom                              | Check                                                                 |
-| ------------------------------------ | --------------------------------------------------------------------- |
-| `GET /healthz` returns 503           | Database unreachable; check `NB_DATABASE_URL`.                        |
-| Compute stays offline                | Agent `/healthz`, the token, controller→agent reachability (`NB_ALLOW_INSECURE_AGENT=1` for http). |
-| Project open → `AGENT_UNAVAILABLE`   | Every compute hosting nodes must be online.                           |
-| Links stay `pending`                 | Start both endpoints; the controller then builds the dataplane.       |
-| No console                           | `consolePort` present, agent listener bound, ticket < 60 s old.        |
-| Web Wireshark → `CAPABILITY_UNSUPPORTED` | `sharkd`/`tshark` missing on the compute.                          |
-| Kernel links unavailable             | Agent reports `kernelDataplane=false`; relays still work.              |
-| `cross-origin request rejected`      | `NB_PUBLIC_URL` does not match the browser origin; set it to the proxy origin and send the matching `Origin`. |
+| Symptom                                              | Check                                                                                                                        |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `GET /healthz` returns 503                           | Database unreachable; check `NB_DATABASE_URL`.                                                                               |
+| Compute stays offline                                | Agent `/healthz`, the token, controller→agent reachability (`NB_ALLOW_INSECURE_AGENT=1` for http).                           |
+| Project open → `AGENT_UNAVAILABLE`                   | Every compute hosting nodes must be online.                                                                                  |
+| Links stay `pending`                                 | Start both endpoints; the controller then builds the dataplane.                                                              |
+| No console                                           | `consolePort` present, agent listener bound, ticket < 60 s old.                                                              |
+| Web Wireshark → `CAPABILITY_UNSUPPORTED`             | `sharkd`/`tshark` missing on the compute.                                                                                    |
+| Kernel links unavailable                             | Agent reports `kernelDataplane=false`; relays still work.                                                                    |
+| `cross-origin request rejected`                      | `NB_PUBLIC_URL` does not match the browser origin; set it to the proxy origin and send the matching `Origin`.                |
 | DynaMips/emulator artifacts in the working directory | The agent's `NB_RUN_DIR`/`NB_STATE_DIR` is not writable or not configured; set both to absolute paths on persistent storage. |

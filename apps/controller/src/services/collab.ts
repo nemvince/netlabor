@@ -34,11 +34,21 @@ interface Member {
   participant: CollabParticipant;
 }
 
-const COLORS = ['#d19155', '#7bc9c4', '#b48cc9', '#7ba7d1', '#79c98a', '#e0b45c', '#d9705f', '#c9a27b'];
+const COLORS = [
+  '#d19155',
+  '#7bc9c4',
+  '#b48cc9',
+  '#7ba7d1',
+  '#79c98a',
+  '#e0b45c',
+  '#d9705f',
+  '#c9a27b',
+];
 
 function colorFor(userId: string): string {
   let hash = 0;
-  for (let index = 0; index < userId.length; index++) hash = (hash * 31 + userId.charCodeAt(index)) | 0;
+  for (let index = 0; index < userId.length; index++)
+    hash = (hash * 31 + userId.charCodeAt(index)) | 0;
   return COLORS[Math.abs(hash) % COLORS.length] ?? COLORS[0]!;
 }
 
@@ -102,7 +112,11 @@ export function joinCollab(ws: ServerWebSocket<WsData>, projectId: string, user:
   const member: Member = { socket: ws, participant };
   room.set(id, member);
   bySocket.set(ws, { projectId, id });
-  send(ws, { type: 'presence.init', selfId: id, participants: [...existing, publicParticipant(participant)] });
+  send(ws, {
+    type: 'presence.init',
+    selfId: id,
+    participants: [...existing, publicParticipant(participant)],
+  });
   broadcast(projectId, { type: 'presence.join', participant: publicParticipant(participant) }, id);
 }
 
@@ -125,7 +139,11 @@ export function updateCollab(ws: ServerWebSocket<WsData>, raw: string | Buffer):
       const point = cursor as Record<string, unknown>;
       if (!finite(point.x) || !finite(point.y)) return;
       participant.cursor = { x: point.x, y: point.y };
-      broadcast(location.projectId, { type: 'presence.cursor', id: participant.id, cursor: participant.cursor }, participant.id);
+      broadcast(
+        location.projectId,
+        { type: 'presence.cursor', id: participant.id, cursor: participant.cursor },
+        participant.id,
+      );
       return;
     }
     case 'selection': {
@@ -137,21 +155,33 @@ export function updateCollab(ws: ServerWebSocket<WsData>, raw: string | Buffer):
         links: strings(value.links, 1000),
         drawings: strings(value.drawings, 1000),
       };
-      broadcast(location.projectId, { type: 'presence.selection', id: participant.id, selection: participant.selection }, participant.id);
+      broadcast(
+        location.projectId,
+        { type: 'presence.selection', id: participant.id, selection: participant.selection },
+        participant.id,
+      );
       return;
     }
     case 'node.move': {
       const nodeId = typeof payload.nodeId === 'string' ? payload.nodeId : null;
       if (!nodeId || !finite(payload.x) || !finite(payload.y)) return;
       participant.nodeMove = { nodeId, x: payload.x, y: payload.y };
-      broadcast(location.projectId, { type: 'node.move', id: participant.id, nodeId, x: payload.x, y: payload.y }, participant.id);
+      broadcast(
+        location.projectId,
+        { type: 'node.move', id: participant.id, nodeId, x: payload.x, y: payload.y },
+        participant.id,
+      );
       return;
     }
     case 'node.move.end': {
       const nodeId = typeof payload.nodeId === 'string' ? payload.nodeId : null;
       if (!nodeId) return;
       if (participant.nodeMove?.nodeId === nodeId) participant.nodeMove = null;
-      broadcast(location.projectId, { type: 'node.move.end', id: participant.id, nodeId }, participant.id);
+      broadcast(
+        location.projectId,
+        { type: 'node.move.end', id: participant.id, nodeId },
+        participant.id,
+      );
       return;
     }
     default:

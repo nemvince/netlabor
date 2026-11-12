@@ -133,9 +133,11 @@ export function prefixForHosts(hosts: number): number {
   return Math.max(0, 32 - Math.ceil(Math.log2(hosts + 2)));
 }
 
-export function parseVlsmRequest(
-  request: string,
-): { prefix: number; label: string; hosts?: number } {
+export function parseVlsmRequest(request: string): {
+  prefix: number;
+  label: string;
+  hosts?: number;
+} {
   const value = request.trim();
   if (value.startsWith('/')) {
     const prefix = Number(value.slice(1));

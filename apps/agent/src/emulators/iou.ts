@@ -215,20 +215,18 @@ const iouAdapter: NodeAdapter = {
     // IOU's NETIO fabric lives under /tmp/netio<uid>. ubridge runs as root,
     // so the IOU process must use the same uid or the IOL bridge socket in
     // /tmp/netio0 is invisible to the instance (/tmp/netio1000).
-    const proc = Bun.spawn(['ip', 'netns', 'exec', ctx.netns, binary, ...args],
-      {
-        cwd: ctx.dir,
-        env: {
-          ...process.env,
-          IOURC: path.join(ctx.dir, 'iourc'),
-          NETMAP: path.join(ctx.dir, 'NETMAP'),
-          LD_LIBRARY_PATH: path.dirname(imagePath),
-        },
-        stdin: 'pipe',
-        stdout: 'pipe',
-        stderr: 'pipe',
+    const proc = Bun.spawn(['ip', 'netns', 'exec', ctx.netns, binary, ...args], {
+      cwd: ctx.dir,
+      env: {
+        ...process.env,
+        IOURC: path.join(ctx.dir, 'iourc'),
+        NETMAP: path.join(ctx.dir, 'NETMAP'),
+        LD_LIBRARY_PATH: path.dirname(imagePath),
       },
-    );
+      stdin: 'pipe',
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
 
     const write = (data: Uint8Array) => {
       try {

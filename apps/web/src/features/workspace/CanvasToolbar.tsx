@@ -9,7 +9,8 @@ import {
   ClipboardPaste,
   Columns3,
   Copy,
-  Grid3x3,Image as ImageIcon, 
+  Grid3x3,
+  Image as ImageIcon,
   Layers,
   Link2,
   Magnet,
@@ -22,7 +23,7 @@ import {
   StickyNote,
   Trash2,
   Type,
-  Undo2
+  Undo2,
 } from 'lucide-react';
 import { DropdownMenu } from 'radix-ui';
 import type { ReactNode } from 'react';
@@ -236,7 +237,12 @@ export function CanvasToolbar({
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
-          <DropdownMenu.Content align="start" sideOffset={6} className={MENU_CLASS} style={MENU_STYLE}>
+          <DropdownMenu.Content
+            align="start"
+            sideOffset={6}
+            className={MENU_CLASS}
+            style={MENU_STYLE}
+          >
             <MenuItem icon={<AlignStartVertical size={13} />} onSelect={() => onAlign('left')}>
               Align left
             </MenuItem>
@@ -294,8 +300,16 @@ export function CanvasToolbar({
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
-          <DropdownMenu.Content align="start" sideOffset={6} className={MENU_CLASS} style={MENU_STYLE}>
-            <MenuItem icon={<RectangleHorizontal size={13} />} onSelect={() => onAddDrawing('rect')}>
+          <DropdownMenu.Content
+            align="start"
+            sideOffset={6}
+            className={MENU_CLASS}
+            style={MENU_STYLE}
+          >
+            <MenuItem
+              icon={<RectangleHorizontal size={13} />}
+              onSelect={() => onAddDrawing('rect')}
+            >
               Rectangle
             </MenuItem>
             <MenuItem icon={<Type size={13} />} onSelect={() => onAddDrawing('text')}>
@@ -338,7 +352,12 @@ export function CanvasToolbar({
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
-          <DropdownMenu.Content align="start" sideOffset={6} className={MENU_CLASS} style={MENU_STYLE}>
+          <DropdownMenu.Content
+            align="start"
+            sideOffset={6}
+            className={MENU_CLASS}
+            style={MENU_STYLE}
+          >
             <ViewToggle checked={gridVisible} onCheckedChange={onToggleGrid}>
               <Grid3x3 size={13} aria-hidden /> Grid
             </ViewToggle>

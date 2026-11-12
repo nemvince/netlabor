@@ -243,21 +243,18 @@ export function PacketAnalysisPanel({ linkId, filter }: { linkId: string; filter
                 aria-label="Matching tshark fields"
               >
                 {fieldSuggestions.isPending ? (
-                  <li
-                    className="px-2 py-1 text-[10px]"
-                    style={{ color: 'var(--color-ink-faint)' }}
-                  >
+                  <li className="px-2 py-1 text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
                     searching fields…
                   </li>
                 ) : fieldSuggestions.isError ? (
-                  <li className="px-2 py-1 text-[10px]" style={{ color: 'var(--color-signal-down)' }}>
+                  <li
+                    className="px-2 py-1 text-[10px]"
+                    style={{ color: 'var(--color-signal-down)' }}
+                  >
                     {messageOf(fieldSuggestions.error)}
                   </li>
                 ) : (fieldSuggestions.data ?? []).length === 0 ? (
-                  <li
-                    className="px-2 py-1 text-[10px]"
-                    style={{ color: 'var(--color-ink-faint)' }}
-                  >
+                  <li className="px-2 py-1 text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
                     No fields match {fieldQuery.trim() || 'the query'}.
                   </li>
                 ) : (
@@ -328,9 +325,7 @@ export function PacketAnalysisPanel({ linkId, filter }: { linkId: string; filter
           style={{ color: 'var(--color-ink-faint)' }}
           role="status"
         >
-          <span className="tabular">
-            filter: {appliedFilter === '' ? 'none' : appliedFilter}
-          </span>
+          <span className="tabular">filter: {appliedFilter === '' ? 'none' : appliedFilter}</span>
           {result ? (
             <>
               <span className="tabular">{result.total} frames</span>
@@ -418,15 +413,11 @@ export function PacketAnalysisPanel({ linkId, filter }: { linkId: string; filter
                   borderColor: 'color-mix(in oklab, var(--color-rule) 55%, transparent)',
                 }}
               >
-                <span className="tabular truncate px-2 leading-[21px]">
-                  {frame.number}
-                </span>
+                <span className="tabular truncate px-2 leading-[21px]">{frame.number}</span>
                 <span className="tabular truncate px-2 leading-[21px]">
                   {frame.timeRelative === null ? '' : frame.timeRelative.toFixed(6)}
                 </span>
-                <span className="tabular truncate px-2 leading-[21px]">
-                  {frame.source ?? ''}
-                </span>
+                <span className="tabular truncate px-2 leading-[21px]">{frame.source ?? ''}</span>
                 <span className="tabular truncate px-2 leading-[21px]">
                   {frame.destination ?? ''}
                 </span>

@@ -225,7 +225,10 @@ export function ProjectTopBar({
                     borderColor: 'var(--color-panel)',
                     color: 'var(--color-ink-dim)',
                   }}
-                  title={collaborators.slice(5).map((participant) => participant.name).join(', ')}
+                  title={collaborators
+                    .slice(5)
+                    .map((participant) => participant.name)
+                    .join(', ')}
                 >
                   +{collaborators.length - 5}
                 </span>
@@ -236,9 +239,7 @@ export function ProjectTopBar({
               className="size-[5px] rounded-full"
               style={{
                 background:
-                  collabStatus === 'live'
-                    ? 'var(--color-signal-up)'
-                    : 'var(--color-signal-warn)',
+                  collabStatus === 'live' ? 'var(--color-signal-up)' : 'var(--color-signal-warn)',
               }}
             />
           </span>
@@ -250,7 +251,12 @@ export function ProjectTopBar({
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content align="end" sideOffset={4} className={MENU_CLASS} style={MENU_STYLE}>
+            <DropdownMenu.Content
+              align="end"
+              sideOffset={4}
+              className={MENU_CLASS}
+              style={MENU_STYLE}
+            >
               <MenuItem
                 icon={paletteOpen ? <Check size={13} /> : <PanelLeft size={13} />}
                 onSelect={onTogglePalette}
@@ -280,7 +286,12 @@ export function ProjectTopBar({
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content align="end" sideOffset={4} className={MENU_CLASS} style={MENU_STYLE}>
+            <DropdownMenu.Content
+              align="end"
+              sideOffset={4}
+              className={MENU_CLASS}
+              style={MENU_STYLE}
+            >
               {canWrite ? (
                 <MenuItem
                   icon={project.locked ? <Unlock size={13} /> : <Lock size={13} />}

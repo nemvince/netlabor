@@ -200,7 +200,9 @@ export async function buildQemuArgs(
       if (!message.includes('already exists') && !message.includes('busy')) throw error;
     });
     await client.send(`tap set_owner ${tap} ${ctx.config.emulatorUid}`).catch(() => undefined);
-    const mac = macBase ? macFromBase(macBase, port.adapter) : defaultMac(ctx.spec.nodeId, port.adapter);
+    const mac = macBase
+      ? macFromBase(macBase, port.adapter)
+      : defaultMac(ctx.spec.nodeId, port.adapter);
     args.push('-netdev', `tap,id=net${port.adapter},ifname=${tap},script=no,downscript=no`);
     args.push('-device', `${adapterType},netdev=net${port.adapter},mac=${mac}`);
   }
@@ -281,7 +283,9 @@ const qemuAdapter: NodeAdapter = {
   async start(ctx: NodeContext): Promise<NodeStartResult> {
     const disks = await prepareDisks(ctx);
     const consoleType =
-      typeof ctx.spec.properties.consoleType === 'string' ? ctx.spec.properties.consoleType : 'telnet';
+      typeof ctx.spec.properties.consoleType === 'string'
+        ? ctx.spec.properties.consoleType
+        : 'telnet';
     const vncDisplay =
       consoleType === 'vnc' ? ctx.registry.allocateVncDisplay(ctx.spec.projectId) : undefined;
     const cloudInitIso =

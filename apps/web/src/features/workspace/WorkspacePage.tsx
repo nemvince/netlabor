@@ -454,7 +454,6 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
     });
   }
 
-
   function toggleConnectMode() {
     setConnectMode((active) => {
       if (active) {
@@ -974,7 +973,11 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
   }
 
   async function startAll() {
-    await powerNodes(nodeRows.filter((node) => node.status !== 'started'), 'start', 'start-all');
+    await powerNodes(
+      nodeRows.filter((node) => node.status !== 'started'),
+      'start',
+      'start-all',
+    );
   }
 
   async function stopAll() {
@@ -1060,19 +1063,13 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         setLinkDialogId(link.id);
         break;
       case 'suspend':
-        void run(
-          () => client.links.update({ id: link.id, suspend: true }),
-          'Link suspended.',
-        );
+        void run(() => client.links.update({ id: link.id, suspend: true }), 'Link suspended.');
         break;
       case 'resume':
         void run(() => client.links.update({ id: link.id, suspend: false }), 'Link resumed.');
         break;
       case 'capture-start':
-        void run(
-          () => client.links.capture.start({ linkId: link.id }),
-          'Capture started.',
-        );
+        void run(() => client.links.capture.start({ linkId: link.id }), 'Capture started.');
         break;
       case 'capture-stop':
         void run(() => client.links.capture.stop({ linkId: link.id }), 'Capture stopped.');
@@ -1081,10 +1078,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         openWireshark(link.id, `Wireshark ${link.nodeAName} ↔ ${link.nodeBName}`);
         break;
       case 'clear-filters':
-        void run(
-          () => client.links.filters.clear({ linkId: link.id }),
-          'Link filters cleared.',
-        );
+        void run(() => client.links.filters.clear({ linkId: link.id }), 'Link filters cleared.');
         break;
       case 'delete':
         setDeleteTarget({ nodes: [], links: [link], drawings: [] });
@@ -1202,7 +1196,6 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         selfCollabId={collab.selfId}
         collabStatus={collab.status}
       />
-
 
       <div className="flex min-h-0 flex-1">
         {paletteOpen ? (
@@ -1440,9 +1433,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
 
       {shareOpen ? <ShareDialog projectId={projectId} onOpenChange={setShareOpen} /> : null}
 
-      {filesOpen ? (
-        <ProjectFilesDialog projectId={projectId} onOpenChange={setFilesOpen} />
-      ) : null}
+      {filesOpen ? <ProjectFilesDialog projectId={projectId} onOpenChange={setFilesOpen} /> : null}
 
       {templatesOpen ? (
         <ProjectTemplatesDialog project={project} onOpenChange={setTemplatesOpen} />

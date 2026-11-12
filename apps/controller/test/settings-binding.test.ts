@@ -35,13 +35,7 @@ describe('updateSettings', () => {
 
     const writes = calls.filter((call) => call.sql.includes('INSERT INTO settings'));
     expect(writes).toHaveLength(5);
-    expect(writes.map((call) => call.params[1])).toEqual([
-      '30',
-      '80',
-      'null',
-      'true',
-      '"lab"',
-    ]);
+    expect(writes.map((call) => call.params[1])).toEqual(['30', '80', 'null', 'true', '"lab"']);
     for (const call of writes) {
       expect(typeof call.params[0]).toBe('string');
       expect(typeof call.params[1]).toBe('string');

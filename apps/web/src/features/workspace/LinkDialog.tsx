@@ -431,11 +431,7 @@ export function LinkDialog({
                   onChange={(event) => update('frequencyDrop', event.target.value)}
                 />
               </Field>
-              <Field
-                label="Bandwidth (kbit/s)"
-                htmlFor="link-rate"
-                hint="Kernel dataplane only"
-              >
+              <Field label="Bandwidth (kbit/s)" htmlFor="link-rate" hint="Kernel dataplane only">
                 <Input
                   id="link-rate"
                   inputMode="numeric"
@@ -446,7 +442,11 @@ export function LinkDialog({
               </Field>
             </div>
             <div className="mt-2">
-              <Field label="BPF filter" htmlFor="link-bpf" hint="Validated by tcpdump on the compute.">
+              <Field
+                label="BPF filter"
+                htmlFor="link-bpf"
+                hint="Validated by tcpdump on the compute."
+              >
                 <Textarea
                   id="link-bpf"
                   rows={2}

@@ -104,7 +104,10 @@ export function DynamipsIdlepcPanel({
         </Notice>
       ) : (
         <div className="flex items-center justify-between gap-2">
-          <span className="tabular truncate text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+          <span
+            className="tabular truncate text-[10px]"
+            style={{ color: 'var(--color-ink-faint)' }}
+          >
             {platform} · image {imageId.slice(0, 8)}
           </span>
           <button
@@ -146,9 +149,7 @@ export function DynamipsIdlepcPanel({
                 disabled={!canUpdate || !running || applying !== null}
                 onClick={() => void apply(proposal.idlepc)}
               >
-                {current === proposal.idlepc ? (
-                  <Check size={12} aria-hidden />
-                ) : null}
+                {current === proposal.idlepc ? <Check size={12} aria-hidden /> : null}
                 {applying === proposal.idlepc ? 'Applying…' : 'Apply'}
               </button>
             </div>

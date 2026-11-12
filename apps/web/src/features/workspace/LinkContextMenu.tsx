@@ -1,15 +1,5 @@
 import type { LinkRow } from '@netlabor/contract';
-import {
-  Download,
-  Pause,
-  Pencil,
-  Play,
-  Radio,
-  Square,
-  Trash2,
-  Waves,
-  XCircle,
-} from 'lucide-react';
+import { Download, Pause, Pencil, Play, Radio, Square, Trash2, Waves, XCircle } from 'lucide-react';
 import { useEffect } from 'react';
 
 export type LinkContextAction =
@@ -119,15 +109,21 @@ export function LinkContextMenu({
 
         <Divider />
         {link.capture?.active ? (
-          <Item icon={Square} label="Stop capture" disabled={!canControl} onClick={() => run('capture-stop')} />
+          <Item
+            icon={Square}
+            label="Stop capture"
+            disabled={!canControl}
+            onClick={() => run('capture-stop')}
+          />
         ) : (
-          <Item icon={Radio} label="Start capture" disabled={!canControl} onClick={() => run('capture-start')} />
+          <Item
+            icon={Radio}
+            label="Start capture"
+            disabled={!canControl}
+            onClick={() => run('capture-start')}
+          />
         )}
-        <Item
-          icon={Waves}
-          label="Open Wireshark"
-          onClick={() => run('wireshark')}
-        />
+        <Item icon={Waves} label="Open Wireshark" onClick={() => run('wireshark')} />
         {link.capture ? (
           <Item
             icon={Download}
@@ -142,11 +138,7 @@ export function LinkContextMenu({
         {canUpdate ? (
           <>
             <Divider />
-            <Item
-              icon={XCircle}
-              label="Clear filters"
-              onClick={() => run('clear-filters')}
-            />
+            <Item icon={XCircle} label="Clear filters" onClick={() => run('clear-filters')} />
             <Item icon={Trash2} label="Delete link" danger onClick={() => run('delete')} />
           </>
         ) : null}

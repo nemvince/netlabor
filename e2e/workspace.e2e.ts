@@ -2,11 +2,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test';
 import { gotoWorkspace, resolveProject } from './helpers.ts';
 
 /** Open a persisted panel when a previous run left it hidden. */
-async function ensurePanelVisible(
-  page: Page,
-  showTitle: string,
-  panel: Locator,
-): Promise<void> {
+async function ensurePanelVisible(page: Page, showTitle: string, panel: Locator): Promise<void> {
   if (await panel.isVisible()) return;
   const show = page.getByTitle(showTitle);
   if ((await show.count()) > 0) await show.first().click();

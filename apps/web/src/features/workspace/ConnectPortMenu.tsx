@@ -114,7 +114,10 @@ export function ConnectPortMenu({
         style={{ borderColor: 'var(--color-rule)' }}
       >
         <div className="min-w-0">
-          <span className="block text-[10px] uppercase tracking-wide" style={{ color: 'var(--color-ink-faint)' }}>
+          <span
+            className="block text-[10px] uppercase tracking-wide"
+            style={{ color: 'var(--color-ink-faint)' }}
+          >
             {role === 'source' ? 'Source port' : 'Target port'}
           </span>
           <span className="block truncate text-[12px] font-semibold">{node.name}</span>
@@ -163,14 +166,19 @@ export function ConnectPortMenu({
               className="flex w-full items-center justify-between gap-2 rounded-[2px] px-2 py-1 text-left text-[12px]"
               style={{
                 background:
-                  index === active ? 'color-mix(in oklab, var(--color-copper) 16%, transparent)' : undefined,
+                  index === active
+                    ? 'color-mix(in oklab, var(--color-copper) 16%, transparent)'
+                    : undefined,
                 color: 'var(--color-ink)',
               }}
               onMouseEnter={() => setActive(index)}
               onClick={() => choose(port)}
             >
               <span className="truncate">{port.name}</span>
-              <span className="shrink-0 font-mono text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+              <span
+                className="shrink-0 font-mono text-[10px]"
+                style={{ color: 'var(--color-ink-faint)' }}
+              >
                 {port.adapter}/{port.port}
               </span>
             </button>

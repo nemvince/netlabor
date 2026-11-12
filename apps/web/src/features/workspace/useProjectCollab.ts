@@ -72,7 +72,8 @@ export function useProjectCollab(projectId: string) {
           const next: Record<string, CollabParticipant> = {};
           for (const item of list) {
             const participant = item as CollabParticipant;
-            if (participant && typeof participant.id === 'string') next[participant.id] = participant;
+            if (participant && typeof participant.id === 'string')
+              next[participant.id] = participant;
           }
           setParticipants(next);
           setSelfId(typeof payload.selfId === 'string' ? payload.selfId : null);
@@ -122,7 +123,9 @@ export function useProjectCollab(projectId: string) {
           if (!id || !nodeId || !Number.isFinite(x) || !Number.isFinite(y)) return;
           setParticipants((current) => {
             const existing = current[id];
-            return existing ? { ...current, [id]: { ...existing, nodeMove: { nodeId, x, y } } } : current;
+            return existing
+              ? { ...current, [id]: { ...existing, nodeMove: { nodeId, x, y } } }
+              : current;
           });
           return;
         }

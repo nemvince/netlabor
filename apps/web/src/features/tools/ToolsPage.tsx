@@ -96,11 +96,7 @@ function SubnetSplitter() {
           />
         </Field>
         <Field label="Rows to show" htmlFor="split-limit">
-          <Select
-            id="split-limit"
-            value={limit}
-            onChange={(event) => setLimit(event.target.value)}
-          >
+          <Select id="split-limit" value={limit} onChange={(event) => setLimit(event.target.value)}>
             {['16', '64', '256', '1024', '4096'].map((value) => (
               <option key={value} value={value}>
                 {value}
@@ -117,7 +113,9 @@ function SubnetSplitter() {
         <>
           <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px]">
             <span style={{ color: 'var(--color-ink-faint)' }}>Base</span>
-            <span className="tabular">{networkLabel(result.value.subnets[0]?.network ?? 0, Number(newPrefix))}</span>
+            <span className="tabular">
+              {networkLabel(result.value.subnets[0]?.network ?? 0, Number(newPrefix))}
+            </span>
             <span style={{ color: 'var(--color-ink-faint)' }}>Subnets</span>
             <Badge tone="copper">{result.value.count.toLocaleString()}</Badge>
             {result.value.truncated ? (
@@ -250,10 +248,12 @@ function VlsmPlanner() {
           type="button"
           className="nb-button justify-self-start"
           data-size="sm"
-          onClick={() => setRequirements((current) => [
-            ...current,
-            { id: crypto.randomUUID(), name: '', request: '' },
-          ])}
+          onClick={() =>
+            setRequirements((current) => [
+              ...current,
+              { id: crypto.randomUUID(), name: '', request: '' },
+            ])
+          }
         >
           <Plus size={12} aria-hidden /> Add requirement
         </button>
@@ -297,9 +297,7 @@ function VlsmPlanner() {
                       {row.fits ? (
                         networkLabel(row.network, row.prefix)
                       ) : (
-                        <span style={{ color: 'var(--color-signal-down)' }}>
-                          does not fit
-                        </span>
+                        <span style={{ color: 'var(--color-signal-down)' }}>does not fit</span>
                       )}
                     </Td>
                     <Td mono>
@@ -343,13 +341,23 @@ function IpCalculator() {
         ['Usable addresses', network.usable.toLocaleString()],
         [
           'Binary address',
-          [network.address >>> 24, (network.address >>> 16) & 255, (network.address >>> 8) & 255, network.address & 255]
+          [
+            network.address >>> 24,
+            (network.address >>> 16) & 255,
+            (network.address >>> 8) & 255,
+            network.address & 255,
+          ]
             .map((octet) => octet.toString(2).padStart(8, '0'))
             .join('.'),
         ],
         [
           'Binary mask',
-          [network.mask >>> 24, (network.mask >>> 16) & 255, (network.mask >>> 8) & 255, network.mask & 255]
+          [
+            network.mask >>> 24,
+            (network.mask >>> 16) & 255,
+            (network.mask >>> 8) & 255,
+            network.mask & 255,
+          ]
             .map((octet) => octet.toString(2).padStart(8, '0'))
             .join('.'),
         ],
@@ -359,7 +367,14 @@ function IpCalculator() {
     <Section
       title="IP calculator"
       description="Inspect any IPv4 address and prefix."
-      actions={network ? <CopyButton value={rows.map(([key, value]) => `${key}: ${value}`).join('\n')} label="Copy values" /> : undefined}
+      actions={
+        network ? (
+          <CopyButton
+            value={rows.map(([key, value]) => `${key}: ${value}`).join('\n')}
+            label="Copy values"
+          />
+        ) : undefined
+      }
     >
       <Field label="Address / prefix" htmlFor="ip-cidr" error={result.error ?? undefined}>
         <Input
@@ -397,7 +412,10 @@ function OverlapCheck() {
     }
   }, [leftInput, rightInput]);
   return (
-    <Section title="Overlap check" description="Test whether two CIDR blocks overlap or contain each other.">
+    <Section
+      title="Overlap check"
+      description="Test whether two CIDR blocks overlap or contain each other."
+    >
       <div className="grid gap-2 sm:grid-cols-2">
         <Field label="Network A" htmlFor="overlap-a" error={result.error ?? undefined}>
           <Input
@@ -429,18 +447,24 @@ function OverlapCheck() {
             ) : null}
             {result.overlap.intersection ? (
               <span className="tabular text-[11px]">
-                intersection {networkLabel(result.overlap.intersection.network, result.overlap.intersection.prefix)}
+                intersection{' '}
+                {networkLabel(
+                  result.overlap.intersection.network,
+                  result.overlap.intersection.prefix,
+                )}
               </span>
             ) : null}
           </div>
           <div className="grid grid-cols-[140px_1fr] gap-x-3 gap-y-1 text-[12px]">
             <span className="nb-rule-label">A</span>
             <span className="tabular">
-              {networkLabel(result.left.network, result.left.prefix)} · mask {formatIpv4(maskForPrefix(result.left.prefix))}
+              {networkLabel(result.left.network, result.left.prefix)} · mask{' '}
+              {formatIpv4(maskForPrefix(result.left.prefix))}
             </span>
             <span className="nb-rule-label">B</span>
             <span className="tabular">
-              {networkLabel(result.right.network, result.right.prefix)} · mask {formatIpv4(maskForPrefix(result.right.prefix))}
+              {networkLabel(result.right.network, result.right.prefix)} · mask{' '}
+              {formatIpv4(maskForPrefix(result.right.prefix))}
             </span>
           </div>
         </div>

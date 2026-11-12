@@ -54,8 +54,7 @@ const CATEGORY_MAP: Record<string, string> = {
   guest: 'End devices',
 };
 
-const LOCAL_DB =
-  process.env.NB_DATABASE_URL ?? 'postgres://nya@127.0.0.1:5432/netlabor';
+const LOCAL_DB = process.env.NB_DATABASE_URL ?? 'postgres://nya@127.0.0.1:5432/netlabor';
 const IMAGE_ROOT = process.env.NB_IMAGE_DIR ?? '/var/lib/netlabor/images';
 const CACHE_PATH = path.join(IMAGE_ROOT, '.gns3a-import-cache.json');
 
@@ -110,7 +109,19 @@ function optionsFromQemu(qemu: Record<string, unknown>): {
   const options: string[] = [];
   let machineType: string | undefined;
   let cpuModel: string | undefined;
-  const dropped = new Set(['-name', '-m', '-smp', '-machine', '-cpu', '-nographic', '-display', '-vga', '-serial', '-monitor', '-enable-kvm']);
+  const dropped = new Set([
+    '-name',
+    '-m',
+    '-smp',
+    '-machine',
+    '-cpu',
+    '-nographic',
+    '-display',
+    '-vga',
+    '-serial',
+    '-monitor',
+    '-enable-kvm',
+  ]);
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     if (token === undefined) continue;
@@ -250,7 +261,13 @@ async function main(): Promise<void> {
 
   for (const file of files) {
     const appliance = (await Bun.file(file).json()) as Gns3Appliance;
-    const nodeType = appliance.qemu ? 'qemu' : appliance.iou ? 'iou' : appliance.docker ? 'docker' : null;
+    const nodeType = appliance.qemu
+      ? 'qemu'
+      : appliance.iou
+        ? 'iou'
+        : appliance.docker
+          ? 'docker'
+          : null;
     if (!nodeType) {
       console.log(`skip ${appliance.name}: unsupported appliance type`);
       continue;
@@ -269,7 +286,15 @@ async function main(): Promise<void> {
           continue;
         }
         const kind = nodeType === 'qemu' ? 'qemu' : 'iou';
-        const result = await ensureImage(appliance, source, image.filename, image.version, kind, cache, opts.dryRun);
+        const result = await ensureImage(
+          appliance,
+          source,
+          image.filename,
+          image.version,
+          kind,
+          cache,
+          opts.dryRun,
+        );
         imported.push(result);
         if (opts.dryRun) {
           console.log(`dry-run ${appliance.name}: ${source} -> ${result.sha256.slice(0, 12)}`);
@@ -335,7 +360,8 @@ async function main(): Promise<void> {
           ? {
               hda: {
                 imageId: primaryImage.id,
-                interface: typeof qemu.hda_disk_interface === 'string' ? qemu.hda_disk_interface : 'ide',
+                interface:
+                  typeof qemu.hda_disk_interface === 'string' ? qemu.hda_disk_interface : 'ide',
                 format: 'qcow2',
               },
             }
@@ -359,15 +385,23 @@ async function main(): Promise<void> {
       };
     } else {
       const docker = appliance.docker ?? {};
-      const environment = typeof docker.environment === 'string'
-        ? docker.environment.split(/[,\n]/).map((line) => line.trim()).filter(Boolean).join('\n')
-        : '';
+      const environment =
+        typeof docker.environment === 'string'
+          ? docker.environment
+              .split(/[,\n]/)
+              .map((line) => line.trim())
+              .filter(Boolean)
+              .join('\n')
+          : '';
       properties = {
         imageName: typeof docker.image === 'string' ? docker.image : 'alpine:3.20',
         adapters: Number(docker.adapters ?? 1),
         startCommand: typeof docker.start_command === 'string' ? docker.start_command : null,
         environment,
-        consoleType: typeof docker.console_type === 'string' && docker.console_type === 'vnc' ? 'vnc' : 'telnet',
+        consoleType:
+          typeof docker.console_type === 'string' && docker.console_type === 'vnc'
+            ? 'vnc'
+            : 'telnet',
         consoleAutoStart: true,
       };
     }

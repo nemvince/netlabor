@@ -12,11 +12,11 @@ Two roles are involved. One controller process owns PostgreSQL, the HTTP API, an
 app. One agent process per compute host owns the privileged host objects: network namespaces,
 TAP devices, `ubridge`, and emulator processes.
 
-| Host      | Requirements                                                                                                                                    |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controller | Bun 1.4 or the compiled binary, PostgreSQL 17 reachable through `NB_DATABASE_URL`, a 32-byte base64 `NB_SECRET_KEY`, `NB_PUBLIC_URL`.            |
+| Host       | Requirements                                                                                                                                                                                       |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Controller | Bun 1.4 or the compiled binary, PostgreSQL 17 reachable through `NB_DATABASE_URL`, a 32-byte base64 `NB_SECRET_KEY`, `NB_PUBLIC_URL`.                                                              |
 | Agent      | Linux with `ip`, `nft`, `tc`, `/dev/net/tun`, root or `CAP_NET_ADMIN`/`CAP_NET_RAW`/`CAP_SYS_ADMIN`, `ubridge` built with the marker and `iol_bridge` modules, `xorriso` for cloud-init templates. |
-| Emulators  | Only the ones you use: `qemu-system-x86_64` with KVM, `dynamips`, `iou`, `vpcs`, Docker Engine or a Podman compatibility socket, `sharkd`/`tshark`, `tcpdump`. |
+| Emulators  | Only the ones you use: `qemu-system-x86_64` with KVM, `dynamips`, `iou`, `vpcs`, Docker Engine or a Podman compatibility socket, `sharkd`/`tshark`, `tcpdump`.                                     |
 
 A single machine can host both processes for a first lab. Multi-compute labs additionally need IP
 reachability for the `10.99.0.0/16` underlay between computes and, for NAT nodes, an
@@ -118,12 +118,12 @@ on the compute; missing images fail with `IMAGE_MISSING` and a library hint in t
 Select a started node and open the **Console** tab in the bottom dock. The console kind comes from
 the template or node:
 
-| Console      | Typical nodes                                  | Notes                                                       |
-| ------------ | ---------------------------------------------- | ----------------------------------------------------------- |
-| `telnet`     | IOU, DynaMips, VPCS, serial QEMU                | Proxied over a controller WebSocket.                        |
-| `vnc`        | QEMU desktops and appliances                    | VNC display forwarded through `/ws/vnc/:nodeId`.            |
-| `http`/`https` | Web-managed appliances                       | Uses a dedicated management network per container.          |
-| `none`       | Nodes with no interactive console               | Console tab shows the reason instead of an empty terminal.  |
+| Console        | Typical nodes                     | Notes                                                      |
+| -------------- | --------------------------------- | ---------------------------------------------------------- |
+| `telnet`       | IOU, DynaMips, VPCS, serial QEMU  | Proxied over a controller WebSocket.                       |
+| `vnc`          | QEMU desktops and appliances      | VNC display forwarded through `/ws/vnc/:nodeId`.           |
+| `http`/`https` | Web-managed appliances            | Uses a dedicated management network per container.         |
+| `none`         | Nodes with no interactive console | Console tab shows the reason instead of an empty terminal. |
 
 The browser never connects to the agent directly. The controller issues a single-use HMAC ticket
 (valid for 60 seconds) and proxies the stream. If a console looks stuck, `console_reset` clears the
@@ -143,15 +143,15 @@ endpoint is not started.
 
 ## Where things live
 
-| Screen            | What it owns                                                                                       |
-| ----------------- | -------------------------------------------------------------------------------------------------- |
-| **Projects**      | Create, import, export, open, close, lock, delete. Search and status filters.                       |
-| **Workspace**     | Canvas, palette, inspector, console dock, link dialogs, markers, faults, snapshots, sharing.        |
-| **Templates**     | Global device templates, project templates, symbols, faults, and the entry point to appliance builds. |
-| **Images**        | Uploaded images, replicas per compute, OS repository, and appliance builds.                         |
-| **Computes**      | Agent registration, capabilities, underlay index, online state, image replicas.                     |
-| **Admin**         | Users, groups, roles, project grants, audit log, OIDC providers, settings, and secrets.              |
-| **Profile**       | Your preferences, sessions, and API keys.                                                           |
+| Screen        | What it owns                                                                                          |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| **Projects**  | Create, import, export, open, close, lock, delete. Search and status filters.                         |
+| **Workspace** | Canvas, palette, inspector, console dock, link dialogs, markers, faults, snapshots, sharing.          |
+| **Templates** | Global device templates, project templates, symbols, faults, and the entry point to appliance builds. |
+| **Images**    | Uploaded images, replicas per compute, OS repository, and appliance builds.                           |
+| **Computes**  | Agent registration, capabilities, underlay index, online state, image replicas.                       |
+| **Admin**     | Users, groups, roles, project grants, audit log, OIDC providers, settings, and secrets.               |
+| **Profile**   | Your preferences, sessions, and API keys.                                                             |
 
 ## Next
 

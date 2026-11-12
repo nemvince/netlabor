@@ -12,10 +12,20 @@ export default function DialogDemo() {
   return (
     <>
       <div className="docs-stack">
-        <button type="button" className="nb-button" data-variant="primary" onClick={() => setOpen(true)}>
+        <button
+          type="button"
+          className="nb-button"
+          data-variant="primary"
+          onClick={() => setOpen(true)}
+        >
           New link
         </button>
-        <button type="button" className="nb-button" data-variant="danger" onClick={() => setConfirmOpen(true)}>
+        <button
+          type="button"
+          className="nb-button"
+          data-variant="danger"
+          onClick={() => setConfirmOpen(true)}
+        >
           Delete node
         </button>
       </div>
@@ -27,18 +37,29 @@ export default function DialogDemo() {
         description="Choose the endpoints and the link type. Ports are allocated automatically."
       >
         <div className="flex flex-col gap-3">
-          <Field label="Endpoint A" htmlFor="demo-endpoint-a" hint="Exact port names come from the node's port list.">
+          <Field
+            label="Endpoint A"
+            htmlFor="demo-endpoint-a"
+            hint="Exact port names come from the node's port list."
+          >
             <Input id="demo-endpoint-a" defaultValue="sw1 · Ethernet0" />
           </Field>
           <Field label="Endpoint B" htmlFor="demo-endpoint-b">
             <Input id="demo-endpoint-b" defaultValue="sw2 · Ethernet0" />
           </Field>
-          <Notice tone="info">Both endpoints must be started before the link becomes active.</Notice>
+          <Notice tone="info">
+            Both endpoints must be started before the link becomes active.
+          </Notice>
           <DialogFooter>
             <button type="button" className="nb-button" onClick={() => setOpen(false)}>
               Cancel
             </button>
-            <button type="button" className="nb-button" data-variant="primary" onClick={() => setOpen(false)}>
+            <button
+              type="button"
+              className="nb-button"
+              data-variant="primary"
+              onClick={() => setOpen(false)}
+            >
               Create link
             </button>
           </DialogFooter>

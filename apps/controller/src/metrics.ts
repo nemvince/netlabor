@@ -38,11 +38,7 @@ export function sseClientClosed(): void {
 }
 
 function metric(name: string, help: string, type: string, samples: string[]): string {
-  return [
-    `# HELP ${name} ${help}`,
-    `# TYPE ${name} ${type}`,
-    ...samples,
-  ].join('\n');
+  return [`# HELP ${name} ${help}`, `# TYPE ${name} ${type}`, ...samples].join('\n');
 }
 
 export async function renderMetrics(db: SQL): Promise<string> {
@@ -70,12 +66,9 @@ export async function renderMetrics(db: SQL): Promise<string> {
         return `nb_http_requests_total{method="${method}",route="${route}"} ${value}`;
       }),
     ),
-    metric(
-      'nb_websocket_sessions',
-      'Active console/VNC/Wireshark WebSocket sessions.',
-      'gauge',
-      [`nb_websocket_sessions ${wsSessions}`],
-    ),
+    metric('nb_websocket_sessions', 'Active console/VNC/Wireshark WebSocket sessions.', 'gauge', [
+      `nb_websocket_sessions ${wsSessions}`,
+    ]),
     metric('nb_sse_clients', 'Active event stream subscribers.', 'gauge', [
       `nb_sse_clients ${sseClients}`,
     ]),

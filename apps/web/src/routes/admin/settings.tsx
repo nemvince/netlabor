@@ -332,10 +332,7 @@ export function SettingsAdminPage() {
             description="Auto-close shuts down projects that have been idle, so emulator processes and network namespaces do not pile up. Off means a project stays open until someone closes it."
           >
             <fieldset className="border-0 p-0">
-              <legend
-                className="text-[12px] font-medium"
-                style={{ color: 'var(--color-ink-dim)' }}
-              >
+              <legend className="text-[12px] font-medium" style={{ color: 'var(--color-ink-dim)' }}>
                 Auto-close idle projects
               </legend>
               <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5">
@@ -419,20 +416,14 @@ export function SettingsAdminPage() {
                   <span className="block text-[13.5px] font-semibold">
                     Advanced — direct settings keys
                   </span>
-                  <span
-                    className="block text-[12px]"
-                    style={{ color: 'var(--color-ink-faint)' }}
-                  >
+                  <span className="block text-[12px]" style={{ color: 'var(--color-ink-faint)' }}>
                     Unsupported escape hatch. Edit the stored key map directly for keys that have no
                     control above.
                   </span>
                 </span>
               </span>
             </summary>
-            <div
-              className="border-t px-4 py-3.5"
-              style={{ borderColor: 'var(--color-rule)' }}
-            >
+            <div className="border-t px-4 py-3.5" style={{ borderColor: 'var(--color-rule)' }}>
               <p className="mb-2 text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
                 Values typed as digits or true/false keep their JSON type. Saving upserts each key;
                 removing a row here does not delete the stored entry.

@@ -57,7 +57,13 @@ function DrawingNodeComponent({ data, selected }: NodeProps<FlowNode>) {
 
   if (drawing.type === 'image') {
     return drawing.filePath && projectId ? (
-      <div style={{ width: drawing.width, height: drawing.height, opacity: drawing.style.opacity ?? 1 }}>
+      <div
+        style={{
+          width: drawing.width,
+          height: drawing.height,
+          opacity: drawing.style.opacity ?? 1,
+        }}
+      >
         <DrawingImage projectId={projectId} filePath={drawing.filePath} />
       </div>
     ) : null;

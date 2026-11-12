@@ -157,7 +157,6 @@ export async function analyzeCapture(options: AnalyzeOptions): Promise<PacketAna
   };
 }
 
-
 export async function analyzePcapFile(
   config: AgentConfig,
   pcapPath: string,

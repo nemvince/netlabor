@@ -10,13 +10,13 @@ ticket exchange, and scripted console use.
 
 ## Console kinds
 
-| Kind        | Path                         | Used for                                  |
-| ----------- | ---------------------------- | ----------------------------------------- |
-| `telnet`    | `/ws/console/:nodeId`        | IOU, DynaMips, VPCS, serial QEMU           |
-| `vnc`       | `/ws/vnc/:nodeId`            | QEMU desktops, appliance images           |
-| `http`      | management network           | Web-managed appliances in containers      |
-| `https`     | management network           | TLS variants of the same                  |
-| `none`      | —                            | Nodes with no interactive console         |
+| Kind     | Path                  | Used for                             |
+| -------- | --------------------- | ------------------------------------ |
+| `telnet` | `/ws/console/:nodeId` | IOU, DynaMips, VPCS, serial QEMU     |
+| `vnc`    | `/ws/vnc/:nodeId`     | QEMU desktops, appliance images      |
+| `http`   | management network    | Web-managed appliances in containers |
+| `https`  | management network    | TLS variants of the same             |
+| `none`   | —                     | Nodes with no interactive console    |
 
 The console type comes from the template or the node properties. QEMU nodes choose between serial
 and VNC through `consoleType`; `consoleAutoStart` decides whether the console listener is started

@@ -138,9 +138,7 @@ export function KeyValueEditor({
         className="nb-button justify-self-start"
         data-size="sm"
         disabled={disabled}
-        onClick={() =>
-          commit([...rows, { id: crypto.randomUUID(), key: '', value: '' }])
-        }
+        onClick={() => commit([...rows, { id: crypto.randomUUID(), key: '', value: '' }])}
       >
         <Plus size={12} aria-hidden /> {addLabel}
       </button>

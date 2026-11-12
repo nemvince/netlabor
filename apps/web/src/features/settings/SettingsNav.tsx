@@ -131,7 +131,8 @@ export function SettingsNav() {
                           ? {
                               borderColor:
                                 'color-mix(in oklab, var(--color-copper) 50%, transparent)',
-                              background: 'color-mix(in oklab, var(--color-copper) 9%, transparent)',
+                              background:
+                                'color-mix(in oklab, var(--color-copper) 9%, transparent)',
                               color: 'var(--color-ink)',
                             }
                           : {

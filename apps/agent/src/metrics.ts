@@ -44,7 +44,9 @@ export async function renderAgentMetrics(
     `nb_agent_namespaces ${projects.length}`,
     '# HELP nb_agent_nodes Nodes by status.',
     '# TYPE nb_agent_nodes gauge',
-    ...[...statuses.entries()].map(([status, count]) => `nb_agent_nodes{status="${status}"} ${count}`),
+    ...[...statuses.entries()].map(
+      ([status, count]) => `nb_agent_nodes{status="${status}"} ${count}`,
+    ),
     '# HELP nb_agent_links Link dataplanes.',
     '# TYPE nb_agent_links gauge',
     `nb_agent_links ${links}`,

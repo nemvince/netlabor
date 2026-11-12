@@ -9,7 +9,18 @@ describe('netemArgs', () => {
   test('all parameters compose into one arg list', () => {
     expect(
       netemArgs({ delayMs: 100, jitterMs: 20, lossPct: 5, corruptPct: 1, rateKbps: 2048 }),
-    ).toEqual(['delay', '100ms', 'jitter', '20ms', 'loss', '5%', 'corrupt', '1%', 'rate', '2048kbit']);
+    ).toEqual([
+      'delay',
+      '100ms',
+      'jitter',
+      '20ms',
+      'loss',
+      '5%',
+      'corrupt',
+      '1%',
+      'rate',
+      '2048kbit',
+    ]);
   });
 
   test('jitter without delay is dropped (tc netem requirement)', () => {

@@ -37,12 +37,12 @@ project-restricted API keys must pass `projectId`.
 
 ## What is idempotent
 
-| Object   | Identity                          | Second apply                     |
-| -------- | --------------------------------- | -------------------------------- |
-| Node     | name inside the project           | updates supplied fields          |
-| File     | `path` inside one node            | rewritten                        |
-| Link     | unordered node pair + type        | reused; style updated if supplied |
-| Drawing  | `style.applyKey`                  | updated in place                 |
+| Object  | Identity                   | Second apply                      |
+| ------- | -------------------------- | --------------------------------- |
+| Node    | name inside the project    | updates supplied fields           |
+| File    | `path` inside one node     | rewritten                         |
+| Link    | unordered node pair + type | reused; style updated if supplied |
+| Drawing | `style.applyKey`           | updated in place                  |
 
 Unkeyed drawings are never matched and never pruned. Node names, templates, computes, and emulator
 types are never changed by apply: an existing node that asks for a different type or compute fails

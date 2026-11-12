@@ -235,10 +235,7 @@ export function ProjectFilesDialog({
                   <Notice tone="error">{messageOf(files.error)}</Notice>
                 </div>
               ) : entries.length === 0 ? (
-                <p
-                  className="px-3 py-2 text-[11px]"
-                  style={{ color: 'var(--color-ink-faint)' }}
-                >
+                <p className="px-3 py-2 text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
                   This directory is empty.
                 </p>
               ) : (
