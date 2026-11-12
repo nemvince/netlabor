@@ -1,6 +1,6 @@
 [Unit]
 Description=Netlabor controller (API, UI, database owner)
-Documentation=https://github.com/netlabor/netlabor
+Documentation=https://github.com/nemvince/netlabor
 After=network-online.target postgresql.service
 Wants=network-online.target
 

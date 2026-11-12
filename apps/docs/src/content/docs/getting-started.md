@@ -143,15 +143,14 @@ endpoint is not started.
 
 ## Where things live
 
-| Screen        | What it owns                                                                                          |
-| ------------- | ----------------------------------------------------------------------------------------------------- |
-| **Projects**  | Create, import, export, open, close, lock, delete. Search and status filters.                         |
-| **Workspace** | Canvas, palette, inspector, console dock, link dialogs, markers, faults, snapshots, sharing.          |
-| **Templates** | Global device templates, project templates, symbols, faults, and the entry point to appliance builds. |
-| **Images**    | Uploaded images, replicas per compute, OS repository, and appliance builds.                           |
-| **Computes**  | Agent registration, capabilities, underlay index, online state, image replicas.                       |
-| **Admin**     | Users, groups, roles, project grants, audit log, OIDC providers, settings, and secrets.               |
-| **Profile**   | Your preferences, sessions, and API keys.                                                             |
+| Screen        | What it owns                                                                                 |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| **Projects**  | Create, import, export, open, close, lock, delete. Search and status filters.                |
+| **Workspace** | Canvas, palette, inspector, console dock, link dialogs, markers, faults, snapshots, sharing. |
+| **Library**   | Device templates, appliances, the image library, and symbols, in one tabbed screen.          |
+| **Computes**  | Agent registration, capabilities, underlay index, online state, image replicas.              |
+| **Admin**     | Users, groups, roles, project grants, audit log, OIDC providers, settings, and secrets.      |
+| **Profile**   | Your preferences, sessions, and API keys.                                                    |
 
 ## Next
 
