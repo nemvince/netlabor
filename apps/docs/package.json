@@ -7,7 +7,7 @@
     "dev": "bun run scripts/generate-api.ts && astro dev",
     "build": "bun run scripts/generate-api.ts && astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "bun run scripts/generate-api.ts && astro check"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.4",
