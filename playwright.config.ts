@@ -18,7 +18,8 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
   },
   projects: [
-    { name: 'setup', testMatch: /auth\.setup\.ts/ },
+    { name: 'firstrun', testMatch: /firstrun\.setup\.ts/ },
+    { name: 'setup', testMatch: /auth\.setup\.ts/, dependencies: ['firstrun'] },
     {
       name: 'chromium',
       use: { browserName: 'chromium', storageState: 'e2e/.auth/state.json' },

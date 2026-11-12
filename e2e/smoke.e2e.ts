@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { rpcJson } from './helpers.ts';
 
 test.describe('controller UI', () => {
   test.beforeAll(async ({ request }) => {
@@ -6,16 +7,22 @@ test.describe('controller UI', () => {
     test.skip(!health?.ok(), 'controller is not reachable at the configured base URL');
   });
 
-  test('lists computes and their live status', async ({ page }) => {
+  test('computes page renders the registry', async ({ page }) => {
     await page.goto('/computes');
     await expect(page.getByRole('heading', { name: /computes/i })).toBeVisible();
-    await expect(page.getByText('local', { exact: true })).toBeVisible();
+    const computes = await rpcJson<{ name: string }[]>(page, 'computes/list', {});
+    const first = computes?.[0];
+    if (first) {
+      await expect(page.getByText(first.name, { exact: true })).toBeVisible();
+    } else {
+      await expect(page.getByText('No compute registered')).toBeVisible();
+    }
   });
 
   test('project list renders', async ({ page }) => {
     await page.goto('/projects');
     await expect(page.getByRole('heading', { name: /projects/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /new project/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'New project' }).first()).toBeVisible();
   });
 
   test('workspace renders the topology canvas', async ({ page, request }) => {
@@ -37,12 +44,19 @@ test.describe('controller UI', () => {
     });
   });
 
-  test('templates and images pages render', async ({ page }) => {
-    await page.goto('/templates');
-    await expect(page.getByRole('heading', { name: /templates/i })).toBeVisible();
+  test('library page renders the catalog', async ({ page }) => {
+    await page.goto('/library');
+    await expect(page.getByRole('heading', { name: 'Library', exact: true })).toBeVisible();
+    await expect(page.getByRole('tab', { name: 'Device templates' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
     await expect(page.locator('main')).toContainText(/vpcs|qemu|switch|iou/i, { timeout: 15_000 });
-    await page.goto('/images');
-    await expect(page.getByRole('heading', { name: /images/i })).toBeVisible();
+    await page.goto('/library?tab=images');
+    await expect(page.getByRole('tab', { name: 'Image library' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
   });
 
   test('MCP rejects anonymous calls', async ({ request }) => {

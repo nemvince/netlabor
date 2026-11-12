@@ -49,6 +49,23 @@ async function loginAs(
   return client.auth.login({ username, password });
 }
 
+/**
+ * `projects.apply` opens the project, which places its nodes on a compute; the
+ * check runs once so the test can skip instead of failing on a bare controller.
+ */
+async function hasRegisteredCompute(): Promise<boolean> {
+  if (!baseUrl) return false;
+  try {
+    const session = makeClient();
+    await loginAs(session.client, adminUser, adminPassword);
+    return (await session.client.computes.list({})).length > 0;
+  } catch {
+    return false;
+  }
+}
+
+const computeRegistered = await hasRegisteredCompute();
+
 describeLive('controller API', () => {
   test('health, login, and auth.me', async () => {
     const session = makeClient();
@@ -196,48 +213,51 @@ describeLive('controller API', () => {
     }
   });
 
-  test('project apply upserts a manifest, keeps ids, and prunes', async () => {
-    const session = makeClient();
-    await loginAs(session.client, adminUser, adminPassword);
-    const name = `apply-${Date.now()}`;
-    const manifest = {
-      name,
-      nodes: [
-        { name: 'sw1', template: 'Ethernet switch' },
-        { name: 'sw2', template: 'Ethernet switch' },
-      ],
-      links: [{ a: 'sw1', b: 'sw2', type: 'ethernet' as const }],
-    };
+  test.skipIf(!computeRegistered)(
+    'project apply upserts a manifest, keeps ids, and prunes',
+    async () => {
+      const session = makeClient();
+      await loginAs(session.client, adminUser, adminPassword);
+      const name = `apply-${Date.now()}`;
+      const manifest = {
+        name,
+        nodes: [
+          { name: 'sw1', template: 'Ethernet switch' },
+          { name: 'sw2', template: 'Ethernet switch' },
+        ],
+        links: [{ a: 'sw1', b: 'sw2', type: 'ethernet' as const }],
+      };
 
-    const first = await session.client.projects.apply(manifest);
-    try {
-      expect(first.nodes).toHaveLength(2);
-      expect(first.links).toHaveLength(1);
-      expect(first.project.status).toBe('opened');
+      const first = await session.client.projects.apply(manifest);
+      try {
+        expect(first.nodes).toHaveLength(2);
+        expect(first.links).toHaveLength(1);
+        expect(first.project.status).toBe('opened');
 
-      const second = await session.client.projects.apply({
-        ...manifest,
-        projectId: first.projectId,
-      });
-      expect(second.nodes.map((node) => node.id).sort()).toEqual(
-        first.nodes.map((node) => node.id).sort(),
-      );
-      expect(second.nodes).toHaveLength(2);
-      expect(second.links).toHaveLength(1);
-      expect(second.links[0]?.id).toBe(first.links[0]?.id as string);
+        const second = await session.client.projects.apply({
+          ...manifest,
+          projectId: first.projectId,
+        });
+        expect(second.nodes.map((node) => node.id).sort()).toEqual(
+          first.nodes.map((node) => node.id).sort(),
+        );
+        expect(second.nodes).toHaveLength(2);
+        expect(second.links).toHaveLength(1);
+        expect(second.links[0]?.id).toBe(first.links[0]?.id as string);
 
-      const pruned = await session.client.projects.apply({
-        projectId: first.projectId,
-        nodes: [{ name: 'sw1', template: 'Ethernet switch' }],
-        prune: true,
-      });
-      expect(pruned.deleted.nodes).toContain('sw2');
-      expect(pruned.nodes).toHaveLength(1);
-      expect(pruned.links).toHaveLength(0);
-    } finally {
-      await session.client.projects.delete({ id: first.projectId });
-    }
-  });
+        const pruned = await session.client.projects.apply({
+          projectId: first.projectId,
+          nodes: [{ name: 'sw1', template: 'Ethernet switch' }],
+          prune: true,
+        });
+        expect(pruned.deleted.nodes).toContain('sw2');
+        expect(pruned.nodes).toHaveLength(1);
+        expect(pruned.links).toHaveLength(0);
+      } finally {
+        await session.client.projects.delete({ id: first.projectId });
+      }
+    },
+  );
 
   test('seeded catalog is present', async () => {
     const admin = makeClient();
