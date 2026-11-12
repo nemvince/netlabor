@@ -3,7 +3,7 @@
   "vcs": {
     "enabled": false,
     "clientKind": "git",
-    "useIgnoreFile": true
+    "useIgnoreFile": true,
   },
   "files": {
     "includes": [
@@ -11,17 +11,18 @@
       "!**/node_modules",
       "!**/dist",
       "!**/.tsbuild",
+      "!**/.astro",
       "!**/e2e/assets",
       "!**/test-results",
       "!**/playwright-report",
-      "!**/packages/catalog/symbols"
-    ]
+      "!**/packages/catalog/symbols",
+    ],
   },
   "formatter": {
     "enabled": false,
     "indentStyle": "space",
     "indentWidth": 2,
-    "lineWidth": 100
+    "lineWidth": 100,
   },
   "javascript": {
     "formatter": {
@@ -29,43 +30,43 @@
       "jsxQuoteStyle": "double",
       "semicolons": "always",
       "trailingCommas": "all",
-      "arrowParentheses": "always"
-    }
+      "arrowParentheses": "always",
+    },
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "suspicious": {
         "noExplicitAny": "warn",
-        "noEmptyBlockStatements": "off"
+        "noEmptyBlockStatements": "off",
       },
       "style": {
         "noNonNullAssertion": "off",
         "useConst": "error",
-        "noParameterAssign": "off"
+        "noParameterAssign": "off",
       },
       "complexity": {
-        "noBannedTypes": "off"
+        "noBannedTypes": "off",
       },
       "correctness": {
         "noUnusedVariables": "error",
-        "noUnusedImports": "error"
-      }
-    }
+        "noUnusedImports": "error",
+      },
+    },
   },
   "assist": {
     "enabled": true,
     "actions": {
       "source": {
-        "organizeImports": "on"
-      }
-    }
+        "organizeImports": "on",
+      },
+    },
   },
   "css": {
     "parser": {
-      "tailwindDirectives": true
-    }
+      "tailwindDirectives": true,
+    },
   },
   "overrides": [
     {
@@ -74,20 +75,36 @@
         "rules": {
           "correctness": {
             "noUnusedVariables": "off",
-            "noUnusedImports": "off"
-          }
-        }
-      }
+            "noUnusedImports": "off",
+          },
+        },
+      },
     },
     {
       "includes": ["apps/web/src/styles.css"],
       "linter": {
         "rules": {
           "complexity": {
-            "noImportantStyles": "off"
-          }
-        }
-      }
-    }
-  ]
+            "noImportantStyles": "off",
+          },
+        },
+      },
+    },
+    {
+      // False positives, not a cascade hazard: five pairings compare `.docs-prose` base rules
+      // against rules for the standalone `.docs-callout`, `.docs-toc`, and `.docs-search__panel`
+      // components, which never match the same element; the other three compare `.docs-prose`
+      // rules that set disjoint declarations (`position` vs `margin`, borders vs `overflow-wrap`),
+      // so their order cannot change the result. The two genuinely order-dependent pairs were
+      // reordered in the stylesheet. Scoped to this one file.
+      "includes": ["apps/docs/src/styles/docs.css"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDescendingSpecificity": "off",
+          },
+        },
+      },
+    },
+  ],
 }

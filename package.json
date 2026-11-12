@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "bun run scripts/dev.ts",
     "typecheck": "bunx tsc -b --pretty false",
-    "lint": "bunx biome check .",
+    "lint": "bunx biome check --error-on-warnings .",
     "test": "bun test",
     "test:integration": "bun test --preload ./test/preload.ts",
     "test:agent": "bun test apps/agent/test",
