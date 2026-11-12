@@ -5,7 +5,6 @@ import {
   ChevronRight,
   Cpu,
   Globe,
-  HardDrive,
   KeyRound,
   LayoutDashboard,
   LayoutTemplate,
@@ -36,8 +35,7 @@ type AppPath =
   | '/'
   | '/projects'
   | '/computes'
-  | '/templates'
-  | '/images'
+  | '/library'
   | '/tools'
   | '/profile'
   | '/admin/users'
@@ -59,8 +57,12 @@ const PRIMARY: NavItem[] = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: Network, requires: ['project.read'] },
   { to: '/computes', label: 'Computes', icon: Server, requires: ['compute.read'] },
-  { to: '/templates', label: 'Templates', icon: LayoutTemplate, requires: ['template.read'] },
-  { to: '/images', label: 'Images', icon: HardDrive, requires: ['image.read'] },
+  {
+    to: '/library',
+    label: 'Library',
+    icon: LayoutTemplate,
+    requires: ['template.read', 'image.read'],
+  },
   { to: '/tools', label: 'Tools', icon: Wrench },
 ];
 
@@ -201,7 +203,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           className={`flex min-w-0 flex-col border-r ${railCollapsed ? 'nb-rail-collapsed' : ''}`}
           style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
         >
-          <div className={`flex items-center gap-1 px-2 py-2 ${railCollapsed ? 'justify-center' : ''}`}>
+          <div
+            className={`flex items-center gap-1 px-2 py-2 ${railCollapsed ? 'justify-center' : ''}`}
+          >
             {railCollapsed ? null : (
               <Link to="/" className="min-w-0 flex-1 px-1" style={{ color: 'inherit' }}>
                 <span className="block truncate text-[14px] font-semibold tracking-tight">

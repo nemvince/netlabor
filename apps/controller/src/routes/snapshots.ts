@@ -85,6 +85,11 @@ export function snapshotRoutes(os: Implementer, deps: AppDeps, jobs: JobService)
         if (!exists) throw new AppError('NOT_FOUND', 'snapshot archive is missing');
         return { downloadUrl: `/api/snapshots/${input.id}/download` };
       }),
+      downloadArchive: os.snapshots.downloadArchive.handler(async ({ input }) => {
+        const file = Bun.file(snapshotPath(deps, input.id));
+        if (!(await file.exists())) throw new AppError('NOT_FOUND', 'snapshot archive is missing');
+        return new File([file], `snapshot-${input.id}.tar.gz`, { type: 'application/gzip' });
+      }),
     },
   };
 }

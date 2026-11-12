@@ -332,6 +332,49 @@ export const ConsoleExecOutput = z.object({
   timedOut: z.boolean(),
 });
 
+/**
+ * Detailed-input shape for the node web-console proxy: path params plus the
+ * request parts that are forwarded upstream unchanged.
+ */
+export const WebProxyInput = z.object({
+  params: z.object({ nodeId: Id, rest: z.string() }),
+  query: z.record(z.string(), z.string()).default({}),
+  headers: z.record(z.string(), z.string()).default({}),
+  body: z.any().optional(),
+});
+
+/** Detailed-input shape for the console root page (no catch-all segment). */
+export const WebProxyRootInput = z.object({
+  params: z.object({ nodeId: Id }),
+  query: z.record(z.string(), z.string()).default({}),
+  headers: z.record(z.string(), z.string()).default({}),
+  body: z.any().optional(),
+});
+
+/** Statuses a proxied node web console may return to the browser. */
+export const WEB_PROXY_STATUSES = [200, 201, 202, 204, 206, 301, 302, 303, 304, 307, 308] as const;
+
+export interface WebProxyOutput {
+  status?: (typeof WEB_PROXY_STATUSES)[number];
+  headers?: Record<string, string>;
+  body: unknown;
+}
+
+const webProxyVariant = (status: number) =>
+  z.object({
+    status: z.literal(status),
+    headers: z.record(z.string(), z.string()).optional(),
+    body: z.any(),
+  });
+
+export const WebProxyOutputSchema = z.union(
+  WEB_PROXY_STATUSES.map(webProxyVariant) as [
+    ReturnType<typeof webProxyVariant>,
+    ReturnType<typeof webProxyVariant>,
+    ...ReturnType<typeof webProxyVariant>[],
+  ],
+) as unknown as z.ZodType<WebProxyOutput>;
+
 export const NodeFileEntry = z.object({
   path: z.string(),
   sizeBytes: z.number(),

@@ -13,11 +13,11 @@ browser ──oRPC/HTTP+SSE+WS── controller ──oRPC── agent ──net
 
 ## Processes
 
-| Process      | Responsibility                                                                                       |
-| ------------ | ---------------------------------------------------------------------------------------------------- |
-| Controller   | Only writer of PostgreSQL, only issuer of agent tokens and WebSocket tickets, HTTP API, MCP, UI host. |
-| Agent        | Privileged host objects: namespaces, veth/TAP, ubridge, emulator processes, consoles, captures.       |
-| Emulators    | External: QEMU, IOU, DynaMips, VPCS, Docker. Never managed in-process.                                 |
+| Process    | Responsibility                                                                                        |
+| ---------- | ----------------------------------------------------------------------------------------------------- |
+| Controller | Only writer of PostgreSQL, only issuer of agent tokens and WebSocket tickets, HTTP API, MCP, UI host. |
+| Agent      | Privileged host objects: namespaces, veth/TAP, ubridge, emulator processes, consoles, captures.       |
+| Emulators  | External: QEMU, IOU, DynaMips, VPCS, Docker. Never managed in-process.                                |
 
 One active controller is enforced by a PostgreSQL advisory lock (`0x6e65746c`); a second instance
 exits. Agents reconcile from their reported state, so a controller restart does not stop a lab.
@@ -59,19 +59,22 @@ content (`templates`, `symbols`, `settings`), and topology (`projects`, `project
 Images are content-addressed by sha256. Uploads stream into the controller's staging store
 (`blobs/<sha256>/<filename>`); the library records one `images` row and a replica per compute.
 `images.sync` copies a replica to another compute. Snapshots and exports live under the staging
-directory and are streamed by dedicated HTTP routes.
+directory and are streamed by procedures through the OpenAPI surface.
 
 ## API and realtime
 
 - oRPC over POST/GET at `/rpc`; procedures are typed end to end.
+- The same contract is served as REST/OpenAPI at `/api` (spec at `/api/openapi.json`, reference at
+  `/api/docs`); file and proxy procedures use its detailed output mode for Blobs, streams, and
+  non-200 success statuses.
 - SSE: `projects.events` and `events.subscribe` (persisted events).
 - WebSockets: `/ws/console/:nodeId`, `/ws/vnc/:nodeId`, `/ws/wireshark/:linkId`,
   `/ws/collab/:projectId`; each requires a session and, for the proxy channels, a single-use HMAC
   ticket.
 - MCP: `/mcp` speaks JSON-RPC 2.0 over Streamable HTTP; tools derive from the contract and are
   filtered per API key.
-- Large transfers use dedicated HTTP routes: uploads, blobs, project and snapshot archives, pcap
-  download.
+- Large transfers are contract procedures with binary responses: uploads, blobs, project and
+  snapshot archives, pcap download.
 
 ## Job model
 

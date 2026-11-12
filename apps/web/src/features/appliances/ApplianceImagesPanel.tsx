@@ -53,7 +53,8 @@ function OsStateCell({
       <div className="flex flex-col gap-1">
         <Badge tone="up">artifact ready</Badge>
         <Link
-          to="/images"
+          to="/library"
+          search={{ tab: 'images' }}
           className="tabular text-[10px] underline-offset-2 hover:underline"
           style={{ color: 'var(--color-ink-faint)' }}
           title="Open the image library"
@@ -279,7 +280,8 @@ function BuildsTable({
                       </button>
                       {build.imageId ? (
                         <Link
-                          to="/images"
+                          to="/library"
+                          search={{ tab: 'images' }}
                           className="nb-button"
                           data-size="sm"
                           title="Open the image library"

@@ -1341,10 +1341,12 @@ export async function createTemplateFromBuild(
     defaultNameFormat: '{name}-{index}',
     properties: {
       cloudInitEnabled: true,
-      cloudInitAutoLogin: true,
-      adapters: 1,
-      ram: 2048,
-      cpus: 2,
+      cloudInitAutoLogin: input.cloudInitAutoLogin,
+      // GUI builds boot into a display manager, so nodes need VNC, not telnet.
+      consoleType: build.desktop === 'none' ? 'telnet' : 'vnc',
+      adapters: input.adapters,
+      ram: input.ram,
+      cpus: input.cpus,
     },
     requiredImages: [{ name: image.name, kind: 'qemu', filenamePattern: `*${image.filename}` }],
     faults: [],

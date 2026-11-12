@@ -64,7 +64,8 @@ export function ImagePicker({
           ))}
         </Select>
         <Link
-          to="/images"
+          to="/library"
+          search={{ tab: 'images' }}
           className="nb-button shrink-0"
           data-size="sm"
           data-variant="ghost"

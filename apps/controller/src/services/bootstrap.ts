@@ -52,19 +52,12 @@ async function seedRoles(db: SQL): Promise<void> {
   }
 }
 
-async function seedAdmin(deps: AppDeps): Promise<void> {
-  const { db, config, logger } = deps;
-  const users = await db.unsafe<{ count: string }[]>('SELECT count(*)::text AS count FROM users');
-  if (Number(users[0]?.count ?? '0') > 0) return;
-
-  const password = config.adminPassword;
-  if (!password) {
-    logger.warn('no users exist and NB_ADMIN_PASSWORD is unset; local login stays disabled');
-    return;
-  }
-  if (password.length < 12) {
-    throw new Error('NB_ADMIN_PASSWORD must be at least 12 characters');
-  }
+/** Create the first admin account. Only valid while no users exist. */
+export async function createBootstrapAdmin(
+  db: SQL,
+  username: string,
+  password: string,
+): Promise<string> {
   const roleRows = await db.unsafe<{ id: string }[]>("SELECT id FROM roles WHERE name = 'admin'");
   const adminRoleId = roleRows[0]?.id;
   if (!adminRoleId) throw new Error('admin role missing after seeding');
@@ -75,13 +68,30 @@ async function seedAdmin(deps: AppDeps): Promise<void> {
     const sql = tx as SQL;
     await sql.unsafe(
       'INSERT INTO users (id, username, email, display_name, password_hash, is_active) VALUES ($1, $2, NULL, $3, $4, true)',
-      [userId, config.adminUser, 'Administrator', passwordHash],
+      [userId, username, 'Administrator', passwordHash],
     );
     await sql.unsafe('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2)', [
       userId,
       adminRoleId,
     ]);
   });
+  return userId;
+}
+
+async function seedAdmin(deps: AppDeps): Promise<void> {
+  const { db, config, logger } = deps;
+  const users = await db.unsafe<{ count: string }[]>('SELECT count(*)::text AS count FROM users');
+  if (Number(users[0]?.count ?? '0') > 0) return;
+
+  const password = config.adminPassword;
+  if (!password) {
+    logger.warn('no users exist; first-run setup wizard claims the admin account');
+    return;
+  }
+  if (password.length < 12) {
+    throw new Error('NB_ADMIN_PASSWORD must be at least 12 characters');
+  }
+  await createBootstrapAdmin(db, config.adminUser.toLowerCase(), password);
   logger.info('bootstrap administrator created', { username: config.adminUser });
 }
 

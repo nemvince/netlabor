@@ -21,6 +21,7 @@ import {
   updateLink,
   updateMarker,
 } from '../services/links.ts';
+import { getNode } from '../services/nodes.ts';
 
 export function linkRoutes(os: Implementer, deps: AppDeps) {
   const requireUser = (context: { auth: { user: { id: string } | null } }): string => {
@@ -98,6 +99,25 @@ export function linkRoutes(os: Implementer, deps: AppDeps) {
             wsUrl: `/ws/wireshark/${input.linkId}?ticket=${encodeURIComponent(ticket)}`,
             pcapUrl: `/api/links/${input.linkId}/capture.pcap`,
           };
+        }),
+        download: os.links.capture.download.handler(async ({ input, context }) => {
+          const link = await getLink(context.db, input.linkId);
+          const node = await getNode(context.db, link.nodeAId);
+          const state = await captureStatus(context, input.linkId);
+          if (!state.path) throw new AppError('NOT_FOUND', 'no capture');
+          const token = await context.agents.agentToken(node.computeId);
+          const compute = await context.db.unsafe<{ url: string }[]>(
+            'SELECT url FROM computes WHERE id = $1',
+            [node.computeId],
+          );
+          const upstream = await fetch(
+            `${(compute[0]?.url ?? '').replace(/\/$/, '')}/agent/projects/${link.projectId}/captures/${link.id}.pcap`,
+            { headers: token ? { authorization: `Bearer ${token}` } : {} },
+          ).catch(() => null);
+          if (!upstream?.ok || !upstream.body) {
+            throw new AppError('NOT_FOUND', 'capture not available');
+          }
+          return upstream.body;
         }),
       },
       markers: {

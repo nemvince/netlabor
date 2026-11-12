@@ -29,7 +29,7 @@ const headings = [
     </p>
     <div class="docs-page-meta">
       <span class="nb-stat"><span class="nb-stat-label">source</span><span class="nb-stat-value">{apiData.source}</span></span>
-      <span class="nb-stat"><span class="nb-stat-label">transport</span><span class="nb-stat-value">oRPC · POST/GET /rpc</span></span>
+      <span class="nb-stat"><span class="nb-stat-label">transport</span><span class="nb-stat-value">oRPC · /rpc + OpenAPI /api</span></span>
     </div>
   </header>
 
@@ -144,7 +144,7 @@ const headings = [
       <li>Mutations return the row they changed, or <code>{'{ ok: true }'}</code> for deletes.</li>
       <li>Ellipsis-style listings are paginated with <code>limit</code> (max 500) and <code>offset</code>.</li>
       <li>Streams use SSE: <code>projects.events</code> and <code>events.subscribe</code>.</li>
-      <li>Large transfers use dedicated HTTP routes rather than oRPC bodies: uploads, blobs, archives, pcaps.</li>
+      <li>Large transfers (uploads, blobs, archives, pcaps) are procedures too; binary bodies and 206 ranges use OpenAPI "detailed" output on <code>/api</code>.</li>
     </ul>
   </div>
 </DocsLayout>

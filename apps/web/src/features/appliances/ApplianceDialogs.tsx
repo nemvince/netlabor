@@ -1,3 +1,4 @@
+import { softwareCatalog } from '@netlabor/catalog';
 import {
   type ApplianceBuildCreated,
   type ApplianceBuildRow,
@@ -12,7 +13,25 @@ import {
   type TemplateRow,
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import {
+  Activity,
+  ArrowLeftRight,
+  Cable,
+  Container,
+  Database,
+  Download,
+  FileCode,
+  Gauge,
+  GitBranch,
+  Globe,
+  Hammer,
+  KeyRound,
+  Lock,
+  Network,
+  Shield,
+  Terminal,
+  X,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
 import { Field, Input, Select, Textarea } from '../../components/Field.tsx';
@@ -266,13 +285,115 @@ export function AdoptOsImageDialog({
   );
 }
 
+/** lucide icons for catalog software entries, keyed by the catalog icon name. */
+const SOFTWARE_ICONS: Record<string, typeof Globe> = {
+  Activity,
+  ArrowLeftRight,
+  Cable,
+  Container,
+  Database,
+  Download,
+  FileCode,
+  Gauge,
+  GitBranch,
+  Globe,
+  Hammer,
+  KeyRound,
+  Lock,
+  Network,
+  Shield,
+  Terminal,
+};
+
+const SOFTWARE_GROUPS: { id: 'server' | 'tools'; label: string }[] = [
+  { id: 'server', label: 'Server roles' },
+  { id: 'tools', label: 'Developer & network tools' },
+];
+
+/**
+ * Preinstalled-software picker: toggle cards from the catalog (icon + name +
+ * one-line description) plus a free-form chip field for anything else.
+ */
+function SoftwarePicker({
+  selected,
+  extraPackages,
+  onToggle,
+  onExtraChange,
+}: {
+  selected: string[];
+  extraPackages: string[];
+  onToggle: (id: string) => void;
+  onExtraChange: (next: string[]) => void;
+}) {
+  const selectedSet = new Set(selected);
+  const groups = SOFTWARE_GROUPS.map((group) => ({
+    ...group,
+    entries: softwareCatalog.filter((entry) => entry.group === group.id),
+  }));
+  return (
+    <Field
+      label="Preinstalled software"
+      htmlFor="build-software"
+      hint="Toggled entries install their apt packages during the build."
+    >
+      {groups.map((group) => (
+        <div key={group.id} className="mt-1">
+          <div className="nb-rule-label">{group.label}</div>
+          <ul className="mt-1 grid grid-cols-2 gap-1">
+            {group.entries.map((entry) => {
+              const active = selectedSet.has(entry.id);
+              const Icon = SOFTWARE_ICONS[entry.icon] ?? Terminal;
+              return (
+                <li key={entry.id}>
+                  <button
+                    type="button"
+                    aria-pressed={active}
+                    title={entry.description}
+                    onClick={() => onToggle(entry.id)}
+                    className="flex w-full items-center gap-1.5 rounded-[3px] border px-1.5 py-1 text-left text-[11px]"
+                    style={{
+                      borderColor: active ? 'var(--color-copper)' : 'var(--color-rule-strong)',
+                      background: active
+                        ? 'color-mix(in oklab, var(--color-copper) 14%, var(--color-panel-sunken))'
+                        : 'var(--color-panel-sunken)',
+                      color: active ? 'var(--color-copper)' : 'var(--color-ink-dim)',
+                    }}
+                  >
+                    <Icon size={13} aria-hidden style={{ flexShrink: 0 }} />
+                    <span className="truncate">{entry.name}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+      <div className="mt-2">
+        <PackageChipInput
+          label="Extra packages"
+          id="build-extra-packages"
+          packages={extraPackages}
+          onChange={onExtraChange}
+          hint="Anything not in the list above; apt package names, Enter or comma to add."
+        />
+      </div>
+    </Field>
+  );
+}
+
 /** apt package chips: commit on Enter, comma, space, or blur. */
 function PackageChipInput({
   packages,
   onChange,
+  label = 'Extra packages',
+  id = 'build-packages',
+  hint = 'apt package names; press Enter, comma, or space after each. The desktop recipe adds its own packages.',
 }: {
   packages: string[];
   onChange: (next: string[]) => void;
+  label?: string;
+  id?: string;
+  hint?: string;
 }) {
   const [draft, setDraft] = useState('');
 
@@ -290,13 +411,9 @@ function PackageChipInput({
   }
 
   return (
-    <Field
-      label="Extra packages"
-      htmlFor="build-packages"
-      hint="apt package names; press Enter, comma, or space after each. The desktop recipe adds its own packages."
-    >
+    <Field label={label} htmlFor={id} hint={hint}>
       <Input
-        id="build-packages"
+        id={id}
         placeholder="htop, curl, tcpdump"
         value={draft}
         onKeyDown={(event) => {
@@ -394,7 +511,8 @@ export function ApplianceBuildDialog({
   const readyOsImages = osImages.filter((osImage) => osImage.imageId !== null);
   const [osImageId, setOsImageId] = useState(readyOsImages[0]?.id ?? '');
   const [desktop, setDesktop] = useState<Desktop>('xfce');
-  const [packages, setPackages] = useState<string[]>([]);
+  const [software, setSoftware] = useState<string[]>([]);
+  const [extraPackages, setExtraPackages] = useState<string[]>([]);
   const [diskGb, setDiskGb] = useState(12);
   const [memoryMb, setMemoryMb] = useState(2048);
   const [cpus, setCpus] = useState(2);
@@ -406,6 +524,14 @@ export function ApplianceBuildDialog({
 
   const selectedOs = readyOsImages.find((osImage) => osImage.id === osImageId);
   const suggested = useMemo(() => suggestedBuildName(selectedOs, desktop), [selectedOs, desktop]);
+  // Toggled catalog entries + free-form chips become the build's package list.
+  const packages = useMemo(() => {
+    const selected = new Set(extraPackages);
+    for (const entry of softwareCatalog) {
+      if (software.includes(entry.id)) for (const pkg of entry.packages) selected.add(pkg);
+    }
+    return [...selected];
+  }, [software, extraPackages]);
 
   useEffect(() => {
     if (!nameTouched) setName(suggested);
@@ -508,7 +634,18 @@ export function ApplianceBuildDialog({
             }}
           />
         </Field>
-        <PackageChipInput packages={packages} onChange={setPackages} />
+        <SoftwarePicker
+          selected={software}
+          extraPackages={extraPackages}
+          onToggle={(id) =>
+            setSoftware((current) =>
+              current.includes(id)
+                ? current.filter((candidate) => candidate !== id)
+                : [...current, id],
+            )
+          }
+          onExtraChange={setExtraPackages}
+        />
         <div className="grid grid-cols-3 gap-2">
           <NumericField
             label="Disk (GB)"
@@ -592,6 +729,10 @@ export function BuildTemplateDialog({
   const [category, setCategory] = useState('Appliances');
   const [symbol, setSymbol] = useState('pc');
   const [projectId, setProjectId] = useState('');
+  const [adapters, setAdapters] = useState(1);
+  const [ram, setRam] = useState(2048);
+  const [cpus, setCpus] = useState(2);
+  const [autoLogin, setAutoLogin] = useState(true);
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState(false);
 
@@ -620,6 +761,10 @@ export function BuildTemplateDialog({
         category: category.trim() === '' ? 'Appliances' : category.trim(),
         symbol,
         projectId: projectId === '' ? null : projectId,
+        adapters,
+        ram,
+        cpus,
+        cloudInitAutoLogin: autoLogin,
       });
       void queryClient.invalidateQueries({ queryKey: orpc.templates.list.key() });
       onCreated(created);
@@ -712,6 +857,46 @@ export function BuildTemplateDialog({
             <span style={{ color: 'var(--color-ink-faint)' }}> · offline-ready</span>
           </div>
         ) : null}
+        <div>
+          <div className="nb-rule-label">Node defaults</div>
+          <div className="mt-1 grid grid-cols-3 gap-2">
+            <NumericField
+              label="Adapters"
+              id="build-template-adapters"
+              value={adapters}
+              min={0}
+              max={32}
+              onChange={setAdapters}
+            />
+            <NumericField
+              label="Memory (MB)"
+              id="build-template-ram"
+              value={ram}
+              min={256}
+              max={65536}
+              onChange={setRam}
+            />
+            <NumericField
+              label="CPUs"
+              id="build-template-cpus"
+              value={cpus}
+              min={1}
+              max={16}
+              onChange={setCpus}
+            />
+          </div>
+          <label
+            className="mt-1.5 flex items-center gap-1.5 text-[12px]"
+            style={{ color: 'var(--color-ink-dim)' }}
+          >
+            <input
+              type="checkbox"
+              checked={autoLogin}
+              onChange={(event) => setAutoLogin(event.target.checked)}
+            />
+            Auto-login on first boot (cloud-init)
+          </label>
+        </div>
         <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
           A project-scoped template needs <code>template.write</code> on that project; the
           controller refuses the create if the grant is missing.

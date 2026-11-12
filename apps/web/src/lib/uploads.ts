@@ -1,19 +1,6 @@
-/** Chunked upload client for the controller's `/api/uploads` HTTP routes. */
+/** Chunked upload client backed by the controller's upload procedures. */
 
-interface UploadStartResponse {
-  uploadId: string;
-  chunkSize: number;
-  receivedBytes: number;
-}
-
-async function readUploadError(response: Response): Promise<Error> {
-  try {
-    const body = (await response.json()) as { message?: string; code?: string };
-    return new Error(body.message ?? `${body.code ?? 'upload'} failed (${response.status})`);
-  } catch {
-    return new Error(`upload failed with status ${response.status}`);
-  }
-}
+import { client } from './api.ts';
 
 /**
  * Uploads one file in controller-sized chunks. Progress is the fraction of
@@ -23,33 +10,18 @@ export async function uploadFile(
   file: File,
   onProgress?: (fraction: number) => void,
 ): Promise<string> {
-  const startResponse = await fetch('/api/uploads', {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ filename: file.name, sizeBytes: file.size }),
-  });
-  if (!startResponse.ok) throw await readUploadError(startResponse);
-  const started = (await startResponse.json()) as UploadStartResponse;
+  const started = await client.uploads.start({ filename: file.name, sizeBytes: file.size });
 
   let offset = started.receivedBytes;
   while (offset < file.size) {
-    const chunk = file.slice(offset, Math.min(offset + started.chunkSize, file.size));
-    const response = await fetch(`/api/uploads/${started.uploadId}?offset=${offset}`, {
-      method: 'PUT',
-      credentials: 'include',
-      body: chunk,
-    });
-    if (!response.ok) throw await readUploadError(response);
-    offset += chunk.size;
+    const end = Math.min(offset + started.chunkSize, file.size);
+    const chunk = new File([file.slice(offset, end)], file.name);
+    await client.uploads.chunk({ uploadId: started.uploadId, offset, chunk });
+    offset = end;
     onProgress?.(offset / file.size);
   }
 
-  const completeResponse = await fetch(`/api/uploads/${started.uploadId}/complete`, {
-    method: 'POST',
-    credentials: 'include',
-  });
-  if (!completeResponse.ok) throw await readUploadError(completeResponse);
+  await client.uploads.complete({ uploadId: started.uploadId });
   onProgress?.(1);
   return started.uploadId;
 }

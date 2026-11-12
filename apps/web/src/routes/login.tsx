@@ -32,6 +32,7 @@ export function LoginPage() {
   const target = safeRedirect(search.redirect);
   const { isAuthenticated } = useMe();
   const providers = useQuery(orpc.auth.oidc.publicProviders.queryOptions({ input: {} }));
+  const setup = useQuery(orpc.auth.setup.status.queryOptions({ input: {} }));
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<LoginValues>({
@@ -83,6 +84,15 @@ export function LoginPage() {
             <Notice tone="success">Password changed. Sign in with the new password.</Notice>
           ) : null}
           {serverError ? <Notice tone="error">{serverError}</Notice> : null}
+          {setup.data?.needsSetup === true ? (
+            <Notice tone="info">
+              First start: this controller has no accounts yet.{' '}
+              <a href="/setup" style={{ color: 'var(--color-copper)' }}>
+                Run the setup wizard
+              </a>{' '}
+              to create your admin account.
+            </Notice>
+          ) : null}
         </div>
 
         <form className="nb-panel mt-3 flex flex-col gap-3 p-5" onSubmit={onSubmit} noValidate>

@@ -152,5 +152,10 @@ export const ApplianceTemplateInput = z.object({
   symbol: z.string().min(1).max(128).default('pc'),
   /** Template lives inside this project; omitted means a global template. */
   projectId: Id.nullable().optional(),
+  /** Template defaults: NICs, memory, vCPUs, and auto-login on first boot. */
+  adapters: z.number().int().min(0).max(32).default(1),
+  ram: z.number().int().min(256).max(65536).default(2048),
+  cpus: z.number().int().min(1).max(16).default(2),
+  cloudInitAutoLogin: z.boolean().default(true),
 });
 export type ApplianceTemplateInput = z.infer<typeof ApplianceTemplateInput>;

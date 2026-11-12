@@ -62,8 +62,15 @@ function redact(value: unknown, depth = 0): unknown {
 
 function fieldOf(input: unknown, field: string): string | null {
   if (!input || typeof input !== 'object') return null;
-  const value = (input as Record<string, unknown>)[field];
-  return typeof value === 'string' ? value : null;
+  const direct = (input as Record<string, unknown>)[field];
+  if (typeof direct === 'string') return direct;
+  // Detailed input structure nests path params under `params`.
+  const params = (input as Record<string, unknown>).params;
+  if (params && typeof params === 'object') {
+    const nested = (params as Record<string, unknown>)[field];
+    if (typeof nested === 'string') return nested;
+  }
+  return null;
 }
 
 /** Resolve the project a procedure operates on, for project-scoped checks. */
@@ -149,9 +156,7 @@ function cookieCsrfViolation(context: Context): boolean {
   // with neither are non-browser clients (CLI, tests) and cannot be CSRF'd.
   if (context.auth.type !== 'session') return false;
   const { origin, host, secFetchSite } = context.request;
-  if (
-    !mutationOriginAllowed({ origin, host, publicUrl: context.config.publicUrl })
-  ) {
+  if (!mutationOriginAllowed({ origin, host, publicUrl: context.config.publicUrl })) {
     return true;
   }
   if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'none') return true;

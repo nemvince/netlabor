@@ -16,6 +16,7 @@ import {
   sessionCookie,
   verifyCredentials,
 } from '../services/auth.ts';
+import { createBootstrapAdmin } from '../services/bootstrap.ts';
 import { createProvider, listProviders, updateProvider } from '../services/oidc.ts';
 import { getPreferences } from '../services/rbac.ts';
 
@@ -68,6 +69,59 @@ export async function buildMe(context: Context) {
 
 export function authRoutes(os: Implementer) {
   return {
+    setup: {
+      status: os.auth.setup.status.handler(async ({ context }) => {
+        const rows = await context.db.unsafe<{ count: string }[]>(
+          'SELECT count(*)::text AS count FROM users',
+        );
+        return { needsSetup: Number(rows[0]?.count ?? '0') === 0 };
+      }),
+      createAdmin: os.auth.setup.createAdmin.handler(async ({ input, context }) => {
+        const rows = await context.db.unsafe<{ count: string }[]>(
+          'SELECT count(*)::text AS count FROM users',
+        );
+        if (Number(rows[0]?.count ?? '0') > 0) {
+          throw new AppError('FORBIDDEN', 'setup is already completed');
+        }
+        const username = input.username.toLowerCase();
+        const userId = await createBootstrapAdmin(context.db, username, input.password);
+        const session = await createSession(context.db, context.config, userId, {
+          ip: context.request.ip,
+          userAgent: context.request.userAgent,
+        });
+        context.resHeaders.append(
+          'set-cookie',
+          sessionCookie(session.token, context.config, session.expiresAt),
+        );
+        await context.events.publish({
+          type: 'log',
+          userId,
+          payload: { action: 'auth.setup', username },
+        });
+        const created = await context.db.unsafe<
+          {
+            id: string;
+            username: string;
+            is_active: boolean;
+            created_at: Date;
+          }[]
+        >('SELECT id, username, is_active, created_at FROM users WHERE id = $1', [userId]);
+        const user = created[0];
+        if (!user) throw new AppError('INTERNAL', 'admin creation failed');
+        return {
+          user: {
+            id: user.id,
+            username: user.username,
+            email: null,
+            displayName: 'Administrator',
+            isActive: user.is_active,
+            createdAt: user.created_at.toISOString(),
+          },
+          expiresAt: session.expiresAt.toISOString(),
+        };
+      }),
+    },
+
     login: os.auth.login.handler(async ({ input, context }) => {
       const user = await verifyCredentials(context.db, input.username, input.password);
       const session = await createSession(context.db, context.config, user.id, {

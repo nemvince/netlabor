@@ -112,6 +112,10 @@ export const OidcPublicProvider = z.object({ id: Id, name: z.string() });
 
 export const PreferencesInput = z.object({ value: z.record(z.string(), z.unknown()) });
 
+/** First-run setup state: true while no user accounts exist. */
+export const SetupStatus = z.object({ needsSetup: z.boolean() });
+export type SetupStatus = z.infer<typeof SetupStatus>;
+
 /* ---------------------------------------------------------------- users --- */
 
 export const UserRow = PublicUser.extend({
@@ -133,6 +137,13 @@ export const UserCreateInput = z.object({
   roleIds: z.array(Id).default([]),
   groupIds: z.array(Id).default([]),
 });
+
+/** Claim the first admin account; only valid while no users exist. */
+export const SetupAdminInput = z.object({
+  username: UserCreateInput.shape.username,
+  password: z.string().min(12).max(256),
+});
+export type SetupAdminInput = z.infer<typeof SetupAdminInput>;
 
 export const UserUpdateInput = z.object({
   id: Id,

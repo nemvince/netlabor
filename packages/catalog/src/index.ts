@@ -12,6 +12,8 @@ import { catalogTemplates } from './templates.ts';
 export * from './fault-catalog.ts';
 export * from './os-images.ts';
 export * from './ports.ts';
+export * from './setup-presets.ts';
+export * from './software.ts';
 export * from './symbols.ts';
 export * from './templates.ts';
 

@@ -10,6 +10,7 @@ import {
   applyManifest,
   collectManifest,
   duplicateProject,
+  exportPath,
   exportProject,
   importProject,
 } from '../services/archives.ts';
@@ -91,6 +92,12 @@ export function projectRoutes(os: Implementer, deps: AppDeps, jobs: JobService) 
         if (!context.auth.user) throw new AppError('UNAUTHORIZED', 'authentication required');
         await getProject(context.db, input.id);
         return exportProject(deps, jobs, input.id);
+      }),
+      exportArchive: os.projects.exportArchive.handler(async ({ input, context }) => {
+        await getProject(context.db, input.id);
+        const file = Bun.file(exportPath(deps, input.id));
+        if (!(await file.exists())) throw new AppError('NOT_FOUND', 'export not ready');
+        return new File([file], `project-${input.id}.tar.gz`, { type: 'application/gzip' });
       }),
       import: os.projects.import.handler(async ({ input, context }) => {
         const user = context.auth.user;

@@ -1,7 +1,8 @@
 /** Node routes: CRUD, power actions, isolation, and files. */
 
-import { AppError } from '@netlabor/contract';
+import { AppError, WEB_PROXY_STATUSES, type WebProxyOutput } from '@netlabor/contract';
 import { issueTicket } from '@netlabor/shared';
+import type { Context } from '../context.ts';
 import type { AppDeps, Implementer } from '../implementer.ts';
 import {
   createNode,
@@ -142,6 +143,18 @@ export function nodeRoutes(os: Implementer) {
           );
           return result;
         }),
+        get: os.nodes.console.get.handler(async ({ input, context }) =>
+          proxyConsole(context, input, 'GET'),
+        ),
+        post: os.nodes.console.post.handler(async ({ input, context }) =>
+          proxyConsole(context, input, 'POST'),
+        ),
+        getRoot: os.nodes.console.getRoot.handler(async ({ input, context }) =>
+          proxyConsole(context, input, 'GET'),
+        ),
+        postRoot: os.nodes.console.postRoot.handler(async ({ input, context }) =>
+          proxyConsole(context, input, 'POST'),
+        ),
       },
 
       files: {
@@ -156,6 +169,14 @@ export function nodeRoutes(os: Implementer) {
           return context.agents.call(node.computeId, (agent) =>
             agent.nodeFiles.read({ projectId: node.projectId, nodeId: node.id, path: input.path }),
           );
+        }),
+        download: os.nodes.files.download.handler(async ({ input, context }) => {
+          const node = await getNode(context.db, input.nodeId);
+          const file = await context.agents.call(node.computeId, (agent) =>
+            agent.nodeFiles.read({ projectId: node.projectId, nodeId: node.id, path: input.path }),
+          );
+          const name = input.path.split('/').pop() ?? 'file';
+          return new File([file.content], name, { type: 'text/plain; charset=utf-8' });
         }),
         write: os.nodes.files.write.handler(async ({ input, context }) => {
           const node = await getNode(context.db, input.nodeId);
@@ -287,4 +308,108 @@ async function setIsolated(
     userId,
     payload: { nodeId, isolated },
   });
+}
+
+/** Request headers forwarded to a node web console upstream. */
+const CONSOLE_FORWARD_HEADERS = new Set([
+  'accept',
+  'accept-language',
+  'content-type',
+  'range',
+  'if-range',
+  'if-none-match',
+]);
+
+/** Response headers copied back from a node web console upstream. */
+const CONSOLE_RESPONSE_HEADERS = [
+  'content-type',
+  'content-length',
+  'cache-control',
+  'etag',
+  'location',
+  'content-disposition',
+  'accept-ranges',
+  'content-range',
+  'last-modified',
+];
+
+interface WebProxyInput {
+  params: { nodeId: string; rest?: string };
+  query: Record<string, string>;
+  headers: Record<string, string>;
+  body?: unknown;
+}
+
+function proxyBody(body: unknown, contentType: string | undefined): BodyInit | undefined {
+  if (body === undefined || body === null) return undefined;
+  if (
+    typeof body === 'string' ||
+    body instanceof Blob ||
+    body instanceof URLSearchParams ||
+    body instanceof FormData ||
+    body instanceof ArrayBuffer
+  ) {
+    return body;
+  }
+  if (contentType?.includes('application/x-www-form-urlencoded') && typeof body === 'object') {
+    return new URLSearchParams(
+      Object.entries(body as Record<string, unknown>).map(([key, value]) => [key, String(value)]),
+    );
+  }
+  return JSON.stringify(body);
+}
+
+/**
+ * Reverse-proxy one request to a node's web console. Detailed OpenAPI output
+ * lets the upstream status (2xx/3xx) and headers reach the browser unchanged.
+ */
+async function proxyConsole(
+  context: Context,
+  input: WebProxyInput,
+  method: 'GET' | 'POST',
+): Promise<WebProxyOutput> {
+  const node = await getNode(context.db, input.params.nodeId);
+  if (node.consoleType !== 'http' && node.consoleType !== 'https') {
+    throw new AppError('BAD_REQUEST', 'node has no web console');
+  }
+  if (node.consolePort === null) throw new AppError('CONFLICT', 'console not ready');
+  const compute = await context.db.unsafe<{ url: string }[]>(
+    'SELECT url FROM computes WHERE id = $1',
+    [node.computeId],
+  );
+  const host = new URL(compute[0]?.url ?? '').hostname;
+  const scheme = node.consoleType === 'https' ? 'https' : 'http';
+  const search = new URLSearchParams(input.query).toString();
+  const rest = input.params.rest ?? '';
+  const target = `${scheme}://${host}:${node.consolePort}/${rest}${search ? `?${search}` : ''}`;
+
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(input.headers)) {
+    if (CONSOLE_FORWARD_HEADERS.has(name.toLowerCase())) headers.set(name, value);
+  }
+  const upstream = await fetch(target, {
+    method,
+    headers,
+    ...(method === 'GET'
+      ? {}
+      : { body: proxyBody(input.body, input.headers['content-type']) ?? null }),
+    redirect: 'manual',
+    ...(scheme === 'https' ? ({ tls: { rejectUnauthorized: false } } as never) : {}),
+  }).catch(() => null);
+  if (!upstream) throw new AppError('AGENT_ERROR', 'console unavailable');
+  if (upstream.status >= 400) {
+    throw new AppError(
+      upstream.status >= 500 ? 'AGENT_ERROR' : 'NOT_FOUND',
+      `console returned ${upstream.status}`,
+    );
+  }
+  const responseHeaders: Record<string, string> = {};
+  for (const name of CONSOLE_RESPONSE_HEADERS) {
+    const value = upstream.headers.get(name);
+    if (value) responseHeaders[name] = value;
+  }
+  const status = (WEB_PROXY_STATUSES as readonly number[]).includes(upstream.status)
+    ? (upstream.status as (typeof WEB_PROXY_STATUSES)[number])
+    : 200;
+  return { status, headers: responseHeaders, body: upstream.body };
 }

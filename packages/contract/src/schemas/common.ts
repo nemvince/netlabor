@@ -17,6 +17,25 @@ export const Pagination = z.object({
 export const Ok = z.object({ ok: z.literal(true) });
 export type Ok = z.infer<typeof Ok>;
 
+/**
+ * OpenAPI "detailed" output for file downloads: the generator requires a
+ * literal success status per variant, so full (200) and ranged (206) responses
+ * are a union of objects.
+ */
+export const FileResponse = z.union([
+  z.object({
+    status: z.literal(200),
+    headers: z.record(z.string(), z.string()).optional(),
+    body: z.any(),
+  }),
+  z.object({
+    status: z.literal(206),
+    headers: z.record(z.string(), z.string()).optional(),
+    body: z.any(),
+  }),
+]);
+export type FileResponse = z.infer<typeof FileResponse>;
+
 export const NODE_TYPES = [
   'qemu',
   'iou',

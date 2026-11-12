@@ -38,6 +38,8 @@ export interface RequestMeta {
   host: string | null;
   origin: string | null;
   secFetchSite: string | null;
+  /** `Range` header of the request, for range-capable downloads. */
+  range: string | null;
   method: string;
   path: string;
   requestId: string;
@@ -79,6 +81,7 @@ export function requestMeta(request: Request): RequestMeta {
     host: request.headers.get('host') ?? url.host,
     origin: request.headers.get('origin'),
     secFetchSite: request.headers.get('sec-fetch-site'),
+    range: request.headers.get('range'),
     method: request.method,
     path: url.pathname,
     requestId: crypto.randomUUID(),

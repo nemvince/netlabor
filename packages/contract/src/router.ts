@@ -4,6 +4,7 @@
  * derive from it. Every procedure carries `authz` and `openapi` metadata.
  */
 
+import type { Route } from '@orpc/contract';
 import { eventIterator, oc } from '@orpc/contract';
 import { z } from 'zod';
 import { type AuthzMeta, authz, PUBLIC, SESSION } from './authz.ts';
@@ -11,7 +12,7 @@ import { EventEnvelope } from './events.ts';
 import * as appliances from './schemas/appliances.ts';
 import * as apply from './schemas/apply.ts';
 import * as auth from './schemas/auth.ts';
-import { Id, Ok, Timestamp } from './schemas/common.ts';
+import { FileResponse, Id, Ok, Timestamp } from './schemas/common.ts';
 import * as computes from './schemas/computes.ts';
 import * as links from './schemas/links.ts';
 import * as misc from './schemas/misc.ts';
@@ -40,14 +41,15 @@ const base = oc.$meta<ProcedureMeta>({
 function proc(
   summary: string,
   authzMeta: AuthzMeta,
-  extra?: { tags?: string[]; mcp?: McpToolMeta },
+  extra?: { tags?: string[]; mcp?: McpToolMeta; route?: Route },
 ) {
   const meta: ProcedureMeta = {
     authz: authzMeta,
     openapi: { summarize: summary, ...(extra?.tags ? { tags: extra.tags } : {}) },
     ...(extra?.mcp ? { mcp: extra.mcp } : {}),
   };
-  return base.meta(meta);
+  const builder = base.meta(meta);
+  return extra?.route ? builder.route(extra.route) : builder;
 }
 
 const noInput = z.object({});
@@ -88,6 +90,14 @@ const authRouter = {
     )
       .input(z.object({ id: Id }))
       .output(Ok),
+  },
+  setup: {
+    status: proc('Whether first-run setup is needed (no user accounts exist)', PUBLIC)
+      .input(noInput)
+      .output(auth.SetupStatus),
+    createAdmin: proc('Create the first admin account and sign in', PUBLIC)
+      .input(auth.SetupAdminInput)
+      .output(auth.LoginOutput),
   },
   apiKeys: {
     list: proc('List API keys of the current user', authz({ mode: 'session' }))
@@ -327,16 +337,52 @@ const images = {
   replicas: proc('List image replicas', authz({ mode: 'any', privilege: 'image.read' }))
     .input(z.object({ imageId: Id }))
     .output(misc.ImageRow.shape.replicas),
+  blob: proc(
+    'Download an image blob (Range capable)',
+    authz({ mode: 'any', privilege: 'image.read' }),
+    { route: { method: 'GET', path: '/blobs/{sha256}/{filename}', outputStructure: 'detailed' } },
+  )
+    .input(
+      z.object({
+        sha256: z.string().regex(/^[0-9a-f]{64}$/, 'lowercase hex sha256 required'),
+        filename: z.string().min(1),
+      }),
+    )
+    .output(FileResponse),
 };
 
 const uploads = {
-  start: proc('Start a chunked upload', authz({ mode: 'any', privilege: 'image.write' }))
+  start: proc('Start a chunked upload', authz({ mode: 'any', privilege: 'image.write' }), {
+    route: { method: 'POST', path: '/uploads' },
+  })
     .input(misc.UploadStartInput)
     .output(misc.UploadStartOutput),
-  status: proc('Read upload progress', authz({ mode: 'any', privilege: 'image.write' }))
+  status: proc('Read upload progress', authz({ mode: 'any', privilege: 'image.write' }), {
+    route: { method: 'GET', path: '/uploads/{uploadId}' },
+  })
     .input(z.object({ uploadId: Id }))
     .output(misc.UploadStatus),
-  cancel: proc('Cancel an upload', authz({ mode: 'any', privilege: 'image.write' }))
+  chunk: proc('Append one chunk to an upload', authz({ mode: 'any', privilege: 'image.write' }), {
+    route: { method: 'PUT', path: '/uploads/{uploadId}' },
+  })
+    .input(
+      z.object({
+        uploadId: Id,
+        offset: z.coerce.number().int().min(0),
+        chunk: z.file(),
+      }),
+    )
+    .output(misc.UploadStatus),
+  complete: proc(
+    'Finish a chunked upload and verify its bytes',
+    authz({ mode: 'any', privilege: 'image.write' }),
+    { route: { method: 'POST', path: '/uploads/{uploadId}/complete' } },
+  )
+    .input(z.object({ uploadId: Id }))
+    .output(misc.UploadStatus),
+  cancel: proc('Cancel an upload', authz({ mode: 'any', privilege: 'image.write' }), {
+    route: { method: 'DELETE', path: '/uploads/{uploadId}' },
+  })
     .input(z.object({ uploadId: Id }))
     .output(Ok),
 };
@@ -483,6 +529,13 @@ const projectsRouter = {
   )
     .input(z.object({ id: Id }))
     .output(projects.ProjectExportOutput),
+  exportArchive: proc(
+    'Download the exported project archive',
+    authz({ mode: 'any', privilege: 'project.export', project: 'input.id' }),
+    { route: { method: 'GET', path: '/projects/{id}/export' } },
+  )
+    .input(z.object({ id: Id }))
+    .output(z.file()),
   import: proc(
     'Import a netlabor.project/1 archive',
     authz({ mode: 'any', privilege: 'project.write' }),
@@ -647,6 +700,65 @@ const nodesRouter = {
     )
       .input(nodes.ConsoleExecInput)
       .output(nodes.ConsoleExecOutput),
+    /** Reverse proxy of a node's web console; see `webProxy` in the schemas. */
+    get: proc(
+      'Proxy a GET request to a node web console',
+      authz({ mode: 'any', privilege: 'node.console', project: 'node' }),
+      {
+        route: {
+          method: 'GET',
+          path: '/nodes/{nodeId}/console/{+rest}',
+          inputStructure: 'detailed',
+          outputStructure: 'detailed',
+        },
+      },
+    )
+      .input(nodes.WebProxyInput)
+      .output(nodes.WebProxyOutputSchema),
+    post: proc(
+      'Proxy a POST request to a node web console',
+      authz({ mode: 'any', privilege: 'node.console', project: 'node' }),
+      {
+        route: {
+          method: 'POST',
+          path: '/nodes/{nodeId}/console/{+rest}',
+          inputStructure: 'detailed',
+          outputStructure: 'detailed',
+        },
+      },
+    )
+      .input(nodes.WebProxyInput)
+      .output(nodes.WebProxyOutputSchema),
+    // The catch-all segment never matches an empty remainder, so the console
+    // root page gets its own route.
+    getRoot: proc(
+      'Proxy the console root page',
+      authz({ mode: 'any', privilege: 'node.console', project: 'node' }),
+      {
+        route: {
+          method: 'GET',
+          path: '/nodes/{nodeId}/console',
+          inputStructure: 'detailed',
+          outputStructure: 'detailed',
+        },
+      },
+    )
+      .input(nodes.WebProxyRootInput)
+      .output(nodes.WebProxyOutputSchema),
+    postRoot: proc(
+      'Proxy a POST to the console root page',
+      authz({ mode: 'any', privilege: 'node.console', project: 'node' }),
+      {
+        route: {
+          method: 'POST',
+          path: '/nodes/{nodeId}/console',
+          inputStructure: 'detailed',
+          outputStructure: 'detailed',
+        },
+      },
+    )
+      .input(nodes.WebProxyRootInput)
+      .output(nodes.WebProxyOutputSchema),
   },
   files: {
     list: proc('List node files', authz({ mode: 'any', privilege: 'node.files', project: 'node' }))
@@ -667,6 +779,13 @@ const nodesRouter = {
     )
       .input(z.object({ nodeId: Id, path: z.string().min(1) }))
       .output(Ok),
+    download: proc(
+      'Download a node file',
+      authz({ mode: 'any', privilege: 'node.files', project: 'node' }),
+      { route: { method: 'GET', path: '/nodes/{nodeId}/files/{+path}' } },
+    )
+      .input(z.object({ nodeId: Id, path: z.string().min(1) }))
+      .output(z.file()),
   },
   qemu: {
     diskImage: {
@@ -778,6 +897,13 @@ const linksRouter = {
     )
       .input(z.object({ linkId: Id }))
       .output(links.CaptureTicketOutput),
+    download: proc(
+      'Download the captured pcap of a link',
+      authz({ mode: 'any', privilege: 'link.capture', project: 'link' }),
+      { route: { method: 'GET', path: '/links/{linkId}/capture.pcap' } },
+    )
+      .input(z.object({ linkId: Id }))
+      .output(z.any()),
   },
   markers: {
     list: proc(
@@ -849,6 +975,13 @@ const snapshots = {
   download: proc('Download a snapshot archive', authz({ mode: 'any', privilege: 'snapshot.read' }))
     .input(z.object({ id: Id }))
     .output(z.object({ downloadUrl: z.string() })),
+  downloadArchive: proc(
+    'Download the snapshot archive file',
+    authz({ mode: 'any', privilege: 'snapshot.read', project: 'snapshot' }),
+    { route: { method: 'GET', path: '/snapshots/{id}/download' } },
+  )
+    .input(z.object({ id: Id }))
+    .output(z.file()),
 };
 
 /* ------------------------------------------------ settings, events, misc --- */

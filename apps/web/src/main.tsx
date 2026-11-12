@@ -10,6 +10,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Loading } from './components/Page.tsx';
 import { requireAuth } from './features/auth/require-auth.tsx';
+import { LibraryPage } from './features/library/LibraryPage.tsx';
+import { SetupWizard } from './features/setup/SetupWizard.tsx';
 import { ToolsPage } from './features/tools/ToolsPage.tsx';
 import { WorkspacePage } from './features/workspace/WorkspacePage.tsx';
 import { AppShell } from './lib/AppShell.tsx';
@@ -21,14 +23,12 @@ import { RolesAdminPage } from './routes/admin/roles.tsx';
 import { SettingsAdminPage } from './routes/admin/settings.tsx';
 import { UsersAdminPage } from './routes/admin/users.tsx';
 import { ComputesPage } from './routes/computes.tsx';
-import { ImagesRoutePage } from './routes/images.tsx';
 import { LoginPage } from './routes/login.tsx';
 import { NotFoundPage } from './routes/not-found.tsx';
 import { OverviewPage } from './routes/overview.tsx';
 import { ProfilePage } from './routes/profile.tsx';
 import { ProjectsPage } from './routes/projects.tsx';
 import { RouteError } from './routes/route-error.tsx';
-import { TemplatesRoutePage } from './routes/templates.tsx';
 import './styles.css';
 
 function loginSearch(search: Record<string, unknown>): {
@@ -58,6 +58,12 @@ const loginRoute = createRoute({
   path: '/login',
   validateSearch: loginSearch,
   component: LoginPage,
+});
+
+const setupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/setup',
+  component: SetupWizard,
 });
 
 /** Pathless layout: the rail and status bar wrap every protected route. */
@@ -95,21 +101,18 @@ const computesRoute = createRoute({
   component: ComputesPage,
 });
 
-const templatesRoute = createRoute({
-  getParentRoute: () => appRoute,
-  path: '/templates',
-  component: TemplatesRoutePage,
-});
-
-function imagesSearch(search: Record<string, unknown>): { tab?: 'appliances' } {
-  return search.tab === 'appliances' ? { tab: 'appliances' } : {};
+function librarySearch(search: Record<string, unknown>): { tab?: TabId } {
+  const tab = search.tab;
+  return typeof tab === 'string' ? { tab: tab as TabId } : {};
 }
 
-const imagesRoute = createRoute({
+type TabId = 'templates' | 'appliances' | 'images' | 'symbols';
+
+const libraryRoute = createRoute({
   getParentRoute: () => appRoute,
-  path: '/images',
-  validateSearch: imagesSearch,
-  component: ImagesRoutePage,
+  path: '/library',
+  validateSearch: librarySearch,
+  component: LibraryPage,
 });
 
 const toolsRoute = createRoute({
@@ -173,12 +176,12 @@ const settingsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
+  setupRoute,
   appRoute.addChildren([
     indexRoute,
     projectsRoute,
     computesRoute,
-    templatesRoute,
-    imagesRoute,
+    libraryRoute,
     toolsRoute,
     workspaceRoute,
     profileRoute,

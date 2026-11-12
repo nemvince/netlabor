@@ -4,8 +4,7 @@ import { stat } from 'node:fs/promises';
 import path from 'node:path';
 import { AppError, ERROR_STATUS } from '@netlabor/contract';
 import { sha256Hex } from '@netlabor/shared';
-import { hasPrivilege } from '../auth/principal.ts';
-import { createRequestContext } from '../context.ts';
+import type { ControllerConfig } from '../config.ts';
 import type { AppDeps, Implementer } from '../implementer.ts';
 import {
   createImageFromUpload,
@@ -48,6 +47,37 @@ export function imageRoutes(os: Implementer, jobs: JobService) {
       replicas: os.images.replicas.handler(async ({ input, context }) =>
         listImageReplicas(context.db, input.imageId),
       ),
+      blob: os.images.blob.handler(async ({ input, context }) => {
+        const filename = safeBlobFilename(input.filename);
+        const filePath = await resolveBlob(context.config, input.sha256, filename);
+        if (!filePath) throw new AppError('NOT_FOUND', 'blob not found');
+        const info = await stat(filePath);
+        const file = Bun.file(filePath);
+        const base = {
+          'content-type': 'application/octet-stream',
+          'accept-ranges': 'bytes',
+          'x-content-type-options': 'nosniff',
+          'content-disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+        };
+        const rangeHeader = context.request.range;
+        const range = rangeHeader ? parseRange(rangeHeader, info.size) : null;
+        if (range) {
+          return {
+            status: 206,
+            headers: {
+              ...base,
+              'content-length': String(range.end - range.start + 1),
+              'content-range': `bytes ${range.start}-${range.end}/${info.size}`,
+            },
+            body: file.slice(range.start, range.end + 1),
+          };
+        }
+        return {
+          status: 200,
+          headers: { ...base, 'content-length': String(info.size) },
+          body: file,
+        };
+      }),
     },
   };
 }
@@ -74,20 +104,20 @@ async function authorizeAgent(deps: AppDeps, request: Request): Promise<void> {
   if (!rows[0]) throw new AppError('UNAUTHORIZED', 'agent token required');
 }
 
-function blobCandidates(deps: AppDeps, sha256: string, filename: string): string[] {
-  const candidates = [uploadBlobPath(deps.config, sha256, filename)];
-  if (deps.config.storageDriver === 'nfs' && deps.config.nfsImageDir) {
-    candidates.push(path.join(deps.config.nfsImageDir, sha256, filename));
+function blobCandidates(config: ControllerConfig, sha256: string, filename: string): string[] {
+  const candidates = [uploadBlobPath(config, sha256, filename)];
+  if (config.storageDriver === 'nfs' && config.nfsImageDir) {
+    candidates.push(path.join(config.nfsImageDir, sha256, filename));
   }
   return candidates;
 }
 
 async function resolveBlob(
-  deps: AppDeps,
+  config: ControllerConfig,
   sha256: string,
   filename: string,
 ): Promise<string | null> {
-  for (const candidate of blobCandidates(deps, sha256, filename)) {
+  for (const candidate of blobCandidates(config, sha256, filename)) {
     try {
       const info = await stat(candidate);
       if (info.isFile()) return candidate;
@@ -146,7 +176,7 @@ export async function handleAgentBlobHttp(
     }
     const filename = safeBlobFilename(decoded);
     await authorizeAgent(deps, request);
-    const filePath = await resolveBlob(deps, sha256, filename);
+    const filePath = await resolveBlob(deps.config, sha256, filename);
     if (!filePath) throw new AppError('NOT_FOUND', 'blob not found');
 
     const info = await stat(filePath);
@@ -186,70 +216,6 @@ export async function handleAgentBlobHttp(
       return Response.json(error.toJSON(), { status: ERROR_STATUS[error.code] });
     }
     deps.logger.error('blob download failed', { err: error });
-    return Response.json({ code: 'INTERNAL', message: 'internal error' }, { status: 500 });
-  }
-}
-
-/** Session-authenticated blob download for the browser (Range capable). */
-export async function handleImageBlobHttp(
-  deps: AppDeps,
-  request: Request,
-  sha256: string,
-  encodedFilename: string,
-): Promise<Response> {
-  try {
-    const context = await createRequestContext(deps, request);
-    if (!context.auth.user || !hasPrivilege(context.auth, 'image.read', null)) {
-      return new Response('forbidden', { status: 403 });
-    }
-    let decoded: string;
-    try {
-      decoded = decodeURIComponent(encodedFilename);
-    } catch {
-      throw new AppError('BAD_REQUEST', 'invalid blob filename');
-    }
-    const filename = safeBlobFilename(decoded);
-    const filePath = await resolveBlob(deps, sha256, filename);
-    if (!filePath) throw new AppError('NOT_FOUND', 'blob not found');
-    const info = await stat(filePath);
-    const file = Bun.file(filePath);
-    const rangeHeader = request.headers.get('range');
-    if (rangeHeader) {
-      const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader.trim());
-      if (match) {
-        const start = match[1] === '' ? Math.max(0, info.size - Number(match[2])) : Number(match[1]);
-        const end = match[2] === '' || match[1] === '' ? info.size - 1 : Number(match[2]);
-        if (start <= end && start < info.size) {
-          return new Response(file.slice(start, end + 1), {
-            status: 206,
-            headers: {
-              'content-type': 'application/octet-stream',
-              'accept-ranges': 'bytes',
-              'content-length': String(end - start + 1),
-              'content-range': `bytes ${start}-${end}/${info.size}`,
-            },
-          });
-        }
-      }
-      return new Response(null, {
-        status: 416,
-        headers: { 'content-range': `bytes */${info.size}` },
-      });
-    }
-    return new Response(file, {
-      headers: {
-        'content-type': 'application/octet-stream',
-        'accept-ranges': 'bytes',
-        'content-length': String(info.size),
-        'content-disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
-        'x-content-type-options': 'nosniff',
-      },
-    });
-  } catch (error) {
-    if (error instanceof AppError) {
-      return Response.json(error.toJSON(), { status: ERROR_STATUS[error.code] });
-    }
-    deps.logger.error('image blob download failed', { err: error });
     return Response.json({ code: 'INTERNAL', message: 'internal error' }, { status: 500 });
   }
 }
