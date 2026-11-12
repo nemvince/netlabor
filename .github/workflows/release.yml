@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to publish (for example v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v5.1.0
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      # oven-sh/setup-bun v2.2.0
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+
+      - name: Resolve tag
+        id: tag
+        run: echo "name=${{ github.event.inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build web bundle
+        working-directory: apps/web
+        run: bunx vite build
+
+      - name: Compile controller and agent
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for target in x64 arm64; do
+            bun build apps/controller/src/index.ts --compile --target="bun-linux-$target" --outfile "dist/netlabor-controller-linux-$target"
+            bun build apps/agent/src/index.ts --compile --target="bun-linux-$target" --outfile "dist/netlabor-agent-linux-$target"
+          done
+
+      - name: Package web bundle
+        run: tar -czf dist/netlabor-web.tar.gz -C apps/web/dist .
+
+      - name: Write checksums
+        working-directory: dist
+        run: sha256sum netlabor-controller-linux-x64 netlabor-controller-linux-arm64 netlabor-agent-linux-x64 netlabor-agent-linux-arm64 netlabor-web.tar.gz > SHA256SUMS
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.name }}
+        run: |
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --generate-notes \
+            dist/netlabor-controller-linux-x64 \
+            dist/netlabor-controller-linux-arm64 \
+            dist/netlabor-agent-linux-x64 \
+            dist/netlabor-agent-linux-arm64 \
+            dist/netlabor-web.tar.gz \
+            dist/SHA256SUMS

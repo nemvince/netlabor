@@ -30,11 +30,14 @@ jobs:
           --health-timeout 5s
           --health-retries 20
     steps:
-      - uses: actions/checkout@v5
+      # actions/checkout v5.1.0
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
 
-      - uses: oven-sh/setup-bun@v2
+      # oven-sh/setup-bun v2.2.0
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
         with:
-          bun-version: 1.4.4
+          bun-version-file: .bun-version
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -61,3 +64,169 @@ jobs:
 
       - name: Build docs site
         run: bun run docs:build
+
+  integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: netlabor
+          POSTGRES_PASSWORD: netlabor
+          POSTGRES_DB: netlabor_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U netlabor -d netlabor_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      NB_SECRET_KEY: BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=
+      NB_DISABLE_RATE_LIMITS: '1'
+      NB_LOG_LEVEL: error
+      NB_STATE_DIR: /tmp/netlabor/state
+      NB_RUN_DIR: /tmp/netlabor/run
+      NB_STAGING_DIR: /tmp/netlabor/staging
+    steps:
+      # actions/checkout v5.1.0
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+
+      # oven-sh/setup-bun v2.2.0
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Create test databases
+        env:
+          PGPASSWORD: netlabor
+        run: |
+          set -euo pipefail
+          for name in setup_test files_test; do
+            psql -h 127.0.0.1 -U netlabor -d netlabor_test -c "CREATE DATABASE $name"
+          done
+
+      - name: First-run setup against an empty controller
+        env:
+          NB_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/setup_test
+          NB_LISTEN: 127.0.0.1:8081
+          NB_PUBLIC_URL: http://127.0.0.1:8081
+          NB_TEST_API_URL: http://127.0.0.1:8081
+          NB_TEST_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/setup_test
+        run: |
+          set -euo pipefail
+          bun apps/controller/src/index.ts &
+          echo $! > /tmp/controller.pid
+          scripts/wait-for-http.sh "$NB_TEST_API_URL/healthz"
+          bun test --preload ./test/preload.ts apps/controller/test/setup.integration.test.ts
+          kill "$(cat /tmp/controller.pid)"
+          wait "$(cat /tmp/controller.pid)" 2>/dev/null || true
+
+      - name: File routes against a bootstrapped controller
+        env:
+          NB_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/files_test
+          NB_LISTEN: 127.0.0.1:8082
+          NB_PUBLIC_URL: http://127.0.0.1:8082
+          NB_ADMIN_PASSWORD: test-password-1234
+          NB_TEST_API_URL: http://127.0.0.1:8082
+          NB_TEST_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/files_test
+        run: |
+          set -euo pipefail
+          bun apps/controller/src/index.ts &
+          echo $! > /tmp/controller.pid
+          scripts/wait-for-http.sh "$NB_TEST_API_URL/healthz"
+          bun test --preload ./test/preload.ts apps/controller/test/files.integration.test.ts
+          kill "$(cat /tmp/controller.pid)"
+          wait "$(cat /tmp/controller.pid)" 2>/dev/null || true
+
+      - name: Remaining integration suites
+        env:
+          NB_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/files_test
+          NB_LISTEN: 127.0.0.1:8083
+          NB_PUBLIC_URL: http://127.0.0.1:8083
+          NB_ADMIN_PASSWORD: test-password-1234
+          NB_TEST_API_URL: http://127.0.0.1:8083
+          NB_TEST_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/files_test
+        run: |
+          set -euo pipefail
+          bun apps/controller/src/index.ts &
+          echo $! > /tmp/controller.pid
+          scripts/wait-for-http.sh "$NB_TEST_API_URL/healthz"
+          bun test --preload ./test/preload.ts apps/controller/test/api.integration.test.ts apps/controller/test/oidc.integration.test.ts
+          kill "$(cat /tmp/controller.pid)"
+          wait "$(cat /tmp/controller.pid)" 2>/dev/null || true
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: netlabor
+          POSTGRES_PASSWORD: netlabor
+          POSTGRES_DB: netlabor_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U netlabor -d netlabor_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      NB_SECRET_KEY: BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=
+      NB_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/netlabor_test
+      NB_LISTEN: 127.0.0.1:8080
+      NB_PUBLIC_URL: http://127.0.0.1:8080
+      NB_STATE_DIR: /tmp/netlabor/state
+      NB_RUN_DIR: /tmp/netlabor/run
+      NB_STAGING_DIR: /tmp/netlabor/staging
+      NB_DISABLE_RATE_LIMITS: '1'
+      NB_LOG_LEVEL: error
+      # No NB_ADMIN_PASSWORD: the first-run wizard claims the account, exactly
+      # like a fresh install.
+      NB_E2E_URL: http://127.0.0.1:8080
+      NB_E2E_PASSWORD: admin-password-1234
+    steps:
+      # actions/checkout v5.1.0
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+
+      # oven-sh/setup-bun v2.2.0
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Build web bundle
+        working-directory: apps/web
+        run: bunx vite build
+
+      - name: Run the browser suite
+        run: |
+          set -euo pipefail
+          bun apps/controller/src/index.ts &
+          echo $! > /tmp/controller.pid
+          scripts/wait-for-http.sh "$NB_E2E_URL/healthz"
+          bunx playwright test
+          kill "$(cat /tmp/controller.pid)"
+          wait "$(cat /tmp/controller.pid)" 2>/dev/null || true
+
+      # actions/upload-artifact v4.6.2
+      - name: Upload failure artefacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
