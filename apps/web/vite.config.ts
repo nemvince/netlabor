@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, type ProxyOptions } from 'vite';
 
 const CONTROLLER = 'http://127.0.0.1:8080';
+/** Origin the controller trusts for cookie-authenticated mutations. */
+const PUBLIC_ORIGIN = new URL(process.env.NB_PUBLIC_URL ?? CONTROLLER).origin;
 
 /**
  * The controller enforces same-origin mutations against NB_PUBLIC_URL. In dev
@@ -15,9 +17,10 @@ function controllerProxy(): ProxyOptions {
     target: CONTROLLER,
     changeOrigin: false,
     configure(proxy) {
-      proxy.on('proxyReq', (proxyReq) => {
-        proxyReq.setHeader('origin', CONTROLLER);
-      });
+      const rewriteOrigin = (request: { setHeader(name: string, value: string): void }) =>
+        request.setHeader('origin', PUBLIC_ORIGIN);
+      proxy.on('proxyReq', rewriteOrigin);
+      proxy.on('proxyReqWs', rewriteOrigin);
     },
   };
 }
@@ -30,7 +33,7 @@ export default defineConfig({
       '/rpc': controllerProxy(),
       '/api': controllerProxy(),
       '/auth': controllerProxy(),
-      '/ws': { target: 'ws://127.0.0.1:8080', ws: true },
+      '/ws': { ...controllerProxy(), target: 'ws://127.0.0.1:8080', ws: true },
       '/healthz': { target: CONTROLLER },
       '/version': { target: CONTROLLER },
     },

@@ -5,7 +5,7 @@
  */
 
 import { setupPresets, softwareCatalog } from '@netlabor/catalog';
-import type { Desktop } from '@netlabor/contract';
+import type { Desktop, OsFamily } from '@netlabor/contract';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -106,18 +106,18 @@ export function SetupWizard() {
 
   if (status.isPending) {
     return (
-      <div
+      <main
         className="flex min-h-screen items-center justify-center text-[13px]"
         style={{ color: 'var(--color-ink-faint)' }}
       >
         Checking controller state…
-      </div>
+      </main>
     );
   }
   if (!needsSetup) return null;
 
   return (
-    <div className="flex min-h-screen items-start justify-center px-4 py-10">
+    <main className="flex min-h-screen items-start justify-center px-4 py-10">
       <div className="w-full max-w-[680px]">
         {error ? <Notice tone="error">{messageOf(error)}</Notice> : null}
 
@@ -182,7 +182,7 @@ export function SetupWizard() {
 
         {step === 'progress' ? <ProgressStep choices={choices} /> : null}
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -404,10 +404,10 @@ interface TrackRow {
   failed: string | null;
 }
 
-function packagesOf(software: string[]): string[] {
+function packagesOf(software: string[], family: OsFamily): string[] {
   const pkgs = new Set<string>();
   for (const id of software) {
-    for (const pkg of softwareEntry(id)?.packages ?? []) pkgs.add(pkg);
+    for (const pkg of softwareEntry(id)?.packages[family] ?? []) pkgs.add(pkg);
   }
   return [...pkgs];
 }
@@ -480,7 +480,10 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
           name: `${osImage.name.replace(/\.qcow2$|\.img$/, '')}-${track.choice.desktop}-lab`,
           osImageId: osImage.id,
           desktop: track.choice.desktop,
-          packages: packagesOf(track.choice.software),
+          packages: packagesOf(
+            track.choice.software,
+            setupPresets.find((entry) => entry.id === track.choice.id)?.family ?? 'debian',
+          ),
           diskGb: 12,
           memoryMb: 2048,
           cpus: 2,

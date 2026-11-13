@@ -305,36 +305,54 @@ const SOFTWARE_ICONS: Record<string, typeof Globe> = {
   Terminal,
 };
 
-const SOFTWARE_GROUPS: { id: 'server' | 'tools'; label: string }[] = [
+const SOFTWARE_GROUPS: {
+  id: 'office' | 'sysadmin' | 'network' | 'server' | 'tools';
+  label: string;
+}[] = [
+  { id: 'office', label: 'Office clients' },
+  { id: 'sysadmin', label: 'System administration' },
+  { id: 'network', label: 'Network tooling' },
   { id: 'server', label: 'Server roles' },
-  { id: 'tools', label: 'Developer & network tools' },
+  { id: 'tools', label: 'Developer & general tools' },
 ];
+
+const PACKAGE_MANAGER: Record<OsFamily, string> = {
+  debian: 'apt',
+  ubuntu: 'apt',
+  rocky: 'dnf',
+  alpine: 'apk',
+};
 
 /**
  * Preinstalled-software picker: toggle cards from the catalog (icon + name +
  * one-line description) plus a free-form chip field for anything else.
  */
 function SoftwarePicker({
+  family,
   selected,
   extraPackages,
   onToggle,
   onExtraChange,
 }: {
+  family: OsFamily;
   selected: string[];
   extraPackages: string[];
   onToggle: (id: string) => void;
   onExtraChange: (next: string[]) => void;
 }) {
   const selectedSet = new Set(selected);
+  const manager = PACKAGE_MANAGER[family];
   const groups = SOFTWARE_GROUPS.map((group) => ({
     ...group,
-    entries: softwareCatalog.filter((entry) => entry.group === group.id),
-  }));
+    entries: softwareCatalog.filter(
+      (entry) => entry.group === group.id && (entry.packages[family]?.length ?? 0) > 0,
+    ),
+  })).filter((group) => group.entries.length > 0);
   return (
     <Field
       label="Preinstalled software"
       htmlFor="build-software"
-      hint="Toggled entries install their apt packages during the build."
+      hint={`Toggled entries install their ${manager} packages during the build.`}
     >
       {groups.map((group) => (
         <div key={group.id} className="mt-1">
@@ -374,7 +392,7 @@ function SoftwarePicker({
           id="build-extra-packages"
           packages={extraPackages}
           onChange={onExtraChange}
-          hint="Anything not in the list above; apt package names, Enter or comma to add."
+          hint={`Anything not in the list above; ${manager} package names, Enter or comma to add.`}
         />
       </div>
     </Field>
@@ -387,7 +405,7 @@ function PackageChipInput({
   onChange,
   label = 'Extra packages',
   id = 'build-packages',
-  hint = 'apt package names; press Enter, comma, or space after each. The desktop recipe adds its own packages.',
+  hint = 'Package names; press Enter, comma, or space after each.',
 }: {
   packages: string[];
   onChange: (next: string[]) => void;
@@ -523,15 +541,23 @@ export function ApplianceBuildDialog({
   const [busy, setBusy] = useState(false);
 
   const selectedOs = readyOsImages.find((osImage) => osImage.id === osImageId);
-  const suggested = useMemo(() => suggestedBuildName(selectedOs, desktop), [selectedOs, desktop]);
+  const family = selectedOs?.family ?? 'debian';
+  const desktopSupported = family === 'debian' || family === 'ubuntu';
+  // Desktop recipes exist only for Debian/Ubuntu; the other families build servers.
+  const effectiveDesktop: Desktop = desktopSupported ? desktop : 'none';
+  const suggested = useMemo(
+    () => suggestedBuildName(selectedOs, effectiveDesktop),
+    [selectedOs, effectiveDesktop],
+  );
   // Toggled catalog entries + free-form chips become the build's package list.
   const packages = useMemo(() => {
     const selected = new Set(extraPackages);
     for (const entry of softwareCatalog) {
-      if (software.includes(entry.id)) for (const pkg of entry.packages) selected.add(pkg);
+      if (!software.includes(entry.id)) continue;
+      for (const pkg of entry.packages[family] ?? []) selected.add(pkg);
     }
     return [...selected];
-  }, [software, extraPackages]);
+  }, [software, extraPackages, family]);
 
   useEffect(() => {
     if (!nameTouched) setName(suggested);
@@ -552,7 +578,7 @@ export function ApplianceBuildDialog({
       const created = await client.appliances.builds.create({
         name: name.trim(),
         osImageId,
-        desktop,
+        desktop: effectiveDesktop,
         packages,
         diskGb,
         memoryMb,
@@ -575,7 +601,7 @@ export function ApplianceBuildDialog({
         if (!open) onOpenChange(false);
       }}
       title="New appliance build"
-      description="Boots the base cloud image in a throwaway VM with internet access, installs the desktop, then powers off into a reusable library image."
+      description="Boots the base cloud image in a throwaway VM with internet access, installs the selected software, then powers off into a reusable library image."
       width={660}
     >
       <div className="flex flex-col gap-3">
@@ -606,14 +632,23 @@ export function ApplianceBuildDialog({
               ))}
             </Select>
           </Field>
-          <Field label="Desktop" htmlFor="build-desktop">
+          <Field
+            label="Desktop"
+            htmlFor="build-desktop"
+            hint={desktopSupported ? undefined : `${family}: server builds only`}
+          >
             <Select
               id="build-desktop"
-              value={desktop}
+              value={effectiveDesktop}
+              disabled={!desktopSupported}
               onChange={(event) => setDesktop(event.target.value as Desktop)}
             >
               {DESKTOP_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
+                <option
+                  key={option.value}
+                  value={option.value}
+                  disabled={!desktopSupported && option.value !== 'none'}
+                >
                   {option.label} — {option.hint}
                 </option>
               ))}
@@ -635,6 +670,7 @@ export function ApplianceBuildDialog({
           />
         </Field>
         <SoftwarePicker
+          family={family}
           selected={software}
           extraPackages={extraPackages}
           onToggle={(id) =>

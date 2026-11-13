@@ -1,8 +1,8 @@
 import type { AgentCapabilities, ImageRow, TemplateRow } from '@netlabor/contract';
-import { ImageOff, Plug, Search, Star } from 'lucide-react';
+import { ImageOff, Plug, Star } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Input } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
+import { SearchInput } from '../../components/SearchInput.tsx';
 import { SymbolGlyph } from '../../components/SymbolGlyph.tsx';
 import { missingRequiredImages } from '../../lib/template-images.ts';
 
@@ -93,22 +93,12 @@ export function Palette({
     >
       <div className="border-b px-3 py-2" style={{ borderColor: 'var(--color-rule)' }}>
         <div className="nb-rule-label mb-1.5">Palette</div>
-        <div className="relative">
-          <Search
-            size={12}
-            aria-hidden
-            className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2"
-            style={{ color: 'var(--color-ink-faint)' }}
-          />
-          <Input
-            aria-label="Search templates"
-            placeholder="Search devices"
-            className="py-1 text-[12px]"
-            style={{ paddingLeft: 24 }}
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </div>
+        <SearchInput
+          label="Search templates"
+          placeholder="Search devices"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-2 py-2">
         {isLoading ? (
@@ -144,7 +134,7 @@ export function Palette({
                           : null
                         : null;
                   return (
-                    <div key={template.id} className="flex h-7 items-center">
+                    <div key={template.id} className="flex items-start gap-0.5">
                       <button
                         type="button"
                         draggable={!disabled}
@@ -161,22 +151,16 @@ export function Palette({
                               ? `${template.name} · missing images: ${missing.join(', ')}`
                               : `Drag or double-click to add ${template.name}`
                         }
-                        className="flex h-7 min-w-0 flex-1 items-center gap-2 rounded-[2px] px-1 text-left text-[12px] hover:bg-[var(--color-panel-raised)] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex min-h-7 min-w-0 flex-1 items-start gap-2 rounded-[2px] px-1 py-1 text-left text-[12px] leading-[1.3] hover:bg-[var(--color-panel-raised)] disabled:cursor-not-allowed disabled:opacity-50"
                         style={{ color: 'var(--color-ink)' }}
                       >
-                        <SymbolGlyph svg={icon} className="size-4 shrink-0" />
-                        <span className="min-w-0 flex-1 truncate">
+                        <SymbolGlyph svg={icon} className="mt-px size-4 shrink-0" />
+                        <span className="line-clamp-2 min-w-0 flex-1 break-words">
                           {template.name}
-                          <span
-                            className="ml-1 text-[11px]"
-                            style={{ color: 'var(--color-ink-faint)' }}
-                          >
-                            {template.nodeType}
-                          </span>
                         </span>
                         {missing.length > 0 ? (
                           <span
-                            className="flex items-center gap-0.5 text-[9px]"
+                            className="flex items-center gap-0.5 text-[10px]"
                             style={{ color: 'var(--color-signal-warn)' }}
                           >
                             <ImageOff size={11} aria-hidden />
@@ -185,7 +169,7 @@ export function Palette({
                         ) : null}
                         {hostMissing ? (
                           <span
-                            className="flex items-center gap-0.5 text-[9px]"
+                            className="flex items-center gap-0.5 text-[10px]"
                             style={{ color: 'var(--color-signal-warn)' }}
                             title={hostMissing}
                           >

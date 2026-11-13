@@ -1,15 +1,19 @@
 import { Link } from '@tanstack/react-router';
+import { Page } from '../components/Page.tsx';
 
 export function NotFoundPage() {
   return (
-    <div className="mx-auto max-w-xl px-8 py-16">
-      <h1 className="text-xl font-semibold tracking-tight">No such page</h1>
-      <p className="mt-2 text-[13px]" style={{ color: 'var(--color-ink-dim)' }}>
-        The route you asked for is not part of this controller.
-      </p>
-      <Link to="/" className="nb-button mt-6" style={{ textDecoration: 'none' }}>
-        Back to control plane
-      </Link>
-    </div>
+    <Page wide={false}>
+      <div className="nb-panel mt-6 px-5 py-6">
+        <div className="nb-rule-label">404</div>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">No such page</h1>
+        <p className="mt-2 max-w-prose text-[13px]" style={{ color: 'var(--color-ink-dim)' }}>
+          The route you asked for is not part of this controller.
+        </p>
+        <Link to="/" className="nb-button mt-5" style={{ textDecoration: 'none' }}>
+          Back to control plane
+        </Link>
+      </div>
+    </Page>
   );
 }

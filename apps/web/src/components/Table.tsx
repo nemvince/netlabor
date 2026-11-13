@@ -1,13 +1,33 @@
 import type { ReactNode } from 'react';
 
 /** Dense hairline table. Rows carry the rules, the panel carries the edge. */
-export function Table({ children, label }: { children: ReactNode; label: string }) {
+export function Table({
+  children,
+  label,
+  maxHeight,
+  stickyHead = false,
+}: {
+  children: ReactNode;
+  label: string;
+  /** Caps the result height and scrolls inside the panel. */
+  maxHeight?: number;
+  stickyHead?: boolean;
+}) {
   return (
     <div
       className="overflow-hidden rounded-[3px] border"
       style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
     >
-      <div className="overflow-x-auto">
+      <div
+        className={[
+          maxHeight === undefined ? 'overflow-x-auto' : 'overflow-auto',
+          stickyHead ? 'nb-scroll-table' : '',
+        ].join(' ')}
+        style={maxHeight === undefined ? undefined : { maxHeight }}
+        {...(maxHeight === undefined
+          ? {}
+          : { role: 'region' as const, 'aria-label': `${label} results`, tabIndex: 0 })}
+      >
         <table aria-label={label} className="w-full border-collapse text-[13px]">
           {children}
         </table>

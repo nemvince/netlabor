@@ -95,6 +95,10 @@ interface WorkspaceState {
   clearHistory: () => void;
 }
 
+// A narrow first visit starts with the canvas, not a 208px palette beside it.
+const startsNarrow =
+  typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches;
+
 export const useWorkspaceStore = create<WorkspaceState>()(
   persist(
     (set, get) => {
@@ -162,11 +166,11 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         setDockOpen: (open) => set({ dockOpen: open }),
         consoleSplit: 1,
         setConsoleSplit: (consoleSplit) => set({ consoleSplit }),
-        minimapVisible: true,
+        minimapVisible: !startsNarrow,
         setMinimapVisible: (minimapVisible) => set({ minimapVisible }),
         portLabelsAlways: false,
         setPortLabelsAlways: (portLabelsAlways) => set({ portLabelsAlways }),
-        paletteOpen: true,
+        paletteOpen: !startsNarrow,
         setPaletteOpen: (open) => set({ paletteOpen: open }),
         inspectorOpen: false,
         setInspectorOpen: (open) => set({ inspectorOpen: open }),

@@ -315,6 +315,9 @@ input[type='range'] {
 }
 .nb-canvas .react-flow__attribution a {
   color: var(--color-ink-faint);
+  display: inline-block;
+  min-height: 24px;
+  padding: 5px 3px;
 }
 .nb-canvas .react-flow__node {
   font-family: var(--font-sans);
@@ -348,7 +351,7 @@ input[type='range'] {
   border-color: var(--color-copper) !important;
 }
 .nb-canvas .react-flow__edge.selected .react-flow__edge-path {
-  filter: drop-shadow(0 0 3px color-mix(in oklab, var(--color-copper) 60%, transparent));
+  stroke: var(--color-copper);
 }
 .nb-canvas .react-flow__node.selected {
   outline: none;
@@ -356,6 +359,15 @@ input[type='range'] {
 .nb-canvas textarea,
 .nb-canvas input {
   color-scheme: dark;
+}
+
+/* --------------------------------------------------------------- tables --- */
+
+.nb-scroll-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-panel);
 }
 
 /* --------------------------------------------------------------- utility --- */
@@ -378,11 +390,7 @@ input[type='range'] {
   color: var(--color-ink);
 }
 .nb-rail-link[aria-current='page'] {
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklab, var(--color-copper) 14%, transparent),
-    transparent 72%
-  );
+  background: var(--color-panel-raised);
   border-left-color: var(--color-copper);
   color: var(--color-ink);
 }

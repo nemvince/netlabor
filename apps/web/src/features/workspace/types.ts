@@ -61,5 +61,5 @@ export function edgeSides(
   return dy >= 0 ? { source: 'bottom', target: 'top' } : { source: 'top', target: 'bottom' };
 }
 
-export const NODE_WIDTH = 128;
-export const NODE_HEIGHT = 86;
+export const NODE_WIDTH = 104;
+export const NODE_HEIGHT = 88;

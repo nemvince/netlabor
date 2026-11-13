@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { KeyRound, RotateCcw, TerminalSquare, Timer, Wrench } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Field, Input } from '../../components/Field.tsx';
+import { Field } from '../../components/Field.tsx';
 import { displaySettingValue, KeyValueEditor } from '../../components/KeyValueEditor.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading, Page, PageHeader } from '../../components/Page.tsx';
 import { toast } from '../../components/Toast.tsx';
+import { UnitInput } from '../../components/UnitInput.tsx';
 import { SecretsSection } from '../../features/admin/SecretsSection.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
@@ -208,7 +209,7 @@ export function SettingsAdminPage() {
 
   const consoleSample =
     rowsError === null && colsError === null
-      ? `${Number(colsText)} × ${Number(rowsText)} cells`
+      ? `${Number(colsText)} columns × ${Number(rowsText)} rows`
       : null;
 
   return (
@@ -259,26 +260,19 @@ export function SettingsAdminPage() {
                 hint="Terminal height for new console tabs."
                 error={rowsError ?? undefined}
               >
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="setting-console-rows"
-                    type="number"
-                    inputMode="numeric"
-                    step={1}
-                    min={ROWS_RANGE.min}
-                    max={ROWS_RANGE.max}
-                    value={rowsText}
-                    disabled={!canWrite}
-                    onChange={(event) => onRowsChange(event.target.value)}
-                    aria-describedby="setting-console-sample"
-                  />
-                  <span
-                    className="shrink-0 text-[11px]"
-                    style={{ color: 'var(--color-ink-faint)' }}
-                  >
-                    rows
-                  </span>
-                </div>
+                <UnitInput
+                  id="setting-console-rows"
+                  unit="rows"
+                  type="number"
+                  inputMode="numeric"
+                  step={1}
+                  min={ROWS_RANGE.min}
+                  max={ROWS_RANGE.max}
+                  value={rowsText}
+                  disabled={!canWrite}
+                  onChange={(event) => onRowsChange(event.target.value)}
+                  aria-describedby="setting-console-sample"
+                />
               </Field>
               <Field
                 label="Columns"
@@ -286,26 +280,19 @@ export function SettingsAdminPage() {
                 hint="Terminal width for new console tabs."
                 error={colsError ?? undefined}
               >
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="setting-console-cols"
-                    type="number"
-                    inputMode="numeric"
-                    step={1}
-                    min={COLS_RANGE.min}
-                    max={COLS_RANGE.max}
-                    value={colsText}
-                    disabled={!canWrite}
-                    onChange={(event) => onColsChange(event.target.value)}
-                    aria-describedby="setting-console-sample"
-                  />
-                  <span
-                    className="shrink-0 text-[11px]"
-                    style={{ color: 'var(--color-ink-faint)' }}
-                  >
-                    columns
-                  </span>
-                </div>
+                <UnitInput
+                  id="setting-console-cols"
+                  unit="columns"
+                  type="number"
+                  inputMode="numeric"
+                  step={1}
+                  min={COLS_RANGE.min}
+                  max={COLS_RANGE.max}
+                  value={colsText}
+                  disabled={!canWrite}
+                  onChange={(event) => onColsChange(event.target.value)}
+                  aria-describedby="setting-console-sample"
+                />
               </Field>
             </div>
             <div
@@ -320,9 +307,6 @@ export function SettingsAdminPage() {
               <span className="tabular text-[12px]">
                 {consoleSample ?? 'set valid rows and columns to preview'}
               </span>
-              <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
-                columns × rows
-              </span>
             </div>
           </SettingsCard>
 
@@ -335,8 +319,16 @@ export function SettingsAdminPage() {
               <legend className="text-[12px] font-medium" style={{ color: 'var(--color-ink-dim)' }}>
                 Auto-close idle projects
               </legend>
-              <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1.5">
-                <label className="flex items-center gap-1.5 text-[12px]">
+              <div className="mt-1.5 flex flex-wrap gap-2">
+                <label
+                  className="flex min-h-7 cursor-pointer items-center gap-2 rounded-[2px] border px-2.5 py-1 text-[12px]"
+                  style={{
+                    borderColor: !idleEnabled
+                      ? 'var(--color-rule-strong)'
+                      : 'var(--color-rule)',
+                    background: !idleEnabled ? 'var(--color-panel-raised)' : 'transparent',
+                  }}
+                >
                   <input
                     type="radio"
                     name="setting-auto-close-mode"
@@ -346,7 +338,13 @@ export function SettingsAdminPage() {
                   />
                   Off
                 </label>
-                <label className="flex items-center gap-1.5 text-[12px]">
+                <label
+                  className="flex min-h-7 cursor-pointer items-center gap-2 rounded-[2px] border px-2.5 py-1 text-[12px]"
+                  style={{
+                    borderColor: idleEnabled ? 'var(--color-rule-strong)' : 'var(--color-rule)',
+                    background: idleEnabled ? 'var(--color-panel-raised)' : 'transparent',
+                  }}
+                >
                   <input
                     type="radio"
                     name="setting-auto-close-mode"
@@ -375,26 +373,19 @@ export function SettingsAdminPage() {
                   hint="Minutes of inactivity before the project closes."
                   error={idleError ?? undefined}
                 >
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="setting-auto-close-minutes"
-                      type="number"
-                      inputMode="numeric"
-                      step={1}
-                      min={IDLE_RANGE.min}
-                      max={IDLE_RANGE.max}
-                      value={idleText}
-                      disabled={!canWrite}
-                      onChange={(event) => onIdleTextChange(event.target.value)}
-                      aria-describedby="setting-auto-close-help"
-                    />
-                    <span
-                      className="shrink-0 text-[11px]"
-                      style={{ color: 'var(--color-ink-faint)' }}
-                    >
-                      minutes
-                    </span>
-                  </div>
+                  <UnitInput
+                    id="setting-auto-close-minutes"
+                    unit="minutes"
+                    type="number"
+                    inputMode="numeric"
+                    step={1}
+                    min={IDLE_RANGE.min}
+                    max={IDLE_RANGE.max}
+                    value={idleText}
+                    disabled={!canWrite}
+                    onChange={(event) => onIdleTextChange(event.target.value)}
+                    aria-describedby="setting-auto-close-help"
+                  />
                 </Field>
               </div>
             ) : null}

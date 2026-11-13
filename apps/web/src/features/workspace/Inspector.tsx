@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { DrawingRow, LinkRow, NodeRow, ProjectRow, SymbolRow } from '@netlabor/contract';
-import { useQuery } from '@tanstack/react-query';
 import { Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -8,11 +7,8 @@ import { z } from 'zod';
 import { Badge } from '../../components/Badge.tsx';
 import { Field, Input, Select, Textarea } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
-import { Loading } from '../../components/Page.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
-import { orpc } from '../../lib/api.ts';
-import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import {
   GroupedPropertyFields,
@@ -23,6 +19,7 @@ import {
   withProperty,
 } from '../templates/TemplatePropertyFields.tsx';
 import { DynamipsIdlepcPanel } from './DynamipsIdlepcPanel.tsx';
+import { ProjectStatsPanel } from './InspectorStats.tsx';
 
 import { NodeConsolePanel } from './NodeConsolePanel.tsx';
 import { NodeFilesPanel } from './NodeFilesPanel.tsx';
@@ -81,10 +78,6 @@ export function Inspector({
   const [portMapping, setPortMapping] = useState<unknown>([]);
   const [portsError, setPortsError] = useState<string | null>(null);
 
-  const stats = useQuery({
-    ...orpc.projects.stats.queryOptions({ input: { id: project.id } }),
-    enabled: node === null && link === null && drawing === null,
-  });
 
   const form = useForm<NodeValues>({
     resolver: zodResolver(nodeSchema),
@@ -346,7 +339,7 @@ export function Inspector({
                 <details className="border-t pt-2" style={{ borderColor: 'var(--color-rule)' }}>
                   <summary
                     className="cursor-pointer text-[11px]"
-                    style={{ color: 'var(--color-ink-soft)' }}
+                    style={{ color: 'var(--color-ink-dim)' }}
                   >
                     Placement &amp; startup
                   </summary>
@@ -421,7 +414,7 @@ export function Inspector({
                   <details className="border-t pt-2" style={{ borderColor: 'var(--color-rule)' }}>
                     <summary
                       className="cursor-pointer text-[11px]"
-                      style={{ color: 'var(--color-ink-soft)' }}
+                      style={{ color: 'var(--color-ink-dim)' }}
                     >
                       Storage
                     </summary>
@@ -439,7 +432,7 @@ export function Inspector({
                   <details className="border-t pt-2" style={{ borderColor: 'var(--color-rule)' }}>
                     <summary
                       className="cursor-pointer text-[11px]"
-                      style={{ color: 'var(--color-ink-soft)' }}
+                      style={{ color: 'var(--color-ink-dim)' }}
                     >
                       Idle-PC
                     </summary>
@@ -459,7 +452,7 @@ export function Inspector({
                 >
                   <summary
                     className="cursor-pointer text-[11px]"
-                    style={{ color: 'var(--color-ink-soft)' }}
+                    style={{ color: 'var(--color-ink-dim)' }}
                   >
                     Advanced properties (JSON)
                   </summary>
@@ -746,113 +739,37 @@ export function Inspector({
         </div>
       ) : (
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2">
-          {stats.isPending ? (
-            <Loading label="Reading project counters…" />
-          ) : stats.isError ? (
-            <Notice tone="error">{messageOf(stats.error)}</Notice>
-          ) : (
-            <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-3 gap-1">
-                <Counter label="Nodes" value={stats.data.nodeCount} />
-                <Counter label="Links" value={stats.data.linkCount} />
-                <Counter label="Drawings" value={stats.data.drawingCount} />
-              </div>
-              <div>
-                <div className="nb-rule-label mb-1">Node status</div>
-                <div className="flex flex-wrap gap-1">
-                  {Object.entries(stats.data.nodesByStatus).map(([state, count]) => (
-                    <Badge
-                      key={state}
-                      tone={
-                        state === 'started'
-                          ? 'up'
-                          : state === 'error'
-                            ? 'down'
-                            : state === 'suspended'
-                              ? 'warn'
-                              : 'neutral'
-                      }
-                    >
-                      <span>{state}</span>
-                      <span className="tabular" style={{ color: 'var(--color-ink)' }}>
-                        {count}
-                      </span>
-                    </Badge>
-                  ))}
-                  {Object.keys(stats.data.nodesByStatus).length === 0 ? (
-                    <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
-                      No nodes.
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-              <div>
-                <div className="nb-rule-label mb-1">Variables</div>
-                {Object.keys(project.variables).length === 0 ? (
-                  <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
-                    No project variables.
-                  </p>
-                ) : (
-                  <Table label="Project variables">
-                    <THead>
-                      <Th>Key</Th>
-                      <Th>Value</Th>
-                    </THead>
-                    <TBody>
-                      {Object.entries(project.variables).map(([key, value]) => (
-                        <Tr key={key}>
-                          <Td mono>{key}</Td>
-                          <Td mono>{value}</Td>
-                        </Tr>
-                      ))}
-                    </TBody>
-                  </Table>
-                )}
-              </div>
-              <div>
-                <div className="nb-rule-label mb-1">Compute slots</div>
-                {stats.data.slots.length === 0 ? (
-                  <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
-                    The project has no slot; creating a node allocates one.
-                  </p>
-                ) : (
-                  <Table label="Project slots">
-                    <THead>
-                      <Th>Slot</Th>
-                      <Th>Netns</Th>
-                      <Th>Project IP</Th>
-                    </THead>
-                    <TBody>
-                      {stats.data.slots.map((slot) => (
-                        <Tr key={`${slot.computeId}-${slot.slot}`}>
-                          <Td mono>{slot.slot}</Td>
-                          <Td mono>{slot.netns}</Td>
-                          <Td mono>{slot.projectIp}</Td>
-                        </Tr>
-                      ))}
-                    </TBody>
-                  </Table>
-                )}
-              </div>
-              <p className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
-                Select a node to edit its properties, ports, files, and console.
-              </p>
+          <div className="flex flex-col gap-3">
+            <ProjectStatsPanel projectId={project.id} />
+            <div>
+              <div className="nb-rule-label mb-1">Variables</div>
+              {Object.keys(project.variables).length === 0 ? (
+                <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
+                  No project variables.
+                </p>
+              ) : (
+                <Table label="Project variables">
+                  <THead>
+                    <Th>Key</Th>
+                    <Th>Value</Th>
+                  </THead>
+                  <TBody>
+                    {Object.entries(project.variables).map(([key, value]) => (
+                      <Tr key={key}>
+                        <Td mono>{key}</Td>
+                        <Td mono>{value}</Td>
+                      </Tr>
+                    ))}
+                  </TBody>
+                </Table>
+              )}
             </div>
-          )}
+            <p className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+              Select a node to edit its properties, ports, files, and console.
+            </p>
+          </div>
         </div>
       )}
     </aside>
-  );
-}
-
-function Counter({ label, value }: { label: string; value: number }) {
-  return (
-    <div
-      className="rounded-[2px] border px-2 py-1"
-      style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-raised)' }}
-    >
-      <div className="nb-rule-label">{label}</div>
-      <div className="tabular text-[14px]">{value}</div>
-    </div>
   );
 }

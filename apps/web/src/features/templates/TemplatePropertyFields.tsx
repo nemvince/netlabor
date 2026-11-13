@@ -481,7 +481,7 @@ export function GroupedPropertyFields({
         >
           <summary
             className="cursor-pointer text-[11px]"
-            style={{ color: 'var(--color-ink-soft)' }}
+            style={{ color: 'var(--color-ink-dim)' }}
           >
             {group}
           </summary>

@@ -9,6 +9,8 @@ export * from './schemas/auth.ts';
 export * from './schemas/common.ts';
 export * from './schemas/computes.ts';
 export * from './schemas/links.ts';
+export * from './schemas/marketplace.ts';
 export * from './schemas/misc.ts';
 export * from './schemas/nodes.ts';
 export * from './schemas/projects.ts';
+export * from './schemas/shares.ts';

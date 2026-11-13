@@ -10,10 +10,12 @@ import { eventRoutes } from './routes/events.ts';
 import { faultRoutes } from './routes/faults.ts';
 import { imageRoutes } from './routes/images.ts';
 import { linkRoutes } from './routes/links.ts';
+import { marketplaceRoutes } from './routes/marketplace.ts';
 import { nodeRoutes } from './routes/nodes.ts';
 import { packetRoutes } from './routes/packet.ts';
 import { projectRoutes } from './routes/projects.ts';
 import { secretRoutes } from './routes/secrets.ts';
+import { shareRoutes } from './routes/shares.ts';
 import { snapshotRoutes } from './routes/snapshots.ts';
 import { symbolRoutes } from './routes/symbols.ts';
 import { templateRoutes } from './routes/templates.ts';
@@ -51,6 +53,8 @@ export function createAppRouter(deps: AppDeps) {
     ...symbolRoutes(os),
     ...uploadRoutes(os),
     ...userRoutes(os),
+    ...shareRoutes(os),
+    ...marketplaceRoutes(os, deps),
     ...adminRoutes(os),
     ...eventRoutes(os, jobs),
     ...secretRoutes(deps),

@@ -115,7 +115,7 @@ export function ConnectPortMenu({
       >
         <div className="min-w-0">
           <span
-            className="block text-[10px] uppercase tracking-wide"
+            className="block text-[10px]"
             style={{ color: 'var(--color-ink-faint)' }}
           >
             {role === 'source' ? 'Source port' : 'Target port'}
@@ -145,7 +145,7 @@ export function ConnectPortMenu({
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Type a port…"
           className="nb-field py-1 text-[12px]"
-          style={{ paddingLeft: 24 }}
+          style={{ paddingLeft: 30 }}
           aria-label="Search ports"
           autoComplete="off"
           spellCheck={false}

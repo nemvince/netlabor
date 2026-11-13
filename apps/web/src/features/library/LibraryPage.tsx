@@ -1,19 +1,22 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { Cable, FileCode2, HardDrive, LayoutTemplate } from 'lucide-react';
+import { Cable, FileCode2, HardDrive, LayoutTemplate, Store } from 'lucide-react';
 import { Loading, Page, PageHeader } from '../../components/Page.tsx';
+import { TabBar } from '../../components/TabBar.tsx';
 import { ApplianceImagesPanel } from '../appliances/ApplianceImagesPanel.tsx';
 import { NotAllowed } from '../auth/require-auth.tsx';
 import { useMe } from '../auth/use-me.ts';
 import { LibraryImagesPanel } from '../images/LibraryImagesPanel.tsx';
 import { DeviceTemplatesPanel } from '../templates/DeviceTemplatesPanel.tsx';
 import { SymbolsPanel } from '../templates/SymbolsPanel.tsx';
+import { CatalogPanel } from './CatalogPanel.tsx';
 
-type Tab = 'templates' | 'appliances' | 'images' | 'symbols';
+type Tab = 'templates' | 'appliances' | 'catalog' | 'images' | 'symbols';
 
 const TABS: { id: Tab; label: string; icon: typeof LayoutTemplate; needs: 'template' | 'image' }[] =
   [
     { id: 'templates', label: 'Device templates', icon: LayoutTemplate, needs: 'template' },
     { id: 'appliances', label: 'Appliances', icon: Cable, needs: 'image' },
+    { id: 'catalog', label: 'Appliance catalog', icon: Store, needs: 'template' },
     { id: 'images', label: 'Image library', icon: HardDrive, needs: 'image' },
     { id: 'symbols', label: 'Symbols', icon: FileCode2, needs: 'template' },
   ];
@@ -44,38 +47,19 @@ export function LibraryPage() {
         description="Device templates and appliance builds that feed the workspace palette, plus the images and symbols they need."
       />
 
-      <div
-        className="mt-4 flex items-center gap-1 border-b"
-        style={{ borderColor: 'var(--color-rule)' }}
-        role="tablist"
-        aria-label="Library sections"
-      >
-        {allowed.map((tab) => {
-          const Icon = tab.icon;
-          const active = view === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              className="flex items-center gap-1 px-3 py-1.5 text-[12px]"
-              style={{
-                color: active ? 'var(--color-ink)' : 'var(--color-ink-dim)',
-                borderBottom: active ? '2px solid var(--color-copper)' : '2px solid transparent',
-              }}
-              onClick={() =>
-                void navigate({
-                  to: '/library',
-                  search: { tab: tab.id === 'templates' ? undefined : tab.id },
-                  replace: true,
-                })
-              }
-            >
-              <Icon size={13} aria-hidden /> {tab.label}
-            </button>
-          );
-        })}
+      <div className="mt-4">
+        <TabBar
+          label="Library sections"
+          value={view}
+          items={allowed}
+          onChange={(id) =>
+            void navigate({
+              to: '/library',
+              search: { tab: id === 'templates' ? undefined : id },
+              replace: true,
+            })
+          }
+        />
       </div>
 
       {view === 'templates' ? (
@@ -89,6 +73,12 @@ export function LibraryPage() {
         <ApplianceImagesPanel
           canWrite={can('image.write')}
           canCreateTemplates={can('template.write')}
+        />
+      ) : null}
+      {view === 'catalog' ? (
+        <CatalogPanel
+          canInstall={can('image.write') && can('template.write')}
+          onOpenTemplates={() => void navigate({ to: '/library', search: { tab: 'templates' } })}
         />
       ) : null}
       {view === 'images' ? <LibraryImagesPanel /> : null}

@@ -10,6 +10,7 @@ import { catalogSymbols } from './symbols.ts';
 import { catalogTemplates } from './templates.ts';
 
 export * from './fault-catalog.ts';
+export * from './marketplace.ts';
 export * from './os-images.ts';
 export * from './ports.ts';
 export * from './setup-presets.ts';
@@ -67,6 +68,16 @@ export async function seedCatalog(db: SQL, options?: { logger?: Logger }): Promi
       [symbol.id, symbol.name, symbol.svg],
     );
   }
+  // Drop retired builtin symbols unless something still points at them.
+  const symbolIds = catalogSymbols.map((symbol) => symbol.id);
+  await db.unsafe(
+    `DELETE FROM symbols s
+      WHERE s.builtin = true
+        AND NOT (s.id = ANY($1::text[]))
+        AND NOT EXISTS (SELECT 1 FROM templates t WHERE t.symbol = s.id)
+        AND NOT EXISTS (SELECT 1 FROM nodes n WHERE n.symbol = s.id)`,
+    [symbolIds],
+  );
   options?.logger?.debug('catalog seeded', {
     templates: catalogTemplates.length,
     symbols: catalogSymbols.length,

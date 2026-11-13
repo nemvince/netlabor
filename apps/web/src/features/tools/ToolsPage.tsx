@@ -1,10 +1,13 @@
-import { Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { ArrowLeftRight, Plus, Trash2 } from 'lucide-react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../components/Badge.tsx';
 import { CopyButton } from '../../components/CopyButton.tsx';
+import { DetailList } from '../../components/DetailList.tsx';
 import { Field, Input, Select } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
-import { Page, PageHeader, Section } from '../../components/Page.tsx';
+import { Page, PageHeader } from '../../components/Page.tsx';
+import { TabBar } from '../../components/TabBar.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import {
   checkOverlap,
@@ -31,6 +34,63 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function ToolSection({
+  label,
+  description,
+  actions,
+  narrow = false,
+  children,
+}: {
+  label: string;
+  description: string;
+  actions?: ReactNode;
+  narrow?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      className={`mt-4 flex flex-col gap-3 ${narrow ? 'max-w-3xl' : ''}`}
+      aria-label={label}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="max-w-2xl text-[12px]" style={{ color: 'var(--color-ink-faint)' }}>
+          {description}
+        </p>
+        {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Controls({ children }: { children: ReactNode }) {
+  return <div className="nb-panel p-3">{children}</div>;
+}
+
+function Summary({ children }: { children: ReactNode }) {
+  return (
+    <div
+      className="flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-[3px] border px-3 py-2"
+      style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: ReactNode }) {
+  return (
+    <span className="flex items-baseline gap-1.5">
+      <span className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+        {label}
+      </span>
+      <span className="tabular text-[11px]" style={{ color: 'var(--color-ink-dim)' }}>
+        {value}
+      </span>
+    </span>
+  );
+}
+
 function SubnetSplitter() {
   const [baseInput, setBaseInput] = useState('10.0.0.0/16');
   const [newPrefix, setNewPrefix] = useState('24');
@@ -55,7 +115,16 @@ function SubnetSplitter() {
       return { value: null, error: errorMessage(error) };
     }
   }, [base.value, newPrefix, limit]);
-  const error = base.error ?? result.error;
+  const prefixOptions = base.value
+    ? Array.from({ length: 33 - base.value.prefix }, (_, index) => base.value!.prefix + index)
+    : [];
+
+  useEffect(() => {
+    if (base.value && Number(newPrefix) < base.value.prefix) {
+      setNewPrefix(String(base.value.prefix));
+    }
+  }, [base.value, newPrefix]);
+
   const copyValue = result.value
     ? result.value.subnets
         .map((row) =>
@@ -70,91 +139,99 @@ function SubnetSplitter() {
     : '';
 
   return (
-    <Section
-      title="Subnet splitter"
+    <ToolSection
+      label="Subnet splitter"
       description="Split one IPv4 network into equal-sized subnets."
       actions={copyValue ? <CopyButton value={copyValue} label="Copy table" /> : undefined}
     >
-      <div className="grid gap-2 sm:grid-cols-3">
-        <Field label="Base network" htmlFor="split-base" error={base.error ?? undefined}>
-          <Input
-            id="split-base"
-            className="tabular"
-            value={baseInput}
-            onChange={(event) => setBaseInput(event.target.value)}
-            placeholder="10.0.0.0/16"
-          />
-        </Field>
-        <Field label="New prefix" htmlFor="split-prefix" error={result.error ?? undefined}>
-          <Input
-            id="split-prefix"
-            className="tabular"
-            inputMode="numeric"
-            value={newPrefix}
-            onChange={(event) => setNewPrefix(event.target.value)}
-            placeholder="24"
-          />
-        </Field>
-        <Field label="Rows to show" htmlFor="split-limit">
-          <Select id="split-limit" value={limit} onChange={(event) => setLimit(event.target.value)}>
-            {['16', '64', '256', '1024', '4096'].map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
-            ))}
-          </Select>
-        </Field>
-      </div>
-      {error ? (
-        <div className="mt-2">
-          <Notice tone="error">{error}</Notice>
+      <Controls>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <Field label="Base network" htmlFor="split-base" error={base.error ?? undefined}>
+            <Input
+              id="split-base"
+              className="tabular"
+              value={baseInput}
+              onChange={(event) => setBaseInput(event.target.value)}
+              placeholder="10.0.0.0/16"
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </Field>
+          <Field label="New prefix" htmlFor="split-prefix">
+            <Select
+              id="split-prefix"
+              className="tabular"
+              value={newPrefix}
+              disabled={!base.value}
+              onChange={(event) => setNewPrefix(event.target.value)}
+            >
+              {prefixOptions.length === 0 ? (
+                <option value={newPrefix}>enter a base network first</option>
+              ) : null}
+              {prefixOptions.map((prefix) => (
+                <option key={prefix} value={prefix}>
+                  /{prefix} — {(2 ** (prefix - (base.value?.prefix ?? prefix))).toLocaleString()}{' '}
+                  subnet{prefix - (base.value?.prefix ?? prefix) === 0 ? '' : 's'}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Rows to show" htmlFor="split-limit">
+            <Select
+              id="split-limit"
+              value={limit}
+              onChange={(event) => setLimit(event.target.value)}
+            >
+              {['16', '64', '256', '1024', '4096'].map((value) => (
+                <option key={value} value={value}>
+                  {value}
+                </option>
+              ))}
+            </Select>
+          </Field>
         </div>
-      ) : result.value ? (
+      </Controls>
+      {result.value && base.value ? (
         <>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px]">
-            <span style={{ color: 'var(--color-ink-faint)' }}>Base</span>
-            <span className="tabular">
-              {networkLabel(result.value.subnets[0]?.network ?? 0, Number(newPrefix))}
-            </span>
-            <span style={{ color: 'var(--color-ink-faint)' }}>Subnets</span>
-            <Badge tone="copper">{result.value.count.toLocaleString()}</Badge>
+          <Summary>
+            <Stat label="Base" value={networkLabel(base.value.network, base.value.prefix)} />
+            <Stat label="New prefix" value={`/${newPrefix}`} />
+            <Stat label="Subnets" value={result.value.count.toLocaleString()} />
             {result.value.truncated ? (
-              <span style={{ color: 'var(--color-signal-warn)' }}>
+              <span className="text-[10px]" style={{ color: 'var(--color-signal-warn)' }}>
                 showing first {result.value.subnets.length}
               </span>
             ) : null}
-          </div>
-          <div className="mt-2">
-            <Table label="Split subnets">
-              <THead>
-                <Th>#</Th>
-                <Th>Network</Th>
-                <Th>Mask</Th>
-                <Th>Broadcast</Th>
-                <Th>Host range</Th>
-                <Th align="right">Usable</Th>
-              </THead>
-              <TBody>
-                {result.value.subnets.map((row) => (
-                  <Tr key={`${row.network}/${row.prefix}`}>
-                    <Td mono align="right">
-                      {row.index + 1}
-                    </Td>
-                    <Td mono>{networkLabel(row.network, row.prefix)}</Td>
-                    <Td mono>{formatIpv4(row.mask)}</Td>
-                    <Td mono>{formatIpv4(row.broadcast)}</Td>
-                    <Td mono>{hostRange(row)}</Td>
-                    <Td mono align="right">
-                      {row.usable.toLocaleString()}
-                    </Td>
-                  </Tr>
-                ))}
-              </TBody>
-            </Table>
-          </div>
+          </Summary>
+          <Table label="Split subnets" maxHeight={520} stickyHead>
+            <THead>
+              <Th>#</Th>
+              <Th>Network</Th>
+              <Th>Mask</Th>
+              <Th>Broadcast</Th>
+              <Th>Host range</Th>
+              <Th align="right">Usable</Th>
+            </THead>
+            <TBody>
+              {result.value.subnets.map((row) => (
+                <Tr key={`${row.network}/${row.prefix}`}>
+                  <Td mono align="right">
+                    {row.index + 1}
+                  </Td>
+                  <Td mono>{networkLabel(row.network, row.prefix)}</Td>
+                  <Td mono>{formatIpv4(row.mask)}</Td>
+                  <Td mono>{formatIpv4(row.broadcast)}</Td>
+                  <Td mono>{hostRange(row)}</Td>
+                  <Td mono align="right">
+                    {row.usable.toLocaleString()}
+                  </Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
         </>
       ) : null}
-    </Section>
+    </ToolSection>
   );
 }
 
@@ -199,123 +276,135 @@ function VlsmPlanner() {
   }
 
   return (
-    <Section
-      title="VLSM planner"
+    <ToolSection
+      label="VLSM planner"
       description="Allocate variable-length subnets from largest to smallest. Enter host counts, or a /prefix."
       actions={copyValue ? <CopyButton value={copyValue} label="Copy plan" /> : undefined}
     >
-      <Field label="Base network" htmlFor="vlsm-base" error={base.error ?? undefined}>
-        <Input
-          id="vlsm-base"
-          className="tabular"
-          value={baseInput}
-          onChange={(event) => setBaseInput(event.target.value)}
-          placeholder="10.0.0.0/24"
-        />
-      </Field>
-      <div className="mt-3 flex flex-col gap-1.5">
-        {requirements.map((requirement, index) => (
-          <div key={requirement.id} className="flex items-center gap-2">
+      <Controls>
+        <div className="max-w-sm">
+          <Field label="Base network" htmlFor="vlsm-base" error={base.error ?? undefined}>
             <Input
-              aria-label={`Requirement ${index + 1} name`}
-              className="basis-1/3"
-              value={requirement.name}
-              placeholder="Name"
-              onChange={(event) => update(requirement.id, { name: event.target.value })}
+              id="vlsm-base"
+              className="tabular"
+              value={baseInput}
+              onChange={(event) => setBaseInput(event.target.value)}
+              placeholder="10.0.0.0/24"
+              spellCheck={false}
+              autoComplete="off"
             />
-            <Input
-              aria-label={`Requirement ${index + 1} hosts or prefix`}
-              className="tabular flex-1"
-              value={requirement.request}
-              placeholder="100 hosts or /28"
-              onChange={(event) => update(requirement.id, { request: event.target.value })}
-            />
-            <button
-              type="button"
-              className="nb-button shrink-0"
-              data-size="sm"
-              data-variant="ghost"
-              aria-label={`Remove ${requirement.name || 'requirement'}`}
-              onClick={() =>
-                setRequirements((current) => current.filter((row) => row.id !== requirement.id))
-              }
-            >
-              <Trash2 size={12} aria-hidden />
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          className="nb-button justify-self-start"
-          data-size="sm"
-          onClick={() =>
-            setRequirements((current) => [
-              ...current,
-              { id: crypto.randomUUID(), name: '', request: '' },
-            ])
-          }
-        >
-          <Plus size={12} aria-hidden /> Add requirement
-        </button>
-      </div>
-      {plan?.errors.length ? (
-        <div className="mt-3 flex flex-col gap-1">
-          {plan.errors.map((entry) => (
-            <Notice key={entry} tone="error">
-              {entry}
-            </Notice>
-          ))}
+          </Field>
         </div>
+        <div className="mt-3 flex flex-col gap-1.5">
+          <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_auto] gap-2 px-0.5">
+            <span className="nb-rule-label">Name</span>
+            <span className="nb-rule-label">Hosts or /prefix</span>
+            <span className="w-[27px]" aria-hidden />
+          </div>
+          {requirements.map((requirement, index) => (
+            <div
+              key={requirement.id}
+              className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_auto] items-center gap-2"
+            >
+              <Input
+                aria-label={`Requirement ${index + 1} name`}
+                value={requirement.name}
+                placeholder="Name"
+                onChange={(event) => update(requirement.id, { name: event.target.value })}
+              />
+              <Input
+                aria-label={`Requirement ${index + 1} hosts or prefix`}
+                className="tabular"
+                value={requirement.request}
+                placeholder="100 hosts or /28"
+                spellCheck={false}
+                onChange={(event) => update(requirement.id, { request: event.target.value })}
+              />
+              <button
+                type="button"
+                className="nb-button"
+                data-size="sm"
+                data-variant="ghost"
+                aria-label={`Remove ${requirement.name || 'requirement'}`}
+                title="Remove requirement"
+                onClick={() =>
+                  setRequirements((current) =>
+                    current.filter((row) => row.id !== requirement.id),
+                  )
+                }
+              >
+                <Trash2 size={12} aria-hidden />
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            className="nb-button mt-1 self-start"
+            data-size="sm"
+            onClick={() =>
+              setRequirements((current) => [
+                ...current,
+                { id: crypto.randomUUID(), name: '', request: '' },
+              ])
+            }
+          >
+            <Plus size={12} aria-hidden /> Add requirement
+          </button>
+        </div>
+      </Controls>
+      {plan?.errors.length ? (
+        <Notice tone="error">
+          <ul className="flex list-inside list-disc flex-col gap-0.5">
+            {plan.errors.map((entry) => (
+              <li key={entry}>{entry}</li>
+            ))}
+          </ul>
+        </Notice>
       ) : null}
       {plan && base.value ? (
         <>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-[11px]">
-            <span style={{ color: 'var(--color-ink-faint)' }}>Base</span>
-            <span className="tabular">{networkLabel(base.value.network, base.value.prefix)}</span>
-            <span style={{ color: 'var(--color-ink-faint)' }}>Used</span>
-            <span className="tabular">{plan.usedAddresses.toLocaleString()} addresses</span>
-            <span style={{ color: 'var(--color-ink-faint)' }}>Free</span>
-            <Badge tone={plan.freeAddresses > 0 ? 'up' : 'neutral'}>
-              {plan.freeAddresses.toLocaleString()}
-            </Badge>
-          </div>
-          <div className="mt-2">
-            <Table label="VLSM allocations">
-              <THead>
-                <Th>Name</Th>
-                <Th>Request</Th>
-                <Th>Subnet</Th>
-                <Th>Host range</Th>
-                <Th align="right">Usable</Th>
-              </THead>
-              <TBody>
-                {plan.allocations.map((row) => (
-                  <Tr key={`${row.name}:${row.network}:${row.prefix}`}>
-                    <Td>{row.name}</Td>
-                    <Td mono>{row.request}</Td>
-                    <Td mono>
-                      {row.fits ? (
-                        networkLabel(row.network, row.prefix)
-                      ) : (
-                        <span style={{ color: 'var(--color-signal-down)' }}>does not fit</span>
-                      )}
-                    </Td>
-                    <Td mono>
-                      {row.fits
-                        ? `${formatIpv4(row.firstHost)} – ${formatIpv4(row.lastHost)}`
-                        : '—'}
-                    </Td>
-                    <Td mono align="right">
-                      {row.fits ? row.usable.toLocaleString() : '—'}
-                    </Td>
-                  </Tr>
-                ))}
-              </TBody>
-            </Table>
-          </div>
+          <Summary>
+            <Stat label="Base" value={networkLabel(base.value.network, base.value.prefix)} />
+            <Stat label="Used" value={`${plan.usedAddresses.toLocaleString()} addresses`} />
+            <Stat label="Free" value={`${plan.freeAddresses.toLocaleString()} addresses`} />
+            <Stat
+              label="Requests"
+              value={`${plan.allocations.filter((row) => row.fits).length} of ${plan.allocations.length} allocated`}
+            />
+          </Summary>
+          <Table label="VLSM allocations" maxHeight={520} stickyHead>
+            <THead>
+              <Th>Name</Th>
+              <Th>Request</Th>
+              <Th>Subnet</Th>
+              <Th>Host range</Th>
+              <Th align="right">Usable</Th>
+            </THead>
+            <TBody>
+              {plan.allocations.map((row) => (
+                <Tr key={`${row.name}:${row.network}:${row.prefix}`}>
+                  <Td>{row.name}</Td>
+                  <Td mono>{row.request}</Td>
+                  <Td mono>
+                    {row.fits ? (
+                      networkLabel(row.network, row.prefix)
+                    ) : (
+                      <span style={{ color: 'var(--color-signal-down)' }}>does not fit</span>
+                    )}
+                  </Td>
+                  <Td mono>
+                    {row.fits ? `${formatIpv4(row.firstHost)} – ${formatIpv4(row.lastHost)}` : '—'}
+                  </Td>
+                  <Td mono align="right">
+                    {row.fits ? row.usable.toLocaleString() : '—'}
+                  </Td>
+                </Tr>
+              ))}
+            </TBody>
+          </Table>
         </>
       ) : null}
-    </Section>
+    </ToolSection>
   );
 }
 
@@ -329,7 +418,7 @@ function IpCalculator() {
     }
   }, [input]);
   const network = result.value;
-  const rows = network
+  const rows: [string, string][] = network
     ? [
         ['Network', networkLabel(network.network, network.prefix)],
         ['Mask', `${formatIpv4(network.mask)} (/${network.prefix})`],
@@ -364,9 +453,10 @@ function IpCalculator() {
       ]
     : [];
   return (
-    <Section
-      title="IP calculator"
+    <ToolSection
+      label="IP calculator"
       description="Inspect any IPv4 address and prefix."
+      narrow
       actions={
         network ? (
           <CopyButton
@@ -376,139 +466,191 @@ function IpCalculator() {
         ) : undefined
       }
     >
-      <Field label="Address / prefix" htmlFor="ip-cidr" error={result.error ?? undefined}>
-        <Input
-          id="ip-cidr"
-          className="tabular"
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          placeholder="192.168.10.42/24"
-        />
-      </Field>
+      <Controls>
+        <div className="max-w-sm">
+          <Field
+            label="Address / prefix"
+            htmlFor="ip-cidr"
+            hint="Enter any address in the subnet; host bits are masked."
+            error={result.error ?? undefined}
+          >
+            <Input
+              id="ip-cidr"
+              className="tabular"
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="192.168.10.42/24"
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </Field>
+        </div>
+      </Controls>
       {network ? (
-        <div className="mt-3 grid grid-cols-[140px_1fr] gap-x-3 gap-y-1.5 text-[12px]">
-          {rows.map(([key, value]) => (
-            <div key={key} className="contents">
-              <span className="nb-rule-label self-center">{key}</span>
-              <span className="tabular break-all">{value}</span>
-            </div>
-          ))}
+        <div className="nb-panel px-3 py-2.5">
+          <DetailList
+            rows={rows.map(([label, value]) => ({
+              label,
+              value: <span className="tabular break-all">{value}</span>,
+            }))}
+          />
         </div>
       ) : null}
-    </Section>
+    </ToolSection>
   );
 }
 
 function OverlapCheck() {
   const [leftInput, setLeftInput] = useState('10.0.0.0/16');
   const [rightInput, setRightInput] = useState('10.0.4.0/24');
-  const result = useMemo(() => {
+  const left = useMemo(() => {
     try {
-      const left = parseCidr(leftInput);
-      const right = parseCidr(rightInput);
-      return { left, right, overlap: checkOverlap(left, right), error: null as string | null };
+      return { value: parseCidr(leftInput), error: null as string | null };
     } catch (error) {
-      return { left: null, right: null, overlap: null, error: errorMessage(error) };
+      return { value: null, error: errorMessage(error) };
     }
-  }, [leftInput, rightInput]);
+  }, [leftInput]);
+  const right = useMemo(() => {
+    try {
+      return { value: parseCidr(rightInput), error: null as string | null };
+    } catch (error) {
+      return { value: null, error: errorMessage(error) };
+    }
+  }, [rightInput]);
+  const overlap =
+    left.value && right.value ? checkOverlap(left.value, right.value) : null;
   return (
-    <Section
-      title="Overlap check"
+    <ToolSection
+      label="Overlap check"
       description="Test whether two CIDR blocks overlap or contain each other."
+      narrow
+      actions={
+        <button
+          type="button"
+          className="nb-button"
+          data-size="sm"
+          onClick={() => {
+            setLeftInput(rightInput);
+            setRightInput(leftInput);
+          }}
+        >
+          <ArrowLeftRight size={12} aria-hidden /> Swap A/B
+        </button>
+      }
     >
-      <div className="grid gap-2 sm:grid-cols-2">
-        <Field label="Network A" htmlFor="overlap-a" error={result.error ?? undefined}>
-          <Input
-            id="overlap-a"
-            className="tabular"
-            value={leftInput}
-            onChange={(event) => setLeftInput(event.target.value)}
-          />
-        </Field>
-        <Field label="Network B" htmlFor="overlap-b">
-          <Input
-            id="overlap-b"
-            className="tabular"
-            value={rightInput}
-            onChange={(event) => setRightInput(event.target.value)}
-          />
-        </Field>
-      </div>
-      {result.overlap && result.left && result.right ? (
-        <div className="mt-3 flex flex-col gap-2">
+      <Controls>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Field label="Network A" htmlFor="overlap-a" error={left.error ?? undefined}>
+            <Input
+              id="overlap-a"
+              className="tabular"
+              value={leftInput}
+              onChange={(event) => setLeftInput(event.target.value)}
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </Field>
+          <Field label="Network B" htmlFor="overlap-b" error={right.error ?? undefined}>
+            <Input
+              id="overlap-b"
+              className="tabular"
+              value={rightInput}
+              onChange={(event) => setRightInput(event.target.value)}
+              spellCheck={false}
+              autoComplete="off"
+            />
+          </Field>
+        </div>
+      </Controls>
+      {overlap && left.value && right.value ? (
+        <div className="nb-panel px-3 py-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone={result.overlap.overlap ? 'warn' : 'up'}>
-              {result.overlap.overlap ? 'overlap' : 'no overlap'}
+            <Badge tone={overlap.overlap ? 'warn' : 'up'}>
+              {overlap.overlap ? 'overlap' : 'no overlap'}
             </Badge>
-            {result.overlap.container ? (
+            {overlap.container ? (
               <Badge tone="info">
-                {result.overlap.container === 'a' ? 'A contains B' : 'B contains A'}
+                {overlap.container === 'a' ? 'A contains B' : 'B contains A'}
               </Badge>
             ) : null}
-            {result.overlap.intersection ? (
+            {overlap.intersection ? (
               <span className="tabular text-[11px]">
                 intersection{' '}
-                {networkLabel(
-                  result.overlap.intersection.network,
-                  result.overlap.intersection.prefix,
-                )}
+                {networkLabel(overlap.intersection.network, overlap.intersection.prefix)}
               </span>
             ) : null}
           </div>
-          <div className="grid grid-cols-[140px_1fr] gap-x-3 gap-y-1 text-[12px]">
-            <span className="nb-rule-label">A</span>
-            <span className="tabular">
-              {networkLabel(result.left.network, result.left.prefix)} · mask{' '}
-              {formatIpv4(maskForPrefix(result.left.prefix))}
-            </span>
-            <span className="nb-rule-label">B</span>
-            <span className="tabular">
-              {networkLabel(result.right.network, result.right.prefix)} · mask{' '}
-              {formatIpv4(maskForPrefix(result.right.prefix))}
-            </span>
+          <div className="mt-2">
+            <DetailList
+              rows={[
+                {
+                  label: 'A',
+                  value: (
+                    <span className="tabular break-all">
+                      {networkLabel(left.value.network, left.value.prefix)} · mask{' '}
+                      {formatIpv4(maskForPrefix(left.value.prefix))} ·{' '}
+                      {hostRange(left.value)}
+                    </span>
+                  ),
+                },
+                {
+                  label: 'B',
+                  value: (
+                    <span className="tabular break-all">
+                      {networkLabel(right.value.network, right.value.prefix)} · mask{' '}
+                      {formatIpv4(maskForPrefix(right.value.prefix))} ·{' '}
+                      {hostRange(right.value)}
+                    </span>
+                  ),
+                },
+              ]}
+            />
           </div>
         </div>
       ) : null}
-    </Section>
+    </ToolSection>
   );
 }
 
 export function ToolsPage() {
-  const [tab, setTab] = useState<ToolTab>('splitter');
+  const search = useSearch({ strict: false }) as { tab?: string };
+  const navigate = useNavigate();
+  const view: ToolTab = TABS.some((entry) => entry.id === search.tab)
+    ? (search.tab as ToolTab)
+    : 'splitter';
+
   return (
     <Page>
       <PageHeader
         title="Network tools"
         description="Subnet math without leaving the control plane. Everything runs in the browser."
       />
-      <div
-        className="mt-4 flex flex-wrap gap-1 border-b"
-        style={{ borderColor: 'var(--color-rule)' }}
-        role="tablist"
-        aria-label="Network tools"
-      >
-        {TABS.map((entry) => (
-          <button
-            key={entry.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === entry.id}
-            className="px-3 py-1.5 text-[12px]"
-            style={{
-              color: tab === entry.id ? 'var(--color-ink)' : 'var(--color-ink-dim)',
-              borderBottom:
-                tab === entry.id ? '2px solid var(--color-copper)' : '2px solid transparent',
-            }}
-            onClick={() => setTab(entry.id)}
-          >
-            {entry.label}
-          </button>
-        ))}
+      <div className="mt-4">
+        <TabBar
+          label="Network tools"
+          value={view}
+          items={TABS}
+          onChange={(id) =>
+            void navigate({
+              to: '/tools',
+              search: { tab: id === 'splitter' ? undefined : id },
+              replace: true,
+            })
+          }
+        />
       </div>
-      {tab === 'splitter' ? <SubnetSplitter /> : null}
-      {tab === 'vlsm' ? <VlsmPlanner /> : null}
-      {tab === 'calculator' ? <IpCalculator /> : null}
-      {tab === 'overlap' ? <OverlapCheck /> : null}
+      <div className={view === 'splitter' ? undefined : 'hidden'}>
+        <SubnetSplitter />
+      </div>
+      <div className={view === 'vlsm' ? undefined : 'hidden'}>
+        <VlsmPlanner />
+      </div>
+      <div className={view === 'calculator' ? undefined : 'hidden'}>
+        <IpCalculator />
+      </div>
+      <div className={view === 'overlap' ? undefined : 'hidden'}>
+        <OverlapCheck />
+      </div>
     </Page>
   );
 }

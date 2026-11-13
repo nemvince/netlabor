@@ -1,13 +1,16 @@
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider, useMutation } from '@tanstack/react-query';
 import {
   createRootRoute,
   createRoute,
   createRouter,
+  Link,
   Outlet,
   RouterProvider,
+  useNavigate,
 } from '@tanstack/react-router';
-import { StrictMode } from 'react';
+import { StrictMode, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
+import { Notice } from './components/Notice.tsx';
 import { Loading } from './components/Page.tsx';
 import { requireAuth } from './features/auth/require-auth.tsx';
 import { LibraryPage } from './features/library/LibraryPage.tsx';
@@ -15,6 +18,8 @@ import { SetupWizard } from './features/setup/SetupWizard.tsx';
 import { ToolsPage } from './features/tools/ToolsPage.tsx';
 import { WorkspacePage } from './features/workspace/WorkspacePage.tsx';
 import { AppShell } from './lib/AppShell.tsx';
+import { client, orpc } from './lib/api.ts';
+import { messageOf } from './lib/errors.ts';
 import { queryClient } from './lib/queryClient.ts';
 import { ApiKeysAdminPage } from './routes/admin/api-keys.tsx';
 import { AuditAdminPage } from './routes/admin/audit.tsx';
@@ -60,11 +65,63 @@ const loginRoute = createRoute({
   component: LoginPage,
 });
 
+const shareRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/s/$token',
+  component: ShareRoutePage,
+});
+
 const setupRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/setup',
   component: SetupWizard,
 });
+
+/** Redeem a read-only share link, then open the lab as its guest session. */
+function ShareRoutePage() {
+  const { token } = shareRoute.useParams();
+  const navigate = useNavigate();
+  const started = useRef(false);
+  const redeem = useMutation({
+    mutationFn: () => client.shares.redeem({ token }),
+    onSuccess: async (result) => {
+      queryClient.removeQueries({ queryKey: orpc.auth.me.key() });
+      await queryClient.invalidateQueries();
+      await navigate({
+        to: '/projects/$projectId',
+        params: { projectId: result.projectId },
+        replace: true,
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    redeem.mutate();
+  }, [redeem]);
+
+  return (
+    <main className="flex min-h-full items-center justify-center px-4 py-10">
+      <div className="w-full max-w-[440px]">
+        {redeem.isError ? (
+          <>
+            <Notice tone="error">{messageOf(redeem.error)}</Notice>
+            <p className="mt-4 text-[12px]" style={{ color: 'var(--color-ink-dim)' }}>
+              Ask the person who shared the lab for a fresh link, or{' '}
+              <Link to="/login" style={{ color: 'var(--color-copper)' }}>
+                sign in
+              </Link>
+              .
+            </p>
+          </>
+        ) : (
+          <Loading label="Opening the shared lab…" />
+        )}
+      </div>
+    </main>
+  );
+}
 
 /** Pathless layout: the rail and status bar wrap every protected route. */
 const appRoute = createRoute({
@@ -106,7 +163,7 @@ function librarySearch(search: Record<string, unknown>): { tab?: TabId } {
   return typeof tab === 'string' ? { tab: tab as TabId } : {};
 }
 
-type TabId = 'templates' | 'appliances' | 'images' | 'symbols';
+type TabId = 'templates' | 'appliances' | 'catalog' | 'images' | 'symbols';
 
 const libraryRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -115,9 +172,14 @@ const libraryRoute = createRoute({
   component: LibraryPage,
 });
 
+function toolsSearch(search: Record<string, unknown>): { tab?: string } {
+  return typeof search.tab === 'string' ? { tab: search.tab } : {};
+}
+
 const toolsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/tools',
+  validateSearch: toolsSearch,
   component: ToolsPage,
 });
 
@@ -176,6 +238,7 @@ const settingsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
+  shareRoute,
   setupRoute,
   appRoute.addChildren([
     indexRoute,

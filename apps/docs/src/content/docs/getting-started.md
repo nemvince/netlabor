@@ -41,7 +41,14 @@ bun install
 bun run dev
 ```
 
-The controller listens on `0.0.0.0:8080`, the agent on `0.0.0.0:8081`, and the UI on
+That command is also the whole first-run setup: it writes `.env` when missing, starts a local
+PostgreSQL cluster in `.dev/postgres` if no server is reachable, migrates the database, and
+registers the local agent as a compute named `dev`. The agent needs root for namespaces, so the
+supervisor runs it with passwordless `sudo` when available (otherwise it starts unprivileged and
+node starts fail with a clear warning). On a fresh database, the UI opens the first-run setup
+wizard to create the admin account.
+
+The controller listens on `127.0.0.1:8080`, the agent on `127.0.0.1:8081`, and the UI on
 `http://127.0.0.1:5173`. Vite proxies `/rpc`, `/api`, `/auth`, `/ws`, and `/healthz` to the
 controller and rewrites the proxy origin so the controller's same-origin mutation check passes.
 

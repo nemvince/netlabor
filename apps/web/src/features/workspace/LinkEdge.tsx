@@ -138,7 +138,7 @@ function LinkEdgeComponent({
         {portLabels.map((port) => (
           <div
             key={port.key}
-            className="pointer-events-none absolute rounded-[2px] px-1 text-[9px] leading-[14px] whitespace-nowrap"
+            className="pointer-events-none absolute rounded-[2px] px-1 text-[10px] leading-[14px] whitespace-nowrap"
             style={{
               transform: `translate(${port.x}px, ${port.y}px) translate(-50%, -50%)`,
               color: emphasized ? 'var(--color-copper)' : 'var(--color-ink-dim)',
@@ -150,7 +150,7 @@ function LinkEdgeComponent({
           </div>
         ))}
         <div
-          className="pointer-events-none absolute flex items-center gap-1.5 rounded-[2px] border px-1.5 py-[1px] text-[9px] whitespace-nowrap"
+          className="pointer-events-none absolute flex items-center gap-1.5 rounded-[2px] border px-1.5 py-[1px] text-[10px] whitespace-nowrap"
           style={{
             transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             color: selected ? 'var(--color-copper)' : 'var(--color-ink-dim)',

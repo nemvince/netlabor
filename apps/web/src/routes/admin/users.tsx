@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { GroupRow, RoleRow, UserRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyRound, Pencil, Plus, Search, Trash, UsersRound } from 'lucide-react';
+import { KeyRound, Pencil, Plus, Trash, UsersRound } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -12,6 +12,7 @@ import { EmptyState } from '../../components/EmptyState.tsx';
 import { CheckboxOption, Field, Input } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading, Page, PageHeader } from '../../components/Page.tsx';
+import { SearchInput } from '../../components/SearchInput.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import { GroupsSection } from '../../features/admin/GroupSection.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
@@ -524,21 +525,13 @@ export function UsersAdminPage() {
         description="Local accounts, their roles, and the groups used for project grants."
         actions={
           <>
-            <div className="relative">
-              <Search
-                size={13}
-                aria-hidden
-                className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2"
-                style={{ color: 'var(--color-ink-faint)' }}
-              />
-              <Input
-                aria-label="Search users"
-                placeholder="Search users"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                style={{ paddingLeft: 28, width: 220 }}
-              />
-            </div>
+            <SearchInput
+              label="Search users"
+              placeholder="Search users"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              wrapperStyle={{ width: 220 }}
+            />
             {canWrite ? (
               <button
                 type="button"

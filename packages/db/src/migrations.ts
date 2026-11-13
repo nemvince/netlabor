@@ -10,6 +10,8 @@ import {
   migration_0004_template_tombstones,
   migration_0005_appliances,
   migration_0006_link_style_straight,
+  migration_0007_share_links,
+  migration_0008_os_families,
 } from './migrations.generated.ts';
 
 export interface Migration {
@@ -24,4 +26,6 @@ export const MIGRATIONS: Migration[] = [
   { version: '0004_template_tombstones.sql', sql: migration_0004_template_tombstones },
   { version: '0005_appliances.sql', sql: migration_0005_appliances },
   { version: '0006_link_style_straight.sql', sql: migration_0006_link_style_straight },
+  { version: '0007_share_links.sql', sql: migration_0007_share_links },
+  { version: '0008_os_families.sql', sql: migration_0008_os_families },
 ];

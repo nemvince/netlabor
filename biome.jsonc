@@ -16,6 +16,7 @@
       "!**/test-results",
       "!**/playwright-report",
       "!**/packages/catalog/symbols",
+      "!**/.dev",
     ],
   },
   "formatter": {

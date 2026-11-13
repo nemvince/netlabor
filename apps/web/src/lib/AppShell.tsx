@@ -196,7 +196,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <div
-        className="grid overflow-hidden transition-[grid-template-columns] duration-150"
+        className="grid overflow-hidden"
         style={{ gridTemplateColumns: railCollapsed ? '44px 1fr' : '172px 1fr' }}
       >
         <aside

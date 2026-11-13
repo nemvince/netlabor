@@ -1,6 +1,6 @@
 import type { SymbolRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { FileUp, Search, Trash2 } from 'lucide-react';
+import { FileUp, Trash2 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { Badge } from '../../components/Badge.tsx';
 import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
@@ -8,6 +8,7 @@ import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
 import { Field, Input, Textarea } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading } from '../../components/Page.tsx';
+import { SearchInput } from '../../components/SearchInput.tsx';
 import { SymbolGlyph } from '../../components/SymbolGlyph.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
@@ -164,16 +165,14 @@ export function SymbolsPanel({ canWrite }: { canWrite: boolean }) {
   return (
     <section className="mt-5">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-1.5" htmlFor="symbol-search">
-          <Search size={13} aria-hidden style={{ color: 'var(--color-ink-faint)' }} />
-          <Input
-            id="symbol-search"
-            className="h-7 w-56 py-0 text-[12px]"
-            placeholder="Search symbols"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </label>
+        <SearchInput
+          id="symbol-search"
+          label="Search symbols"
+          placeholder="Search symbols"
+          wrapperStyle={{ width: 224 }}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
         <span className="tabular text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
           {filtered.length} of {symbols.data?.length ?? 0}
         </span>
@@ -212,28 +211,27 @@ export function SymbolsPanel({ canWrite }: { canWrite: boolean }) {
                 <div className="truncate text-[12px] font-medium" title={symbol.name}>
                   {symbol.name}
                 </div>
-                <div
-                  className="tabular truncate text-[9px]"
-                  style={{ color: 'var(--color-ink-faint)' }}
-                  title={symbol.id}
-                >
-                  {symbol.id}
-                </div>
+                {symbol.id !== symbol.name ? (
+                  <div
+                    className="tabular truncate text-[10px]"
+                    style={{ color: 'var(--color-ink-faint)' }}
+                    title={symbol.id}
+                  >
+                    {symbol.id}
+                  </div>
+                ) : null}
               </div>
               <div className="mt-auto flex items-center justify-between">
                 <span className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
                   {symbol.theme ?? 'any theme'}
                 </span>
-                {canWrite ? (
+                {canWrite && !symbol.builtin ? (
                   <button
                     type="button"
                     className="nb-button"
                     data-size="sm"
                     data-variant="ghost"
-                    disabled={symbol.builtin}
-                    title={
-                      symbol.builtin ? 'Builtin symbols are read-only' : `Delete ${symbol.name}`
-                    }
+                    title={`Delete ${symbol.name}`}
                     aria-label={`Delete ${symbol.name}`}
                     onClick={() => {
                       setDeleteError(null);

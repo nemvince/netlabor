@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { Id, Timestamp } from './common.ts';
 import { JobRow } from './misc.ts';
 
-export const OS_FAMILIES = ['debian', 'ubuntu'] as const;
+export const OS_FAMILIES = ['debian', 'ubuntu', 'rocky', 'alpine'] as const;
 export const OsFamily = z.enum(OS_FAMILIES);
 export type OsFamily = z.infer<typeof OsFamily>;
 

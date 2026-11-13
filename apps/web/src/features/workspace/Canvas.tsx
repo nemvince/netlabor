@@ -420,7 +420,7 @@ export function Canvas({
                   />
                 </svg>
                 <span
-                  className="mt-3 rounded-[2px] px-1 py-[1px] text-[9px] font-semibold whitespace-nowrap"
+                  className="mt-3 rounded-[2px] px-1 py-[1px] text-[10px] font-semibold whitespace-nowrap"
                   style={{ background: participant.color, color: '#111417' }}
                 >
                   {participant.name}

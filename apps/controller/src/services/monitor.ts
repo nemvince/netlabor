@@ -13,10 +13,16 @@ const OFFLINE_AFTER_MS = 30_000;
 interface MonitorState {
   timer: ReturnType<typeof setInterval> | undefined;
   lastSuccess: Map<string, number>;
+  /** Agent process identity per compute; a change means it restarted. */
+  startedAt: Map<string, string>;
 }
 
 export class ComputeMonitor {
-  private readonly state: MonitorState = { timer: undefined, lastSuccess: new Map() };
+  private readonly state: MonitorState = {
+    timer: undefined,
+    lastSuccess: new Map(),
+    startedAt: new Map(),
+  };
 
   constructor(private readonly deps: AppDeps) {}
 
@@ -40,11 +46,14 @@ export class ComputeMonitor {
       try {
         await this.deps.agents.call(compute.id, (agent) => agent.heartbeat({}));
         this.state.lastSuccess.set(compute.id, Date.now());
+        const info = await this.deps.agents.call(compute.id, (agent) => agent.info({}));
+        const previousStart = this.state.startedAt.get(compute.id);
+        const restarted = previousStart !== undefined && previousStart !== info.startedAt;
+        if (restarted) this.state.startedAt.set(compute.id, info.startedAt);
         if (compute.status !== 'online') {
           const capabilities = await this.deps.agents.call(compute.id, (agent) =>
             agent.capabilities({}),
           );
-          const info = await this.deps.agents.call(compute.id, (agent) => agent.info({}));
           if (info.apiVersion !== '1') {
             this.deps.logger.warn('agent API version is incompatible', {
               computeId: compute.id,
@@ -61,6 +70,12 @@ export class ComputeMonitor {
             capabilities,
           });
           await this.markStatus(compute.id, compute.name, 'online');
+        }
+        // A restarted agent has no emulator processes: its snapshot is the truth,
+        // so nodes are not left "started" without a console.
+        if (restarted) {
+          const snapshot = await this.deps.agents.call(compute.id, (agent) => agent.state({}));
+          await reconcileState(this.deps.db, compute.id, snapshot.nodes, snapshot.links);
         }
       } catch {
         const last = this.state.lastSuccess.get(compute.id) ?? 0;
@@ -100,6 +115,7 @@ export class ComputeMonitor {
           capabilities,
         });
         this.state.lastSuccess.set(compute.id, Date.now());
+        this.state.startedAt.set(compute.id, info.startedAt);
         const snapshot = await this.deps.agents.call(compute.id, (agent) => agent.state({}));
         await reconcileState(this.deps.db, compute.id, snapshot.nodes, snapshot.links);
       } catch (error) {

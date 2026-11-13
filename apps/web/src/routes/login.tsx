@@ -61,7 +61,7 @@ export function LoginPage() {
   });
 
   return (
-    <div className="flex min-h-full items-center justify-center px-4 py-10">
+    <main className="flex min-h-full items-center justify-center px-4 py-10">
       <div className="w-full max-w-[400px]">
         <div className="mb-6">
           <div className="nb-rule-label" style={{ color: 'var(--color-copper)' }}>
@@ -159,6 +159,6 @@ export function LoginPage() {
           Sessions live in an HttpOnly cookie and end when you sign out or the session expires.
         </p>
       </div>
-    </div>
+    </main>
   );
 }

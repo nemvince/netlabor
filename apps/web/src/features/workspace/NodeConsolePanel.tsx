@@ -99,7 +99,7 @@ export function NodeConsolePanel({
         >
           <summary
             className="cursor-pointer text-[11px]"
-            style={{ color: 'var(--color-ink-soft)' }}
+            style={{ color: 'var(--color-ink-dim)' }}
           >
             Power &amp; maintenance
           </summary>

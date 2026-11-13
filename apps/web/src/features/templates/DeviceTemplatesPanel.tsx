@@ -7,7 +7,6 @@ import {
   LayoutTemplate,
   Pencil,
   Plus,
-  Search,
   Trash2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -18,6 +17,7 @@ import { EmptyState } from '../../components/EmptyState.tsx';
 import { Field, Input, Select } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading } from '../../components/Page.tsx';
+import { SearchInput } from '../../components/SearchInput.tsx';
 import { SymbolGlyph } from '../../components/SymbolGlyph.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import { toast } from '../../components/Toast.tsx';
@@ -500,17 +500,14 @@ export function DeviceTemplatesPanel({
             ))}
           </Select>
         </label>
-        <label className="flex items-center gap-1.5" htmlFor="template-search">
-          <Search size={13} aria-hidden style={{ color: 'var(--color-ink-faint)' }} />
-          <Input
-            id="template-search"
-            className="h-7 py-0 text-[12px]"
-            style={{ width: 224 }}
-            placeholder="Search templates"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </label>
+        <SearchInput
+          id="template-search"
+          label="Search templates"
+          wrapperStyle={{ width: 224 }}
+          placeholder="Search templates"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
         <Select
           aria-label="Filter by node type"
           className="h-7 py-0 text-[12px]"
@@ -669,7 +666,7 @@ export function DeviceTemplatesPanel({
                                   {symbol ? (
                                     <SymbolGlyph svg={symbol.svg} className="size-6" />
                                   ) : (
-                                    <span className="text-[9px]">?</span>
+                                    <span className="text-[10px]">?</span>
                                   )}
                                 </span>
                                 <span className="min-w-0 flex-1">

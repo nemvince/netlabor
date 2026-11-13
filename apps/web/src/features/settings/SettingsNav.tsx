@@ -125,7 +125,7 @@ export function SettingsNav() {
                     <Link
                       to={entry.to}
                       aria-current={active ? 'page' : undefined}
-                      className="flex max-w-[250px] min-w-0 items-start gap-2 rounded-[2px] border px-2 py-1.5 transition-colors hover:bg-[var(--color-panel-raised)]"
+                      className="flex max-w-full min-w-0 items-start gap-2 rounded-[2px] border px-2 py-1.5 transition-colors hover:bg-[var(--color-panel-raised)] sm:max-w-[250px]"
                       style={
                         active
                           ? {
@@ -155,7 +155,7 @@ export function SettingsNav() {
                           {entry.label}
                         </span>
                         <span
-                          className="block text-[11px] leading-[1.4]"
+                          className="hidden text-[11px] leading-[1.4] sm:block"
                           style={{ color: 'var(--color-ink-faint)' }}
                         >
                           {entry.purpose}

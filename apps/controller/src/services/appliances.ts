@@ -7,7 +7,7 @@
 import { randomBytes } from 'node:crypto';
 import { mkdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { catalogOsImages, desktopRecipes } from '@netlabor/catalog';
+import { catalogOsImages, type DesktopRecipe, desktopRecipes } from '@netlabor/catalog';
 import {
   AppError,
   type AppErrorCode,
@@ -295,7 +295,7 @@ interface StreamedFile {
  * Stream a URL to `target` while hashing it. Used for upstream cloud images
  * and for pulling a finished build artifact from a compute agent.
  */
-async function downloadToFile(
+export async function downloadToFile(
   url: string,
   target: string,
   options: {
@@ -554,8 +554,12 @@ async function runDownload(
 
 /* ------------------------------------------------------------- provisioning --- */
 
-/** Strict Debian package name, optionally architecture-qualified (`pkg:amd64`). */
-const APT_PACKAGE_NAME = /^[a-z0-9][a-z0-9+.-]*(?::[a-z0-9][a-z0-9-]*)?$/;
+/**
+ * Package name for apt/dnf/apk: starts with alphanumeric, then letters,
+ * digits, and `.`, `_`, `+`, `-`; an optional `:arch` suffix covers Debian.
+ * Names are interpolated into a shell command, so nothing else is allowed.
+ */
+const PACKAGE_NAME = /^[A-Za-z0-9][A-Za-z0-9+._-]*(?::[A-Za-z0-9._-]+)?$/;
 
 /** Package names are interpolated into a shell command, so refuse anything else. */
 export function assertPackageNames(packages: readonly string[]): string[] {
@@ -564,7 +568,7 @@ export function assertPackageNames(packages: readonly string[]): string[] {
   for (const raw of packages) {
     const name = raw.trim();
     if (name === '') continue;
-    if (!APT_PACKAGE_NAME.test(name)) {
+    if (!PACKAGE_NAME.test(name)) {
       throw new AppError('BAD_REQUEST', `invalid apt package name: ${raw}`);
     }
     if (seen.has(name)) continue;
@@ -600,20 +604,38 @@ export interface ApplianceRecipeInput {
   desktop: Desktop;
   packages: readonly string[];
   commands: readonly string[];
+  family: OsFamily;
 }
 
 /**
- * The provisioning script cloud-init writes into the build VM. Everything is
- * one bash script so a failed apt run is visible in the console log instead of
- * being hidden inside cloud-init's package module.
+ * The provisioning script cloud-init writes into the build VM. One script per
+ * distro family so failures surface in the console instead of inside a
+ * cloud-init package module.
  */
 export function applianceProvisioningScript(
-  input: Pick<ApplianceRecipeInput, 'desktop' | 'packages' | 'commands'>,
+  input: Pick<ApplianceRecipeInput, 'family' | 'desktop' | 'packages' | 'commands'>,
 ): string {
   const extraPackages = assertPackageNames(input.packages);
   const commands = assertCommands(input.commands);
+  const debianLike = input.family === 'debian' || input.family === 'ubuntu';
+  if (input.desktop !== 'none' && !debianLike) {
+    throw new AppError(
+      'BAD_REQUEST',
+      `desktop builds are not supported on ${input.family}; choose the None desktop`,
+    );
+  }
   const recipe = input.desktop === 'none' ? null : desktopRecipes[input.desktop];
   const packages = [...(recipe?.packages ?? []), ...extraPackages];
+  if (input.family === 'alpine') return alpineProvisioningScript(packages, commands);
+  if (input.family === 'rocky') return rockyProvisioningScript(packages, commands);
+  return debianProvisioningScript(packages, commands, recipe);
+}
+
+function debianProvisioningScript(
+  packages: string[],
+  commands: string[],
+  recipe: DesktopRecipe | null,
+): string {
   const lines = [
     '#!/bin/bash',
     'set -Eeuo pipefail',
@@ -634,7 +656,9 @@ export function applianceProvisioningScript(
   ];
   if (packages.length > 0) {
     lines.push('progress 20 "installing packages"');
-    lines.push(`apt-get install -y --no-install-recommends ${packages.join(' ')}`);
+    lines.push(
+      `apt-get install -y ${recipe ? '' : '--no-install-recommends '}${packages.join(' ')}`,
+    );
   } else {
     lines.push('progress 20 "no packages to install"');
   }
@@ -642,12 +666,100 @@ export function applianceProvisioningScript(
     lines.push('progress 80 "enabling the desktop"');
     lines.push(`systemctl enable ${recipe.displayManager}`);
     lines.push('systemctl set-default graphical.target');
+    if (recipe.displayManager === 'lightdm') {
+      // The Debian cloud kernel ships no DRM driver, so logind never marks the
+      // seat graphical and lightdm would wait forever for it.
+      lines.push('progress 85 "configuring the display manager"');
+      lines.push('mkdir -p /etc/lightdm/lightdm.conf.d');
+      lines.push(
+        "printf '[LightDM]\\nlogind-check-graphical=false\\n' > /etc/lightdm/lightdm.conf.d/60-netlabor.conf",
+      );
+    }
   }
   if (commands.length > 0) {
     lines.push('progress 90 "running custom commands"');
     for (const command of commands) lines.push(`bash -c ${quoteShell(command)}`);
   }
   lines.push('progress 100 "build complete"', 'echo NETLABOR_BUILD_OK', 'systemctl poweroff -f');
+  return `${lines.join('\n')}\n`;
+}
+
+function rockyProvisioningScript(packages: string[], commands: string[]): string {
+  const lines = [
+    '#!/bin/bash',
+    'set -Eeuo pipefail',
+    '',
+    'progress() { echo "NETLABOR_PROGRESS $1 $2"; }',
+    '',
+    'on_error() {',
+    '  local status=$?',
+    '  echo "NETLABOR_BUILD_FAILED provisioning failed with exit code $status"',
+    '  systemctl poweroff -f',
+    '  exit $status',
+    '}',
+    'trap on_error ERR',
+    '',
+    'progress 5 "refreshing package lists"',
+    'dnf -y makecache',
+  ];
+  if (packages.length > 0) {
+    lines.push('progress 20 "installing packages"');
+    lines.push(`dnf -y install ${packages.join(' ')}`);
+  } else {
+    lines.push('progress 20 "no packages to install"');
+  }
+  if (commands.length > 0) {
+    lines.push('progress 90 "running custom commands"');
+    for (const command of commands) lines.push(`bash -c ${quoteShell(command)}`);
+  }
+  lines.push('progress 100 "build complete"', 'echo NETLABOR_BUILD_OK', 'systemctl poweroff -f');
+  return `${lines.join('\n')}\n`;
+}
+
+function alpineProvisioningScript(packages: string[], commands: string[]): string {
+  const lines = [
+    '#!/bin/sh',
+    'set -eu',
+    '',
+    'progress() {',
+    '  msg="NETLABOR_PROGRESS $1 $2"',
+    '  echo "$msg"',
+    '  [ -c /dev/ttyS0 ] && echo "$msg" > /dev/ttyS0 || true',
+    '}',
+    '',
+    'fail() {',
+    '  echo "NETLABOR_BUILD_FAILED provisioning failed"',
+    '  [ -c /dev/ttyS0 ] && echo "NETLABOR_BUILD_FAILED provisioning failed" > /dev/ttyS0 || true',
+    '  poweroff -f',
+    '  exit 1',
+    '}',
+    '',
+    'progress 5 "refreshing package lists"',
+    '# The Alpine cloud image relies on cloud-init networking; bring the first',
+    '# NIC up over DHCP so apk can reach the mirrors.',
+    'for iface in /sys/class/net/e*; do',
+    '  name=$(basename "$iface")',
+    '  ip link set "$name" up || true',
+    '  udhcpc -i "$name" -q -n -t 5 -T 3 >/dev/null 2>&1 || true',
+    'done',
+    'apk update || fail',
+  ];
+  if (packages.length > 0) {
+    lines.push('progress 20 "installing packages"');
+    lines.push(`apk add --no-cache ${packages.join(' ')} || fail`);
+  } else {
+    lines.push('progress 20 "no packages to install"');
+  }
+  if (commands.length > 0) {
+    lines.push('progress 90 "running custom commands"');
+    for (const command of commands) lines.push(`sh -c ${quoteShell(command)} || fail`);
+  }
+  lines.push(
+    'progress 100 "build complete"',
+    'echo NETLABOR_BUILD_OK',
+    '[ -c /dev/ttyS0 ] && echo NETLABOR_BUILD_OK > /dev/ttyS0 || true',
+    'poweroff -f',
+  );
   return `${lines.join('\n')}\n`;
 }
 
@@ -679,6 +791,10 @@ export function applianceUserData(input: ApplianceRecipeInput): string {
     .split('\n')
     .map((line) => `      ${line}`)
     .join('\n');
+  const alpine = input.family === 'alpine';
+  const groups = alpine || input.family === 'rocky' ? '[wheel]' : '[sudo, adm]';
+  const shell = alpine ? '/bin/sh' : '/bin/bash';
+  const runner = alpine ? 'sh' : 'bash';
   return [
     '#cloud-config',
     `hostname: "${hostname}"`,
@@ -690,9 +806,9 @@ export function applianceUserData(input: ApplianceRecipeInput): string {
     'users:',
     `  - name: "${user}"`,
     '    gecos: "Netlabor appliance"',
-    '    groups: [sudo, adm]',
-    '    shell: /bin/bash',
-    '    sudo: "ALL=(ALL) NOPASSWD:ALL"',
+    `    groups: ${groups}`,
+    `    shell: ${shell}`,
+    ...(alpine ? [] : ['    sudo: "ALL=(ALL) NOPASSWD:ALL"']),
     `    plain_text_passwd: "${input.password}"`,
     '    lock_passwd: false',
     'write_files:',
@@ -704,7 +820,7 @@ export function applianceUserData(input: ApplianceRecipeInput): string {
     'output:',
     "  all: '| tee -a /var/log/netlabor-build.log /dev/console'",
     'runcmd:',
-    '  - [bash, /usr/local/sbin/netlabor-build.sh]',
+    `  - [${runner}, /usr/local/sbin/netlabor-build.sh]`,
     '',
   ].join('\n');
 }
@@ -861,6 +977,23 @@ export async function createBuild(
   if (baseImage.kind !== 'qemu') {
     throw new AppError('BAD_REQUEST', 'the OS image artifact must be a QEMU disk image');
   }
+  // A build disk smaller than the base image truncates its partitions and the
+  // guest cannot find its root filesystem.
+  const baseVirtual = Number(baseImage.metadata['virtualSize'] ?? 0);
+  const minimumGb = Math.ceil(baseVirtual / 1024 ** 3);
+  if (minimumGb > 0 && input.diskGb < minimumGb) {
+    throw new AppError(
+      'BAD_REQUEST',
+      `this base image needs at least ${minimumGb} GB; the build requested ${input.diskGb} GB`,
+    );
+  }
+  const family = osRecord.family;
+  if (input.desktop !== 'none' && family !== 'debian' && family !== 'ubuntu') {
+    throw new AppError(
+      'BAD_REQUEST',
+      `desktop builds are only supported on Debian and Ubuntu base images; choose None for ${family}`,
+    );
+  }
   const compute = await resolveBuildCompute(deps.db, input.computeId);
 
   const buildId = newId();
@@ -873,6 +1006,7 @@ export async function createBuild(
     desktop: input.desktop,
     packages,
     commands,
+    family,
   });
   const metaData = `instance-id: ${buildId}\nlocal-hostname: ${hostname}\n`;
   const spec: ApplianceBuildSpec = {
@@ -884,6 +1018,10 @@ export async function createBuild(
     cpus: input.cpus,
     userData,
     metaData,
+    // Debian's BIOS GRUB cannot read its kernel from virtio-blk; Rocky and
+    // Alpine cloud images expect virtio and lack the IDE path in their initramfs.
+    diskInterface: family === 'rocky' ? 'virtio' : 'ide',
+    firmware: family === 'rocky' ? 'uefi' : 'bios',
   };
 
   await deps.db.unsafe(
@@ -1173,7 +1311,9 @@ async function finishBuild(
       replicaPath =
         listing.find(
           (entry) => entry.sha256 === artifact.sha256 && entry.filename === imageFilename,
-        )?.path ?? null;
+        )?.path ??
+        listing.find((entry) => entry.sha256 === artifact.sha256)?.path ??
+        null;
     } catch (error) {
       deps.logger.warn('failed to locate the build artifact on its compute', {
         buildId: context.buildId,
@@ -1324,6 +1464,11 @@ export async function createTemplateFromBuild(
     throw new AppError('BAD_REQUEST', 'the build has not produced an image yet');
   }
   const image = await getImage(deps.db, build.imageId);
+  const familyRows = await deps.db.unsafe<{ family: string }[]>(
+    'SELECT family FROM os_images WHERE id = $1',
+    [build.osImageId],
+  );
+  const osFamily = familyRows[0]?.family ?? 'debian';
   const projectId = input.projectId ?? null;
   const existing = await deps.db.unsafe<{ id: string }[]>(
     `SELECT id FROM templates
@@ -1341,6 +1486,10 @@ export async function createTemplateFromBuild(
     defaultNameFormat: '{name}-{index}',
     properties: {
       cloudInitEnabled: true,
+      osFamily,
+      // Desktop images need the desktop cloud-init variant so the node
+      // configures the display manager and can auto-login.
+      cloudInitVariant: build.desktop === 'none' ? 'server' : 'desktop',
       cloudInitAutoLogin: input.cloudInitAutoLogin,
       // GUI builds boot into a display manager, so nodes need VNC, not telnet.
       consoleType: build.desktop === 'none' ? 'telnet' : 'vnc',
@@ -1348,7 +1497,14 @@ export async function createTemplateFromBuild(
       ram: input.ram,
       cpus: input.cpus,
     },
-    requiredImages: [{ name: image.name, kind: 'qemu', filenamePattern: `*${image.filename}` }],
+    requiredImages: [
+      {
+        name: image.name,
+        kind: 'qemu',
+        filenamePattern: `*${image.filename}`,
+        sha256: image.sha256,
+      },
+    ],
     faults: [],
     projectId,
   });

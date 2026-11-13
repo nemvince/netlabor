@@ -191,7 +191,7 @@ export function CanvasToolbar({
   const imageInputRef = useRef<HTMLInputElement>(null);
   return (
     <div
-      className="absolute top-2 left-2 z-10 flex flex-wrap items-center gap-0.5 rounded-[3px] border px-1 py-0.5"
+      className="absolute top-2 left-2 z-10 flex max-w-[calc(100%-1rem)] flex-nowrap items-center gap-0.5 overflow-x-auto rounded-[3px] border px-1 py-0.5"
       style={{
         background: 'color-mix(in oklab, var(--color-panel) 94%, transparent)',
         borderColor: 'var(--color-rule-strong)',

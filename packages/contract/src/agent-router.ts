@@ -268,6 +268,10 @@ export const ApplianceBuildSpec = z.object({
   userData: z.string().min(1),
   metaData: z.string().default(''),
   networkConfig: z.string().optional(),
+  /** Disk bus for the boot disk; cloud images vary in initramfs support. */
+  diskInterface: z.enum(['ide', 'virtio']).default('ide'),
+  /** Firmware for the build VM; Rocky cloud images need UEFI + virtio. */
+  firmware: z.enum(['bios', 'uefi']).default('bios'),
 });
 export type ApplianceBuildSpec = z.infer<typeof ApplianceBuildSpec>;
 

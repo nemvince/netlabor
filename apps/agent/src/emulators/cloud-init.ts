@@ -69,6 +69,7 @@ function userData(ctx: NodeContext, properties: Record<string, unknown>): string
     typeof properties.cloudInitSshKey === 'string' ? properties.cloudInitSshKey.trim() : '';
   const desktop = properties.cloudInitVariant === 'desktop';
   const autoLogin = desktop && properties.cloudInitAutoLogin !== false;
+  const alpine = properties.osFamily === 'alpine';
   const lines = [
     '#cloud-config',
     `hostname: ${quoted(hostname)}`,
@@ -103,22 +104,44 @@ function userData(ctx: NodeContext, properties: Record<string, unknown>): string
       'packages:',
       '  - xfce4',
       '  - xinit',
+      '  - xorg',
+      '  - lightdm',
+      '  - lightdm-gtk-greeter',
       '  - qemu-guest-agent',
     );
   }
-  lines.push('runcmd:', '  - [systemctl, enable, --now, serial-getty@ttyS0.service]');
+  if (desktop) {
+    lines.push(
+      'write_files:',
+      '  - path: /etc/lightdm/lightdm.conf.d/60-logind.conf',
+      '    permissions: "0644"',
+      '    content: |',
+      '      [LightDM]',
+      '      logind-check-graphical=false',
+    );
+    if (autoLogin) {
+      lines.push(
+        '  - path: /etc/lightdm/lightdm.conf.d/60-netlabor.conf',
+        '    permissions: "0644"',
+        '    content: |',
+        '      [Seat:*]',
+        `      autologin-user=${user}`,
+        '      autologin-user-timeout=0',
+      );
+    }
+  }
+  if (alpine) {
+    // OpenRC image: systemd units do not exist; enable the SSH service instead.
+    lines.push('runcmd:', '  - [rc-update, add, sshd, default]');
+  } else {
+    lines.push('runcmd:', '  - [systemctl, enable, --now, serial-getty@ttyS0.service]');
+  }
   if (desktop) {
     lines.push(
       '  - [systemctl, enable, --now, qemu-guest-agent]',
       '  - [systemctl, set-default, graphical.target]',
+      '  - [systemctl, enable, lightdm]',
     );
-    if (autoLogin) {
-      lines.push(
-        `  - [bash, -lc, 'mkdir -p /etc/systemd/system/getty@tty1.service.d && { echo "[Service]"; echo "ExecStart="; echo "ExecStart=-/sbin/agetty --autologin ${user} --noclear %I linux"; } > /etc/systemd/system/getty@tty1.service.d/autologin.conf']`,
-        `  - [bash, -lc, 'echo "exec startxfce4" > /home/${user}/.xinitrc && chown ${user} /home/${user}/.xinitrc && echo "exec startx" >> /home/${user}/.bash_profile']`,
-      );
-    }
-    lines.push('  - [bash, -lc, "systemctl disable --now lightdm 2>/dev/null || true"]');
   }
   return `${lines.join('\n')}\n`;
 }

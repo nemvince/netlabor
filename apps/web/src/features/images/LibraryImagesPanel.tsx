@@ -1,17 +1,16 @@
-import type { ImageKind, ImageRow } from '@netlabor/contract';
+import type { ComputeRow, ImageKind, ImageRow } from '@netlabor/contract';
 import { IMAGE_KINDS } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { HardDrive, Layers, Pencil, RefreshCw, Search, Trash2, UploadCloud } from 'lucide-react';
+import { FileText, HardDrive, RefreshCw, UploadCloud } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge, type BadgeTone } from '../../components/Badge.tsx';
 import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
-import { CopyButton } from '../../components/CopyButton.tsx';
 import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
 import { EmptyState } from '../../components/EmptyState.tsx';
 import { Input, Select } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading } from '../../components/Page.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
+import { SearchInput } from '../../components/SearchInput.tsx';
 import { toast } from '../../components/Toast.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
@@ -19,16 +18,28 @@ import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/queryClient.ts';
 import { useMe } from '../auth/use-me.ts';
+import { ImageDetailDialog } from './ImageDetailDialog.tsx';
 import { ImagePruneDialog } from './ImagePruneDialog.tsx';
-import { ImageReplicaDrawer } from './ImageReplicaDrawer.tsx';
 import { ImageSyncDialog } from './ImageSyncDialog.tsx';
 import { ImageUploadDialog } from './ImageUploadDialog.tsx';
 
-function replicaTone(state: ImageRow['replicas'][number]['state'] | 'absent'): BadgeTone {
-  if (state === 'present') return 'up';
-  if (state === 'syncing') return 'warn';
-  if (state === 'missing') return 'down';
-  return 'neutral';
+function replicaSummary(
+  image: ImageRow,
+  computes: ComputeRow[],
+): { label: string; tone: BadgeTone } {
+  const states =
+    computes.length > 0
+      ? computes.map(
+          (compute) =>
+            image.replicas.find((replica) => replica.computeId === compute.id)?.state ?? 'absent',
+        )
+      : image.replicas.map((replica) => replica.state);
+  if (states.length === 0) return { label: 'no replicas', tone: 'neutral' };
+  const present = states.filter((state) => state === 'present').length;
+  return {
+    label: `${present}/${states.length} present`,
+    tone: present === states.length ? 'up' : 'warn',
+  };
 }
 
 /** Library images: upload, rename, replicas, sync, and prune. */
@@ -42,7 +53,7 @@ export function LibraryImagesPanel() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [pruneOpen, setPruneOpen] = useState(false);
   const [syncTarget, setSyncTarget] = useState<ImageRow | null>(null);
-  const [drawerTarget, setDrawerTarget] = useState<ImageRow | null>(null);
+  const [detailTarget, setDetailTarget] = useState<ImageRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ImageRow | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<unknown>(null);
@@ -104,7 +115,7 @@ export function LibraryImagesPanel() {
     try {
       await client.images.delete({ id: deleteTarget.id });
       setDeleteTarget(null);
-      if (drawerTarget?.id === deleteTarget.id) setDrawerTarget(null);
+      if (detailTarget?.id === deleteTarget.id) setDetailTarget(null);
       toast.success(`${deleteTarget.name} deleted.`);
       invalidateImages();
     } catch (error) {
@@ -117,19 +128,18 @@ export function LibraryImagesPanel() {
   return (
     <div className="mt-4 flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-1.5" htmlFor="image-search">
-          <Search size={13} aria-hidden style={{ color: 'var(--color-ink-faint)' }} />
-          <Input
-            id="image-search"
-            className="h-7 w-64 py-0 text-[12px]"
-            placeholder="Search images"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </label>
+        <SearchInput
+          id="image-search"
+          label="Search images"
+          placeholder="Search images"
+          wrapperStyle={{ width: 256 }}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
         <Select
           aria-label="Filter by image kind"
-          className="h-7 w-36 py-0 text-[12px]"
+          className="h-7 py-0 text-[12px]"
+          style={{ width: 144 }}
           value={kind}
           onChange={(event) => setKind(event.target.value as 'all' | ImageKind)}
         >
@@ -140,6 +150,9 @@ export function LibraryImagesPanel() {
             </option>
           ))}
         </Select>
+        <span className="tabular text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+          {images.data?.length ?? 0} image(s)
+        </span>
         {canWrite ? (
           <span className="ml-auto flex items-center gap-2">
             <button
@@ -160,9 +173,6 @@ export function LibraryImagesPanel() {
             </button>
           </span>
         ) : null}
-        <span className="tabular text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
-          {images.data?.length ?? 0} image(s)
-        </span>
       </div>
 
       <div className="mt-3">
@@ -193,158 +203,56 @@ export function LibraryImagesPanel() {
             }
           />
         ) : (
-          <Table label="Images">
-            <THead>
-              <Th>Image</Th>
-              <Th>Kind</Th>
-              <Th>File</Th>
-              <Th>SHA-256</Th>
-              <Th align="right">Size</Th>
-              <Th>Created</Th>
-              <Th>Replicas</Th>
-              <Th align="right">Actions</Th>
-            </THead>
-            <TBody>
-              {images.data.map((image) => (
-                <Tr key={image.id}>
-                  <Td>
-                    <button
-                      type="button"
-                      className="max-w-[190px] truncate text-left font-medium underline-offset-2 hover:underline"
-                      onClick={() => setDrawerTarget(image)}
-                      title={image.name}
-                    >
-                      {image.name}
-                    </button>
-                    <span
-                      className="tabular block text-[10px]"
-                      style={{ color: 'var(--color-ink-faint)' }}
-                    >
-                      {image.id.slice(0, 8)}
-                    </span>
-                  </Td>
-                  <Td>
-                    <Badge tone="copper">{image.kind}</Badge>
-                  </Td>
-                  <Td mono>{image.filename}</Td>
-                  <Td>
-                    <span className="flex items-center gap-1">
-                      <span className="tabular text-[10px]" title={image.sha256}>
-                        {image.sha256.slice(0, 12)}…
-                      </span>
-                      <CopyButton value={image.sha256} label="copy" />
-                    </span>
-                  </Td>
-                  <Td mono align="right">
-                    {formatBytes(image.sizeBytes)}
-                  </Td>
-                  <Td mono>{formatStamp(image.createdAt)}</Td>
-                  <Td>
-                    <span className="flex flex-wrap gap-1">
-                      {(computes.data ?? []).length > 0
-                        ? computes.data?.map((compute) => {
-                            const replica = image.replicas.find(
-                              (row) => row.computeId === compute.id,
-                            );
-                            const state = replica?.state ?? 'absent';
-                            return (
-                              <button
-                                key={compute.id}
-                                type="button"
-                                title={replica?.path ?? 'no replica'}
-                                onClick={() => setDrawerTarget(image)}
-                              >
-                                <Badge tone={replicaTone(state)}>
-                                  {compute.name} {state}
-                                </Badge>
-                              </button>
-                            );
-                          })
-                        : image.replicas.map((replica) => (
-                            <button
-                              key={replica.computeId}
-                              type="button"
-                              title={replica.path ?? 'no path'}
-                              onClick={() => setDrawerTarget(image)}
-                            >
-                              <Badge tone={replicaTone(replica.state)}>
-                                {replica.computeName} {replica.state}
-                              </Badge>
-                            </button>
-                          ))}
-                      {image.replicas.length === 0 && (computes.data ?? []).length === 0 ? (
-                        <span className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
-                          none
-                        </span>
-                      ) : null}
-                    </span>
-                  </Td>
-                  <Td align="right">
-                    <span className="inline-flex items-center gap-1">
+          <div
+            className="overflow-hidden rounded-[3px] border"
+            style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
+          >
+            <ul>
+              {images.data.map((image) => {
+                const summary = replicaSummary(image, computes.data ?? []);
+                return (
+                  <li
+                    key={image.id}
+                    className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-3 py-2.5 last:border-b-0"
+                    style={{ borderColor: 'var(--color-rule)' }}
+                  >
+                    <div className="min-w-0 flex-1">
+                      <button
+                        type="button"
+                        className="max-w-full truncate text-left text-[13px] font-medium underline-offset-2 hover:underline"
+                        onClick={() => setDetailTarget(image)}
+                        title={`Open details for ${image.name}`}
+                      >
+                        {image.name}
+                      </button>
+                      <p
+                        className="tabular mt-0.5 truncate text-[10px]"
+                        style={{ color: 'var(--color-ink-faint)' }}
+                        title={image.filename}
+                      >
+                        {image.kind} · {image.filename} · {formatBytes(image.sizeBytes)} ·{' '}
+                        {formatStamp(image.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Badge tone={summary.tone}>{summary.label}</Badge>
                       <button
                         type="button"
                         className="nb-button"
                         data-size="sm"
                         data-variant="ghost"
-                        title="Replica inventory"
-                        aria-label={`Replicas for ${image.name}`}
-                        onClick={() => setDrawerTarget(image)}
+                        aria-label={`Details for ${image.name}`}
+                        title="Image details, replicas, and actions"
+                        onClick={() => setDetailTarget(image)}
                       >
-                        <Layers size={12} aria-hidden />
+                        <FileText size={12} aria-hidden /> Details
                       </button>
-                      {canSync ? (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="ghost"
-                          disabled={computes.isPending || computes.isError}
-                          title="Sync to computes"
-                          aria-label={`Sync ${image.name}`}
-                          onClick={() => setSyncTarget(image)}
-                        >
-                          <RefreshCw size={12} aria-hidden />
-                        </button>
-                      ) : null}
-                      {canWrite ? (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="ghost"
-                          title="Rename image"
-                          aria-label={`Rename ${image.name}`}
-                          onClick={() => {
-                            setRenameError(null);
-                            setRenameValue(image.name);
-                            setRenameTarget(image);
-                          }}
-                        >
-                          <Pencil size={12} aria-hidden />
-                        </button>
-                      ) : null}
-                      {canWrite ? (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="ghost"
-                          title="Delete image"
-                          aria-label={`Delete ${image.name}`}
-                          onClick={() => {
-                            setDeleteError(null);
-                            setDeleteTarget(image);
-                          }}
-                        >
-                          <Trash2 size={12} aria-hidden />
-                        </button>
-                      ) : null}
-                    </span>
-                  </Td>
-                </Tr>
-              ))}
-            </TBody>
-          </Table>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         )}
       </div>
 
@@ -384,10 +292,30 @@ export function LibraryImagesPanel() {
         />
       ) : null}
 
-      {drawerTarget ? (
-        <ImageReplicaDrawer
-          image={images.data?.find((image) => image.id === drawerTarget.id) ?? drawerTarget}
-          onClose={() => setDrawerTarget(null)}
+      {detailTarget ? (
+        <ImageDetailDialog
+          image={images.data?.find((image) => image.id === detailTarget.id) ?? detailTarget}
+          computes={computes.data ?? []}
+          canWrite={canWrite}
+          canSync={canSync}
+          onOpenChange={(open) => {
+            if (!open) setDetailTarget(null);
+          }}
+          onSync={() => {
+            setDetailTarget(null);
+            setSyncTarget(detailTarget);
+          }}
+          onRename={() => {
+            setDetailTarget(null);
+            setRenameError(null);
+            setRenameValue(detailTarget.name);
+            setRenameTarget(detailTarget);
+          }}
+          onDelete={() => {
+            setDetailTarget(null);
+            setDeleteError(null);
+            setDeleteTarget(detailTarget);
+          }}
         />
       ) : null}
 

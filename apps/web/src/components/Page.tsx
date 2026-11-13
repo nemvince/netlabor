@@ -1,5 +1,5 @@
 import { LoaderCircle } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 
 /** Page frame: one max width, dense vertical rhythm, hairline header rule. */
 export function Page({ children, wide = true }: { children: ReactNode; wide?: boolean }) {
@@ -17,6 +17,10 @@ export function PageHeader({
   description?: string;
   actions?: ReactNode;
 }) {
+  useEffect(() => {
+    document.title = `${title} · Netlabor`;
+  }, [title]);
+
   return (
     <header
       className="flex flex-wrap items-end justify-between gap-3 border-b pb-3"

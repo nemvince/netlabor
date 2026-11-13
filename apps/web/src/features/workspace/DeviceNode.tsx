@@ -2,13 +2,7 @@ import type { NodeStatus } from '@netlabor/contract';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { memo } from 'react';
 import { SymbolGlyph } from '../../components/SymbolGlyph.tsx';
-import {
-  type FlowNode,
-  type FlowNodeData,
-  NODE_HEIGHT,
-  NODE_WIDTH,
-  nodeHandleId,
-} from './types.ts';
+import { type FlowNode, type FlowNodeData, NODE_HEIGHT, NODE_WIDTH, nodeHandleId } from './types.ts';
 
 const STATUS_COLOR: Record<NodeStatus, string> = {
   started: 'var(--color-signal-up)',
@@ -17,118 +11,66 @@ const STATUS_COLOR: Record<NodeStatus, string> = {
   error: 'var(--color-signal-down)',
 };
 
+/** Colored device artwork is never recolored; status lives in the dot and opacity. */
+const STATUS_OPACITY: Record<NodeStatus, number> = {
+  started: 1,
+  stopped: 0.72,
+  suspended: 0.9,
+  error: 1,
+};
+
+/** Bare device symbol: icon, name caption, status dot, and invisible handles. */
 function DeviceNodeComponent({ data, selected }: NodeProps<FlowNode>) {
   const payload = data as FlowNodeData;
   if (payload.kind !== 'device') return null;
   const { node, svg, remoteColors } = payload;
   const statusColor = STATUS_COLOR[node.status];
-  const ports = node.ports;
-
-  const litPorts = ports.slice(0, 8);
-  const hiddenPorts = ports.length - litPorts.length;
 
   return (
     <div
-      className="relative rounded-[2px] border"
-      style={{
-        width: NODE_WIDTH,
-        height: NODE_HEIGHT,
-        background: 'var(--color-panel-raised)',
-        borderColor: selected ? 'var(--color-copper)' : 'var(--color-rule-strong)',
-        boxShadow: selected
-          ? '0 0 0 1px var(--color-copper), 0 8px 20px rgba(0,0,0,0.4)'
-          : '0 3px 9px rgba(0,0,0,0.28)',
-      }}
-      title={`${node.name} · ${node.nodeType} · ${node.status}`}
+      className="relative flex flex-col items-center justify-center"
+      style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
+      title={`${node.name} · ${node.nodeType} · ${node.status}${node.isolated ? ' · isolated' : ''}`}
     >
       <div
-        className="absolute inset-x-0 top-0 flex h-[20px] items-center gap-1.5 border-b px-2"
+        className="relative flex items-center justify-center rounded-[6px] transition-colors"
         style={{
-          borderColor: 'color-mix(in oklab, var(--color-rule) 70%, transparent)',
-          background: 'var(--color-panel)',
+          width: 60,
+          height: 60,
+          opacity: STATUS_OPACITY[node.status],
+          background: selected
+            ? 'color-mix(in oklab, var(--color-copper) 14%, transparent)'
+            : 'transparent',
+          boxShadow: selected ? 'inset 0 0 0 2px var(--color-copper)' : undefined,
+          outline: node.isolated ? '1px dashed var(--color-signal-warn)' : undefined,
         }}
       >
+        <SymbolGlyph svg={svg} className="size-[52px]" />
         <span
           aria-hidden
-          className="inline-block size-[5px] rounded-full"
+          className="absolute right-0.5 bottom-0.5 inline-block size-[6px] rounded-full"
           style={{
             background: statusColor,
+            border: '1.5px solid var(--color-canvas, var(--color-panel))',
             boxShadow:
               node.status === 'started'
                 ? '0 0 5px color-mix(in oklab, var(--color-signal-up) 60%, transparent)'
                 : undefined,
           }}
         />
-        <span
-          className="min-w-0 flex-1 truncate font-mono text-[9px] leading-none"
-          style={{ color: 'var(--color-ink-faint)' }}
-        >
-          {node.nodeType}
-        </span>
-        <span className="flex shrink-0 items-center gap-[2px]" aria-hidden>
-          {litPorts.map((port) => (
-            <span
-              key={`${port.adapter}:${port.port}`}
-              className="inline-block h-[5px] w-[4px] rounded-[1px]"
-              style={{
-                background:
-                  node.status === 'started'
-                    ? 'color-mix(in oklab, var(--color-signal-up) 60%, var(--color-panel-sunken))'
-                    : 'var(--color-rule-strong)',
-              }}
-            />
-          ))}
-          {hiddenPorts > 0 ? (
-            <span
-              className="ml-0.5 font-mono text-[8px] leading-none"
-              style={{ color: 'var(--color-ink-faint)' }}
-            >
-              +{hiddenPorts}
-            </span>
-          ) : null}
-        </span>
-      </div>
-
-      <div className="absolute top-[28px] left-2 flex h-7 w-7 items-center justify-center">
-        <SymbolGlyph svg={svg} className="size-6" />
-      </div>
-      <div className="absolute top-[26px] right-2 left-10 min-w-0">
-        <div className="truncate text-[12px] leading-[1.2] font-semibold">{node.name}</div>
-        <div
-          className="mt-0.5 flex items-center gap-1 text-[10px] leading-[1.3]"
-          style={{ color: 'var(--color-ink-dim)' }}
-        >
-          <span
-            aria-hidden
-            className="inline-block size-[4px] rounded-full"
-            style={{ background: statusColor }}
-          />
-          {node.status}
-        </div>
       </div>
 
       <div
-        className="absolute inset-x-2 bottom-1 flex items-center gap-1 font-mono text-[9px] leading-none"
-        style={{ color: 'var(--color-ink-faint)' }}
+        className="mt-0.5 max-w-full truncate px-1 text-center text-[10px] leading-[1.3]"
+        style={{ color: selected ? 'var(--color-ink)' : 'var(--color-ink-dim)' }}
       >
-        <span>{ports.length === 1 ? '1 port' : `${ports.length} ports`}</span>
-        {node.isolated ? (
-          <span
-            className="ml-auto rounded-[1px] border px-1 py-[1px]"
-            style={{
-              color: 'var(--color-signal-warn)',
-              borderColor: 'color-mix(in oklab, var(--color-signal-warn) 40%, transparent)',
-            }}
-          >
-            isolated
-          </span>
-        ) : null}
+        {node.name}
       </div>
 
       {remoteColors && remoteColors.length > 0 ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-1 -bottom-[3px] h-[2px] rounded-full"
+          className="pointer-events-none absolute inset-x-3 -bottom-[2px] h-[2px] rounded-full"
           style={{
             background:
               remoteColors.length === 1
@@ -137,12 +79,14 @@ function DeviceNodeComponent({ data, selected }: NodeProps<FlowNode>) {
           }}
         />
       ) : null}
+
       {(
         [
-          { side: 'left', position: Position.Left, style: { left: 0, top: '50%' } },
-          { side: 'right', position: Position.Right, style: { right: 0, top: '50%' } },
-          { side: 'top', position: Position.Top, style: { top: 0, left: '50%' } },
-          { side: 'bottom', position: Position.Bottom, style: { bottom: 0, left: '50%' } },
+          // Handles sit on the icon's edge, not the caption's, so links meet the device.
+          { side: 'left', position: Position.Left, style: { left: 22, top: 37 } },
+          { side: 'right', position: Position.Right, style: { right: 22, top: 37 } },
+          { side: 'top', position: Position.Top, style: { top: 4, left: '50%' } },
+          { side: 'bottom', position: Position.Bottom, style: { bottom: 4, left: '50%' } },
         ] as const
       ).map(({ side, position, style }) => (
         <Handle

@@ -11,6 +11,7 @@ const BASE = {
   user: 'netlabor',
   password: 'abcdef0123456789abcdef01',
   desktop: 'xfce' as const,
+  family: 'ubuntu' as const,
   packages: ['vim', 'curl'],
   commands: ['echo hello'],
 };
@@ -18,11 +19,15 @@ const BASE = {
 describe('appliance provisioning script', () => {
   test('installs the desktop packages and enables the display manager', () => {
     const script = applianceProvisioningScript(BASE);
-    expect(script).toContain('apt-get install -y --no-install-recommends');
-    expect(script).toContain('xfce4');
-    expect(script).toContain('lightdm');
+    // Desktops install Recommends: xfce4 and lightdm only recommend the X server.
+    expect(script).toContain('apt-get install -y xfce4');
+    expect(script).not.toContain('--no-install-recommends');
+    expect(script).toContain('xorg');
+    expect(script).toContain('xserver-xorg-video-vesa');
     expect(script).toContain('systemctl enable lightdm');
     expect(script).toContain('systemctl set-default graphical.target');
+    expect(script).toContain('[LightDM]');
+    expect(script).toContain('logind-check-graphical=false');
   });
 
   test('appends extra packages and custom commands', () => {
@@ -37,6 +42,34 @@ describe('appliance provisioning script', () => {
     expect(script).toContain('apt-get install -y --no-install-recommends vim curl');
     expect(script).not.toContain('systemctl enable');
     expect(script).not.toContain('graphical.target');
+  });
+
+  test('rocky uses dnf and systemd', () => {
+    const script = applianceProvisioningScript({
+      ...BASE,
+      family: 'rocky',
+      desktop: 'none',
+      packages: ['nginx'],
+    });
+    expect(script).toContain('dnf -y install nginx');
+    expect(script).toContain('systemctl poweroff -f');
+    expect(script).not.toContain('apt-get');
+  });
+
+  test('alpine uses apk and OpenRC-friendly shutdown', () => {
+    const script = applianceProvisioningScript({
+      ...BASE,
+      family: 'alpine',
+      desktop: 'none',
+      packages: ['nginx'],
+    });
+    expect(script).toContain('apk add --no-cache nginx');
+    expect(script).toContain('poweroff -f');
+    expect(script).not.toContain('systemctl');
+  });
+
+  test('desktop builds are refused outside Debian and Ubuntu', () => {
+    expect(() => applianceProvisioningScript({ ...BASE, family: 'alpine' })).toThrow(AppError);
   });
 
   test('emits progress markers, the success marker, and a forced poweroff', () => {

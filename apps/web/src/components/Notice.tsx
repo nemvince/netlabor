@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { messageOf } from '../lib/errors.ts';
 
 export type NoticeTone = 'info' | 'success' | 'warn' | 'error';
 
@@ -25,11 +24,5 @@ export function Notice({ tone = 'info', children }: { tone?: NoticeTone; childre
     >
       {children}
     </div>
-  );
-}
-
-export function ErrorNotice({ error, prefix }: { error: unknown; prefix?: string }) {
-  return (
-    <Notice tone="error">{prefix ? `${prefix} ${messageOf(error)}` : messageOf(error)}</Notice>
   );
 }

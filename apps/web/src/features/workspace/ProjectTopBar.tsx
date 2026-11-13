@@ -119,7 +119,7 @@ export function ProjectTopBar({
   const opened = project.status === 'opened';
   return (
     <header
-      className="flex h-[42px] shrink-0 items-center gap-2 border-b px-2"
+      className="flex min-h-[42px] shrink-0 flex-wrap items-center gap-2 border-b px-2 py-1 sm:h-[42px] sm:flex-nowrap sm:py-0"
       style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
     >
       <Link
@@ -168,8 +168,10 @@ export function ProjectTopBar({
         disabled={!opened || busy !== null || nodeCount === 0}
         onClick={onStartAll}
         title="Start every stopped node"
+        aria-label="Start all"
       >
-        <Play size={13} aria-hidden /> {busy === 'start-all' ? 'Starting…' : 'Start all'}
+        <Play size={13} aria-hidden />{' '}
+        <span className="hidden sm:inline">{busy === 'start-all' ? 'Starting…' : 'Start all'}</span>
       </button>
       <button
         type="button"
@@ -178,8 +180,10 @@ export function ProjectTopBar({
         disabled={!opened || busy !== null || nodeCount === 0}
         onClick={onStopAll}
         title="Stop every running node"
+        aria-label="Stop all"
       >
-        <Square size={13} aria-hidden /> {busy === 'stop-all' ? 'Stopping…' : 'Stop all'}
+        <Square size={13} aria-hidden />{' '}
+        <span className="hidden sm:inline">{busy === 'stop-all' ? 'Stopping…' : 'Stop all'}</span>
       </button>
 
       <span className="ml-auto flex items-center gap-1">
@@ -204,7 +208,7 @@ export function ProjectTopBar({
                 return (
                   <span
                     key={participant.id}
-                    className="flex size-5 items-center justify-center rounded-full border text-[8px] font-bold"
+                    className="flex size-5 items-center justify-center rounded-full border text-[10px] font-semibold"
                     style={{
                       background: participant.color,
                       borderColor: 'var(--color-panel)',
@@ -219,7 +223,7 @@ export function ProjectTopBar({
               })}
               {collaborators.length > 5 ? (
                 <span
-                  className="flex size-5 items-center justify-center rounded-full border text-[8px]"
+                  className="flex size-5 items-center justify-center rounded-full border text-[10px]"
                   style={{
                     background: 'var(--color-panel-raised)',
                     borderColor: 'var(--color-panel)',

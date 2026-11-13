@@ -31,4 +31,15 @@ test.describe('network tools', () => {
     await page.getByRole('tab', { name: 'Overlap check' }).click();
     await expect(page.getByText('A contains B')).toBeVisible();
   });
+
+  test('keeps each tool\'s inputs when switching tabs', async ({ page }) => {
+    await page.goto('/tools');
+    const prefix = page.getByLabel('New prefix');
+    await expect(prefix).toHaveValue('24');
+    await prefix.selectOption('26');
+
+    await page.getByRole('tab', { name: 'IP calculator' }).click();
+    await page.getByRole('tab', { name: 'Subnet splitter' }).click();
+    await expect(prefix).toHaveValue('26');
+  });
 });

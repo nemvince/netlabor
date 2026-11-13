@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PRIVILEGES, type Privilege, type RoleRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Eye, Lock, Pencil, Plus, ShieldCheck, Trash } from 'lucide-react';
+import { Eye, Pencil, Plus, ShieldCheck, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -256,16 +256,6 @@ export function RolesAdminPage() {
         }
       />
       <SettingsNav />
-
-      <div className="mt-4">
-        <Notice tone="info">
-          <span className="inline-flex items-center gap-1.5">
-            <Lock size={12} aria-hidden />
-            Built-in roles (admin, operator, editor, owner, viewer, auditor) are read-only. Only
-            custom roles can be edited or deleted.
-          </span>
-        </Notice>
-      </div>
 
       <div className="mt-4">
         {roles.isPending ? (

@@ -19,6 +19,7 @@ import {
   stat,
   writeFile,
 } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import {
   AppError,
@@ -103,7 +104,7 @@ const MAX_LOG_PENDING = 8 * 1024;
 const LOG_CHUNK_BYTES = 1024 * 1024;
 /** A completed build keeps its log; a failed or cancelled one keeps only state. */
 const KEEP_COMPLETED = new Set([STATE_FILE, CONSOLE_FILE]);
-const KEEP_TERMINAL = new Set([STATE_FILE]);
+const KEEP_TERMINAL = new Set([STATE_FILE, QEMU_LOG_FILE, CONSOLE_FILE]);
 
 const runtimes = new Map<string, BuildRuntime>();
 
@@ -260,6 +261,14 @@ async function readPidFile(workspace: string): Promise<number | null> {
   }
 }
 
+/**
+ * QEMU rejects unix socket paths at ~108 bytes; the build workspace under the
+ * state dir can be longer, so keep the QMP socket in the system temp dir.
+ */
+function qmpSocketPath(buildId: string): string {
+  return path.join(tmpdir(), `netlabor-build-${buildId}.sock`);
+}
+
 async function removeWorkspaceContents(
   workspace: string,
   keep: ReadonlySet<string>,
@@ -275,6 +284,7 @@ async function removeWorkspaceContents(
       .filter((entry) => !keep.has(entry.name))
       .map((entry) => rm(path.join(workspace, entry.name), { recursive: true, force: true })),
   );
+  await rm(qmpSocketPath(path.basename(workspace)), { force: true }).catch(() => undefined);
 }
 
 /* ------------------------------------------------------------------ logs --- */
@@ -518,6 +528,10 @@ interface QemuArgsInput {
   memoryMb: number;
   cpus: number;
   diskPath: string;
+  diskInterface: 'ide' | 'virtio';
+  firmware: 'bios' | 'uefi';
+  ovmfCode: string | null;
+  ovmfVars: string | null;
   seedPath: string;
   consoleLog: string;
   qmpSocket: string;
@@ -526,18 +540,29 @@ interface QemuArgsInput {
 
 function qemuArgs(input: QemuArgsInput): string[] {
   const accel = existsSync('/dev/kvm') ? 'kvm' : 'tcg';
+  const firmware =
+    input.firmware === 'uefi' && input.ovmfCode && input.ovmfVars
+      ? [
+          '-drive',
+          `if=pflash,format=raw,readonly=on,file=${input.ovmfCode}`,
+          '-drive',
+          `if=pflash,format=raw,file=${input.ovmfVars}`,
+        ]
+      : [];
   return [
     input.qemu,
+    ...firmware,
     '-name',
     `netlabor-build-${input.buildId}`,
     '-m',
     String(input.memoryMb),
     '-smp',
     String(input.cpus),
+    // Modern distro userlands (Rocky 9+) require x86-64-v2; qemu64 lacks it.
+    '-cpu',
+    'max',
     '-drive',
-    // IDE matches the node default: the Debian cloud image's BIOS GRUB cannot
-    // read its kernel from virtio-blk, and Ubuntu boots from either.
-    `file=${input.diskPath},if=ide,format=qcow2`,
+    `file=${input.diskPath},if=${input.diskInterface},format=qcow2`,
     '-drive',
     `file=${input.seedPath},media=cdrom,readonly=on`,
     '-nic',
@@ -774,13 +799,41 @@ interface LaunchInput {
   artifactName: string;
 }
 
+/** Locate OVMF firmware; layout differs between Arch and Debian hosts. */
+function locateOvmf(): { code: string; vars: string } | null {
+  const candidates = [
+    ['/usr/share/edk2/x64/OVMF_CODE.4m.fd', '/usr/share/edk2/x64/OVMF_VARS.4m.fd'],
+    ['/usr/share/OVMF/OVMF_CODE.fd', '/usr/share/OVMF/OVMF_VARS.fd'],
+    ['/usr/share/OVMF/OVMF_CODE_4M.fd', '/usr/share/OVMF/OVMF_VARS_4M.fd'],
+    ['/usr/share/qemu/OVMF_CODE.fd', '/usr/share/OVMF/OVMF_VARS.fd'],
+  ] as const;
+  for (const [code, vars] of candidates) {
+    if (existsSync(code) && existsSync(vars)) return { code, vars };
+  }
+  return null;
+}
+
 async function launchBuild(input: LaunchInput): Promise<{ proc: BuildProcess; state: BuildState }> {
   const { workspace, spec } = input;
   const diskPath = path.join(workspace, DISK_FILE);
   const seedPath = path.join(workspace, 'seed');
   const consoleLog = path.join(workspace, CONSOLE_FILE);
-  const qmpSocket = path.join(workspace, 'qmp.sock');
+  const qmpSocket = qmpSocketPath(spec.buildId);
   const pidFile = path.join(workspace, 'qemu.pid');
+  let firmwareFiles: { code: string; vars: string } | null = null;
+  if (spec.firmware === 'uefi') {
+    const ovmf = locateOvmf();
+    if (!ovmf) {
+      throw new AppError(
+        'CAPABILITY_UNSUPPORTED',
+        'UEFI firmware (OVMF) is not installed; install edk2-ovmf or ovmf on the compute',
+      );
+    }
+    const varsPath = path.join(workspace, 'ovmf-vars.fd');
+    await copyFile(ovmf.vars, varsPath);
+    firmwareFiles = { code: ovmf.code, vars: varsPath };
+  }
+  await rm(qmpSocket, { force: true }).catch(() => undefined);
 
   await createOverlay({
     qemuImg: input.qemuImg,
@@ -815,6 +868,10 @@ async function launchBuild(input: LaunchInput): Promise<{ proc: BuildProcess; st
     memoryMb: spec.memoryMb,
     cpus: spec.cpus,
     diskPath,
+    diskInterface: spec.diskInterface,
+    firmware: spec.firmware,
+    ovmfCode: firmwareFiles?.code ?? null,
+    ovmfVars: firmwareFiles?.vars ?? null,
     seedPath: seedIso,
     consoleLog,
     qmpSocket,

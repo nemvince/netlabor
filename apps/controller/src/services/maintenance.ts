@@ -1,9 +1,11 @@
 /** Periodic retention: events, expired sessions, stale uploads, and jobs. */
 
+import { rm } from 'node:fs/promises';
 import type { Logger } from '@netlabor/shared';
 import type { AppDeps } from '../implementer.ts';
 import { activeProjectSockets, forgetProject, projectIdleMs } from './activity.ts';
 import { closeProject } from './projects.ts';
+import { uploadPartPath } from './uploads.ts';
 
 const HOUR_MS = 3_600_000;
 const ACTIVITY_TICK_MS = 60_000;
@@ -72,17 +74,30 @@ export class Maintenance {
       const sessions = await db.unsafe(
         `DELETE FROM sessions WHERE expires_at < now() - interval '1 day' RETURNING id`,
       );
-      const uploads = await db.unsafe(
-        `DELETE FROM uploads WHERE state = 'pending' AND created_at < now() - interval '1 day' RETURNING id`,
+      const uploads = await db.unsafe<{ id: string }[]>(
+        `DELETE FROM uploads WHERE created_at < now() - interval '1 day' RETURNING id`,
       );
+      for (const upload of uploads) {
+        await rm(uploadPartPath(this.deps.config, upload.id), { force: true }).catch(
+          () => undefined,
+        );
+      }
       const jobs = await db.unsafe(
         `DELETE FROM jobs WHERE state <> 'running' AND updated_at < now() - interval '30 days' RETURNING id`,
+      );
+      const links = await db.unsafe(
+        `WITH expired AS (DELETE FROM share_links WHERE expires_at < now() RETURNING guest_user_id),
+              grants AS (DELETE FROM project_grants g USING expired e
+                          WHERE g.subject_type = 'user' AND g.subject_id = e.guest_user_id
+                          RETURNING g.id)
+         DELETE FROM users u USING expired e WHERE u.id = e.guest_user_id RETURNING u.id`,
       );
       this.logger.debug('retention pass complete', {
         events: events.length,
         sessions: sessions.length,
         uploads: uploads.length,
         jobs: jobs.length,
+        shareLinks: links.length,
       });
     } catch (error) {
       this.logger.warn('retention pass failed', {

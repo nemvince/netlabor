@@ -1,16 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PROJECT_ROLE_NAMES } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Trash2, UserPlus } from 'lucide-react';
+import { Copy, Link2, Trash2, UserPlus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Dialog } from '../../components/Dialog.tsx';
-import { Field, Select } from '../../components/Field.tsx';
+import { Field, Input, Select } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading } from '../../components/Page.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
-import { orpc } from '../../lib/api.ts';
+import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/queryClient.ts';
 import { useMe } from '../auth/use-me.ts';
@@ -41,6 +41,8 @@ export function ShareDialog({
   const canReadPeople = can('user.read');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [ttlHours, setTtlHours] = useState(24);
+  const [createdLink, setCreatedLink] = useState<{ path: string; expiresAt: string } | null>(null);
 
   const grants = useQuery({
     ...orpc.grants.list.queryOptions({ input: { projectId } }),
@@ -83,6 +85,40 @@ export function ShareDialog({
     },
     onError: (createError) => setError(messageOf(createError)),
   });
+
+  const shareLinks = useQuery({
+    ...orpc.shares.list.queryOptions({ input: { projectId } }),
+    retry: false,
+  });
+  const createLink = useMutation({
+    mutationFn: () => client.shares.create({ projectId, ttlHours }),
+    onSuccess: (link) => {
+      setError(null);
+      setCreatedLink({ path: link.path, expiresAt: link.expiresAt });
+      setNotice('Share link created. Copy it now; it is only shown once.');
+      void queryClient.invalidateQueries({ queryKey: orpc.shares.list.key() });
+    },
+    onError: (linkError) => setError(messageOf(linkError)),
+  });
+  const revokeLink = useMutation({
+    mutationFn: (id: string) => client.shares.revoke({ id, projectId }),
+    onSuccess: () => {
+      setError(null);
+      setNotice('Share link revoked.');
+      void queryClient.invalidateQueries({ queryKey: orpc.shares.list.key() });
+    },
+    onError: (revokeError) => setError(messageOf(revokeError)),
+  });
+
+  async function copyShareLink() {
+    if (!createdLink) return;
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${createdLink.path}`);
+      setNotice('Share link copied to the clipboard.');
+    } catch {
+      setNotice('Copy failed; select the link and copy it manually.');
+    }
+  }
 
   const remove = useMutation({
     ...orpc.grants.delete.mutationOptions(),
@@ -136,6 +172,82 @@ export function ShareDialog({
       <div className="flex flex-col gap-4">
         {error ? <Notice tone="error">{error}</Notice> : null}
         {notice ? <Notice tone="success">{notice}</Notice> : null}
+
+        <div
+          className="flex flex-col gap-2 border-b pb-4"
+          style={{ borderColor: 'var(--color-rule)' }}
+        >
+          <div className="flex items-center gap-1.5 text-[12px] font-medium">
+            <Link2 size={13} aria-hidden /> Read-only link
+          </div>
+          <p className="text-[11px]" style={{ color: 'var(--color-ink-dim)' }}>
+            Anyone with the link opens this project as a guest with the viewer role. The link
+            expires on its own, and redeeming it replaces whatever session that browser had.
+          </p>
+          <div className="flex items-end gap-2">
+            <Field label="Expires after" htmlFor="share-ttl">
+              <Select
+                id="share-ttl"
+                value={ttlHours}
+                onChange={(event) => setTtlHours(Number(event.target.value))}
+              >
+                <option value={1}>1 hour</option>
+                <option value={24}>24 hours</option>
+                <option value={72}>3 days</option>
+                <option value={168}>7 days</option>
+              </Select>
+            </Field>
+            <button
+              type="button"
+              className="nb-button"
+              data-size="sm"
+              data-variant="primary"
+              disabled={createLink.isPending}
+              onClick={() => createLink.mutate()}
+            >
+              {createLink.isPending ? 'Creating…' : 'Create link'}
+            </button>
+          </div>
+          {createdLink ? (
+            <div className="flex items-center gap-2">
+              <Input
+                readOnly
+                aria-label="Share link"
+                value={`${window.location.origin}${createdLink.path}`}
+                onFocus={(event) => event.currentTarget.select()}
+              />
+              <button type="button" className="nb-button" data-size="sm" onClick={copyShareLink}>
+                <Copy size={12} aria-hidden /> Copy
+              </button>
+            </div>
+          ) : null}
+          {shareLinks.isError ? (
+            <Notice tone="error">{messageOf(shareLinks.error)}</Notice>
+          ) : (shareLinks.data ?? []).length > 0 ? (
+            <ul className="flex flex-col gap-1">
+              {(shareLinks.data ?? []).map((link) => (
+                <li key={link.id} className="flex items-center gap-2 text-[11px]">
+                  <span className="tabular" style={{ color: 'var(--color-ink-faint)' }}>
+                    expires {new Date(link.expiresAt).toLocaleString()}
+                  </span>
+                  <span style={{ color: 'var(--color-ink-faint)' }}>
+                    · {link.createdByName ?? 'unknown'}
+                  </span>
+                  <button
+                    type="button"
+                    className="nb-button ml-auto"
+                    data-size="sm"
+                    data-variant="ghost"
+                    disabled={revokeLink.isPending}
+                    onClick={() => revokeLink.mutate(link.id)}
+                  >
+                    <Trash2 size={12} aria-hidden /> Revoke
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
 
         {grants.isPending ? (
           <Loading label="Reading grants…" />

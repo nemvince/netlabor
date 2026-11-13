@@ -1,7 +1,8 @@
 /** Agent entrypoint: authenticated oRPC over Bun.serve. */
 
 import { timingSafeEqual } from 'node:crypto';
-import { chmod, mkdir } from 'node:fs/promises';
+import { rmSync } from 'node:fs';
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { AppError } from '@netlabor/contract';
 import { createLogger } from '@netlabor/shared';
@@ -46,6 +47,36 @@ await chownForEmulator(
   config.emulatorGid,
 );
 await mkdir(config.imageDir, { recursive: true, mode: 0o755 });
+
+// One agent owns a run dir. A second one would tear down the first one's
+// namespaces and emulators during startup cleanup.
+const lockPath = path.join(config.runDir, 'agent.pid');
+try {
+  const running = Number((await readFile(lockPath, 'utf8')).trim());
+  if (Number.isInteger(running) && running > 0 && running !== process.pid) {
+    try {
+      process.kill(running, 0);
+      logger.error('another agent is already running for this run dir', {
+        pid: running,
+        runDir: config.runDir,
+      });
+      process.exit(1);
+    } catch {
+      // stale lock from a crashed agent
+    }
+  }
+} catch {
+  // no lock yet
+}
+await writeFile(lockPath, String(process.pid), { mode: 0o600 });
+process.on('exit', () => {
+  try {
+    rmSync(lockPath, { force: true });
+  } catch {
+    // already gone
+  }
+});
+
 await startupCleanup(config, logger);
 
 registerVpcsAdapter();

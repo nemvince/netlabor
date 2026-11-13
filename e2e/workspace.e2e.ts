@@ -1,11 +1,15 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
 import { gotoWorkspace, resolveProject } from './helpers.ts';
 
-/** Open a persisted panel when a previous run left it hidden. */
-async function ensurePanelVisible(page: Page, showTitle: string, panel: Locator): Promise<void> {
+/** Open a persisted panel through the project View menu when hidden. */
+async function ensurePanelVisible(
+  page: Page,
+  menuLabel: string,
+  panel: Locator,
+): Promise<void> {
   if (await panel.isVisible()) return;
-  const show = page.getByTitle(showTitle);
-  if ((await show.count()) > 0) await show.first().click();
+  await page.getByTitle('Panel visibility').click();
+  await page.getByRole('menuitem', { name: menuLabel }).click();
   await expect(panel).toBeVisible();
 }
 
@@ -23,14 +27,14 @@ test.describe('workspace', () => {
     await gotoWorkspace(page, project.id);
 
     const palette = page.getByRole('complementary', { name: 'Device palette' });
-    await ensurePanelVisible(page, 'Show palette', palette);
+    await ensurePanelVisible(page, 'Palette', palette);
     await expect(palette.getByRole('textbox', { name: 'Search templates' })).toBeVisible();
     await expect(palette).toContainText(/Drag one onto the canvas/);
 
     await expect(page.getByRole('toolbar', { name: 'Canvas tools' })).toBeVisible();
 
     const inspector = page.getByRole('complementary', { name: 'Inspector' });
-    await ensurePanelVisible(page, 'Show inspector', inspector);
+    await ensurePanelVisible(page, 'Inspector', inspector);
     await expect(inspector.getByText('Inspector', { exact: true })).toBeVisible();
 
     const footer = page.getByRole('contentinfo');
@@ -69,22 +73,25 @@ test.describe('workspace', () => {
     if (!project) return;
 
     await gotoWorkspace(page, project.id);
-    const toggle = page.getByRole('button', { name: 'Toggle minimap' });
-    await expect(toggle).toBeVisible();
+    const display = page.getByTitle('Canvas display options');
+    await expect(display).toBeVisible();
+    await display.click();
+    const minimap = page.getByRole('menuitemcheckbox', { name: 'Minimap' });
 
     // The visibility preference is persisted, so normalise it before toggling.
-    if ((await toggle.getAttribute('aria-pressed')) !== 'true') {
-      await toggle.click();
-    }
+    if ((await minimap.getAttribute('aria-checked')) !== 'true') await minimap.click();
+    await page.keyboard.press('Escape');
     await expect(page.locator('.react-flow__minimap')).toBeVisible();
 
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    await display.click();
+    await minimap.click();
+    await expect(minimap).toHaveAttribute('aria-checked', 'false');
     await expect(page.locator('.react-flow__minimap')).toHaveCount(0);
 
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    await minimap.click();
+    await expect(minimap).toHaveAttribute('aria-checked', 'true');
     await expect(page.locator('.react-flow__minimap')).toBeVisible();
+    await page.keyboard.press('Escape');
   });
 
   test('filters the palette by device name', async ({ page }) => {
@@ -94,7 +101,7 @@ test.describe('workspace', () => {
 
     await gotoWorkspace(page, project.id);
     const palette = page.getByRole('complementary', { name: 'Device palette' });
-    await ensurePanelVisible(page, 'Show palette', palette);
+    await ensurePanelVisible(page, 'Palette', palette);
     const search = palette.getByRole('textbox', { name: 'Search templates' });
     await expect(search).toBeVisible();
     await search.fill(`zz-no-such-device-${Date.now()}`);

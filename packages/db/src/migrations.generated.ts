@@ -17,3 +17,9 @@ export const migration_0005_appliances =
 
 export const migration_0006_link_style_straight =
   "-- Link lines: switch every stored link to GNS3/Packet Tracer-style straight\n-- point-to-point lines; orthogonal/bezier stay opt-in per link.\nDO $$\nBEGIN\n  UPDATE links\n     SET style = jsonb_set(style, '{type}', '\"straight\"'::jsonb, true)\n   WHERE style->>'type' = 'orthogonal' OR style->>'type' IS NULL;\nEND\n$$;\n";
+
+export const migration_0007_share_links =
+  '-- Read-only, expiring share links. Each link owns a synthetic guest user that\n-- holds the viewer role on one project, so the normal RBAC path enforces\n-- read-only access without a parallel authorization model.\n\nCREATE TABLE IF NOT EXISTS share_links (\n  id uuid PRIMARY KEY,\n  project_id uuid NOT NULL,\n  token_hash text NOT NULL UNIQUE,\n  guest_user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n  created_by uuid REFERENCES users(id) ON DELETE SET NULL,\n  expires_at timestamptz NOT NULL,\n  created_at timestamptz NOT NULL DEFAULT now()\n);\n\nCREATE INDEX IF NOT EXISTS share_links_project_idx ON share_links(project_id);\nCREATE INDEX IF NOT EXISTS share_links_expires_idx ON share_links(expires_at);\n';
+
+export const migration_0008_os_families =
+  "-- More base distributions for appliance builds.\nALTER TABLE os_images DROP CONSTRAINT IF EXISTS os_images_family_check;\nALTER TABLE os_images\n  ADD CONSTRAINT os_images_family_check\n  CHECK (family IN ('debian', 'ubuntu', 'rocky', 'alpine'));\n";

@@ -15,9 +15,11 @@ import * as auth from './schemas/auth.ts';
 import { FileResponse, Id, Ok, Timestamp } from './schemas/common.ts';
 import * as computes from './schemas/computes.ts';
 import * as links from './schemas/links.ts';
+import * as marketplace from './schemas/marketplace.ts';
 import * as misc from './schemas/misc.ts';
 import * as nodes from './schemas/nodes.ts';
 import * as projects from './schemas/projects.ts';
+import * as sharesSchema from './schemas/shares.ts';
 
 export interface McpToolMeta {
   /** Tool name exposed through MCP, e.g. `project_list`. */
@@ -228,6 +230,32 @@ const grants = {
     .output(Ok),
 };
 
+/* ------------------------------------------------------- share links --- */
+
+const shares = {
+  list: proc(
+    'List active share links of a project',
+    authz({ mode: 'any', privilege: 'project.members', project: 'input.projectId' }),
+  )
+    .input(z.object({ projectId: Id }))
+    .output(z.array(sharesSchema.ShareLinkRow)),
+  create: proc(
+    'Create a read-only share link for a project',
+    authz({ mode: 'any', privilege: 'project.members', project: 'input.projectId' }),
+  )
+    .input(sharesSchema.ShareLinkCreateInput)
+    .output(sharesSchema.ShareLinkCreated),
+  revoke: proc(
+    'Revoke a share link',
+    authz({ mode: 'any', privilege: 'project.members', project: 'input.projectId' }),
+  )
+    .input(z.object({ id: Id, projectId: Id }))
+    .output(Ok),
+  redeem: proc('Redeem a share link and start a read-only guest session', PUBLIC)
+    .input(sharesSchema.ShareLinkRedeemInput)
+    .output(sharesSchema.ShareLinkRedeemOutput),
+};
+
 const audit = {
   list: proc('List audit log rows', authz({ mode: 'any', privilege: 'audit.read' }))
     .input(auth.AuditListInput)
@@ -349,6 +377,21 @@ const images = {
       }),
     )
     .output(FileResponse),
+};
+
+const marketplaceRouter = {
+  list: proc(
+    'Browse the curated appliance catalog',
+    authz({ mode: 'any', privilege: 'template.read' }),
+  )
+    .input(marketplace.MarketplaceListInput)
+    .output(z.array(marketplace.MarketplaceApplianceRow)),
+  install: proc(
+    'Download and install a catalog appliance as a template',
+    authz({ mode: 'any', privilege: 'image.write', also: ['template.write'] }),
+  )
+    .input(marketplace.MarketplaceInstallInput)
+    .output(misc.JobRow),
 };
 
 const uploads = {
@@ -1137,6 +1180,7 @@ export const router = {
   groups,
   roles,
   grants,
+  shares,
   audit,
   computes: computesRouter,
   pools,
@@ -1156,6 +1200,7 @@ export const router = {
   packet,
   jobs,
   appliances: appliancesRouter,
+  marketplace: marketplaceRouter,
 };
 
 export type AppRouter = typeof router;

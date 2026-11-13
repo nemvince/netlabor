@@ -89,7 +89,7 @@ export function AuditAdminPage() {
         <Field label="Action" htmlFor="audit-action">
           <Input
             id="audit-action"
-            placeholder="users.create"
+            placeholder="e.g. users.create"
             spellCheck={false}
             value={action}
             onChange={(event) => setAction(event.target.value)}
@@ -98,7 +98,7 @@ export function AuditAdminPage() {
         <Field label="Resource type" htmlFor="audit-resource-type">
           <Input
             id="audit-resource-type"
-            placeholder="users"
+            placeholder="e.g. users"
             spellCheck={false}
             value={resourceType}
             onChange={(event) => setResourceType(event.target.value)}
@@ -128,7 +128,7 @@ export function AuditAdminPage() {
           ) : (
             <Input
               id="audit-user"
-              placeholder="user UUID"
+              placeholder="e.g. 01a1d23f-…"
               spellCheck={false}
               value={userId}
               onChange={(event) => {

@@ -8,7 +8,6 @@ import {
   Lock,
   Play,
   Plus,
-  Search,
   Square,
   Trash2,
   Unlock,
@@ -18,8 +17,9 @@ import { useDeferredValue, useState } from 'react';
 import { Badge } from '../components/Badge.tsx';
 import { ConfirmDialog } from '../components/ConfirmDialog.tsx';
 import { EmptyState } from '../components/EmptyState.tsx';
-import { Input, Select } from '../components/Field.tsx';
+import { Select } from '../components/Field.tsx';
 import { Loading, Page, PageHeader } from '../components/Page.tsx';
+import { SearchInput } from '../components/SearchInput.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../components/Table.tsx';
 import { toast } from '../components/Toast.tsx';
 import { NotAllowed } from '../features/auth/require-auth.tsx';
@@ -137,21 +137,13 @@ export function ProjectsPage() {
       />
 
       <div className="mt-4 flex flex-wrap items-end gap-2">
-        <div className="relative min-w-[240px] flex-1">
-          <Search
-            size={13}
-            aria-hidden
-            className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2"
-            style={{ color: 'var(--color-ink-faint)' }}
-          />
-          <Input
-            aria-label="Search projects"
-            placeholder="Search projects"
-            className="pl-7"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-        </div>
+        <SearchInput
+          label="Search projects"
+          placeholder="Search projects"
+          wrapperClassName="min-w-[240px] flex-1"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
         <Select
           aria-label="Filter project status"
           style={{ width: 168 }}

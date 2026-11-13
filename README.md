@@ -3,11 +3,37 @@
 Browser-first network lab control plane, AGPL-3.0-or-later. Architecture and
 operations live in `apps/docs/src/content/docs/` (the Astro site in `apps/docs`).
 
+## Quick start (fresh clone)
+
+```bash
+bun install
+bun run dev
+```
+
+`bun run dev` provisions everything a first run needs, idempotently:
+
+- writes `.env` if it is missing (generated secret, local paths under `.dev/`);
+- starts a local PostgreSQL cluster in `.dev/postgres` when no server is reachable
+  (needs `pg_ctl`/`initdb` on `PATH` or via mise);
+- creates and migrates the `netlabor` database;
+- registers the local agent as a compute named `dev`;
+- starts the controller, the agent, and Vite.
+
+Runtime state lives in `/var/tmp/netlabor-dev` (state and run dirs), not in the
+checkout: emulators drop to an unprivileged uid and must be able to traverse
+every parent directory, which a `0750` home directory prevents. Images and
+staging keep their `/var/lib/netlabor` defaults so replicas survive restarts.
+
+Open `http://localhost:5173` and finish the first-run setup wizard to create the
+admin account. The agent runs under `sudo` when passwordless sudo is available
+(it needs root for namespaces); otherwise it starts unprivileged, the UI works,
+and starting nodes fails with a warning printed at boot.
+
 ## Development
 
 ```bash
 bun install
-bun run dev                # controller + agent + Vite (see scripts/dev.ts)
+bun run dev                # provisions + controller + agent + Vite (see scripts/dev.ts)
 bun run typecheck          # tsc -b
 bun run lint               # Biome checks; Bun ships no built-in lint command
 bun fmt                    # Bun's built-in formatter (options in bunfig.toml)

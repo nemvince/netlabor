@@ -18,7 +18,12 @@ import { newId } from '@netlabor/shared';
 import type { SQL } from 'bun';
 import type { AppDeps } from '../implementer.ts';
 import type { JobService } from './jobs.ts';
-import { type UploadRecord, uploadBlobPath, verifyCompletedUpload } from './uploads.ts';
+import {
+  type UploadRecord,
+  uploadBlobPath,
+  uploadPartPath,
+  verifyCompletedUpload,
+} from './uploads.ts';
 
 interface ImageRecord {
   id: string;
@@ -532,6 +537,9 @@ export async function createImageFromUpload(
     [sha256],
   );
   if (duplicate[0]) {
+    // The bytes are already in the library; the staged upload is dead weight.
+    await deps.db.unsafe('DELETE FROM uploads WHERE id = $1', [input.uploadId]);
+    await rm(partPath, { force: true }).catch(() => undefined);
     throw new AppError('CONFLICT', 'an image with this sha256 already exists', {
       details: { imageId: duplicate[0].id },
     });
@@ -581,6 +589,9 @@ export async function createImageFromUpload(
     type: 'image.updated',
     payload: { imageId: id, sha256, action: 'created', kind: input.kind },
   });
+  // The image now lives in the blob store; drop the staged upload copy.
+  await deps.db.unsafe('DELETE FROM uploads WHERE id = $1', [input.uploadId]);
+  await rm(uploadPartPath(deps.config, input.uploadId), { force: true }).catch(() => undefined);
   return getImage(deps.db, id);
 }
 

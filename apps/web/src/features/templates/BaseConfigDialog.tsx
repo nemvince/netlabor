@@ -191,7 +191,7 @@ export function BaseConfigDialog({
                       >
                         {file.filename}
                         <span
-                          className="block text-[9px]"
+                          className="block text-[10px]"
                           style={{ color: 'var(--color-ink-faint)' }}
                         >
                           {file.content.length} bytes
