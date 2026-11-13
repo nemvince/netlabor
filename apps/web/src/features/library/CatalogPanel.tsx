@@ -114,8 +114,7 @@ export function CatalogPanel({
                       className="tabular mt-1 text-[10px]"
                       style={{ color: 'var(--color-ink-faint)' }}
                     >
-                      {appliance.vendor} ·{' '}
-                      {appliance.nodeType === 'docker' ? 'Docker' : 'QEMU'}
+                      {appliance.vendor} · {appliance.nodeType === 'docker' ? 'Docker' : 'QEMU'}
                       {appliance.version ? ` · ${appliance.version}` : ''}
                       {appliance.sizeBytes > 0 ? ` · ${formatBytes(appliance.sizeBytes)}` : ''}
                     </p>

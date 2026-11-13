@@ -150,8 +150,8 @@ export async function clampSessionExpiry(
   sessionId: string,
   expiresAt: Date,
 ): Promise<void> {
-  await db.unsafe(
-    'UPDATE sessions SET expires_at = LEAST(expires_at, $2) WHERE id = $1',
-    [sessionId, expiresAt],
-  );
+  await db.unsafe('UPDATE sessions SET expires_at = LEAST(expires_at, $2) WHERE id = $1', [
+    sessionId,
+    expiresAt,
+  ]);
 }

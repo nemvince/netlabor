@@ -2,7 +2,13 @@ import type { NodeStatus } from '@netlabor/contract';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { memo } from 'react';
 import { SymbolGlyph } from '../../components/SymbolGlyph.tsx';
-import { type FlowNode, type FlowNodeData, NODE_HEIGHT, NODE_WIDTH, nodeHandleId } from './types.ts';
+import {
+  type FlowNode,
+  type FlowNodeData,
+  NODE_HEIGHT,
+  NODE_WIDTH,
+  nodeHandleId,
+} from './types.ts';
 
 const STATUS_COLOR: Record<NodeStatus, string> = {
   started: 'var(--color-signal-up)',

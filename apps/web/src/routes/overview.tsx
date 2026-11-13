@@ -1,13 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import {
-  ArrowRight,
-  LayoutTemplate,
-  type LucideIcon,
-  Network,
-  Server,
-  Wrench,
-} from 'lucide-react';
+import { ArrowRight, LayoutTemplate, type LucideIcon, Network, Server, Wrench } from 'lucide-react';
 import { Badge } from '../components/Badge.tsx';
 import { Page, PageHeader, RuleRow } from '../components/Page.tsx';
 import { useMe } from '../features/auth/use-me.ts';
@@ -103,10 +96,7 @@ export function OverviewPage() {
         </section>
 
         <section className="nb-panel overflow-hidden" aria-label="Jump back in">
-          <header
-            className="border-b px-4 py-2.5"
-            style={{ borderColor: 'var(--color-rule)' }}
-          >
+          <header className="border-b px-4 py-2.5" style={{ borderColor: 'var(--color-rule)' }}>
             <h2 className="text-[13px] font-semibold">Jump back in</h2>
           </header>
           {can('project.read') ? (
@@ -172,7 +162,11 @@ export function OverviewPage() {
           ) : (
             <ul>
               {(projects.data ?? []).map((project) => (
-                <li key={project.id} className="border-b last:border-b-0" style={{ borderColor: 'var(--color-rule)' }}>
+                <li
+                  key={project.id}
+                  className="border-b last:border-b-0"
+                  style={{ borderColor: 'var(--color-rule)' }}
+                >
                   <Link
                     to="/projects/$projectId"
                     params={{ projectId: project.id }}
@@ -185,7 +179,10 @@ export function OverviewPage() {
                     <Badge tone={project.status === 'opened' ? 'up' : 'neutral'}>
                       {project.status}
                     </Badge>
-                    <span className="tabular text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+                    <span
+                      className="tabular text-[10px]"
+                      style={{ color: 'var(--color-ink-faint)' }}
+                    >
                       {project.nodeCount} node{project.nodeCount === 1 ? '' : 's'} ·{' '}
                       {project.linkCount} link{project.linkCount === 1 ? '' : 's'} · updated{' '}
                       {formatStamp(project.updatedAt)}

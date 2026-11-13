@@ -14,7 +14,7 @@ TAP devices, `ubridge`, and emulator processes.
 
 | Host       | Requirements                                                                                                                                                                                       |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controller | Bun 1.4 or the compiled binary, PostgreSQL 17 or newer (18 recommended) reachable through `NB_DATABASE_URL`, a 32-byte base64 `NB_SECRET_KEY`, `NB_PUBLIC_URL`.                                  |
+| Controller | Bun 1.4 or the compiled binary, PostgreSQL 17 or newer (18 recommended) reachable through `NB_DATABASE_URL`, a 32-byte base64 `NB_SECRET_KEY`, `NB_PUBLIC_URL`.                                    |
 | Agent      | Linux with `ip`, `nft`, `tc`, `/dev/net/tun`, root or `CAP_NET_ADMIN`/`CAP_NET_RAW`/`CAP_SYS_ADMIN`, `ubridge` built with the marker and `iol_bridge` modules, `xorriso` for cloud-init templates. |
 | Emulators  | Only the ones you use: `qemu-system-x86_64` with KVM, `dynamips`, `iou`, `vpcs`, Docker Engine or a Podman compatibility socket, `sharkd`/`tshark`, `tcpdump`.                                     |
 

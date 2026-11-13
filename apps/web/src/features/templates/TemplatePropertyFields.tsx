@@ -479,10 +479,7 @@ export function GroupedPropertyFields({
           className="rounded-[2px] border px-2 py-1.5"
           style={{ borderColor: 'var(--color-rule)' }}
         >
-          <summary
-            className="cursor-pointer text-[11px]"
-            style={{ color: 'var(--color-ink-dim)' }}
-          >
+          <summary className="cursor-pointer text-[11px]" style={{ color: 'var(--color-ink-dim)' }}>
             {group}
           </summary>
           <div className="mt-1.5">{grid(fields.filter((field) => field.group === group))}</div>

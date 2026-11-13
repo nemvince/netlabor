@@ -67,7 +67,10 @@ export function ImageDetailDialog({
               label: 'File',
               value: <span className="tabular break-all">{image.filename}</span>,
             },
-            { label: 'Size', value: <span className="tabular">{formatBytes(image.sizeBytes)}</span> },
+            {
+              label: 'Size',
+              value: <span className="tabular">{formatBytes(image.sizeBytes)}</span>,
+            },
             {
               label: 'SHA-256',
               value: (

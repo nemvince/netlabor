@@ -114,10 +114,7 @@ export function ConnectPortMenu({
         style={{ borderColor: 'var(--color-rule)' }}
       >
         <div className="min-w-0">
-          <span
-            className="block text-[10px]"
-            style={{ color: 'var(--color-ink-faint)' }}
-          >
+          <span className="block text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
             {role === 'source' ? 'Source port' : 'Target port'}
           </span>
           <span className="block truncate text-[12px] font-semibold">{node.name}</span>

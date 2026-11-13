@@ -2,11 +2,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test';
 import { gotoWorkspace, resolveProject } from './helpers.ts';
 
 /** Open a persisted panel through the project View menu when hidden. */
-async function ensurePanelVisible(
-  page: Page,
-  menuLabel: string,
-  panel: Locator,
-): Promise<void> {
+async function ensurePanelVisible(page: Page, menuLabel: string, panel: Locator): Promise<void> {
   if (await panel.isVisible()) return;
   await page.getByTitle('Panel visibility').click();
   await page.getByRole('menuitem', { name: menuLabel }).click();

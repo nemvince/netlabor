@@ -78,7 +78,6 @@ export function Inspector({
   const [portMapping, setPortMapping] = useState<unknown>([]);
   const [portsError, setPortsError] = useState<string | null>(null);
 
-
   const form = useForm<NodeValues>({
     resolver: zodResolver(nodeSchema),
     defaultValues: {

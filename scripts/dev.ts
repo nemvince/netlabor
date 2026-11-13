@@ -97,9 +97,12 @@ function readEnvFile(file: string): Record<string, string> {
 function ensureEnvFile(): boolean {
   const envPath = path.join(root, '.env');
   if (existsSync(envPath)) {
-    Object.assign(process.env, Object.fromEntries(
-      Object.entries(readEnvFile(envPath)).filter(([key]) => process.env[key] === undefined),
-    ));
+    Object.assign(
+      process.env,
+      Object.fromEntries(
+        Object.entries(readEnvFile(envPath)).filter(([key]) => process.env[key] === undefined),
+      ),
+    );
     return false;
   }
   const user = process.env.USER ?? 'netlabor';
@@ -128,9 +131,12 @@ NB_IMAGE_DIR=/var/tmp/netlabor-dev/images
 }
 
 function awaitEnv(envPath: string): void {
-  Object.assign(process.env, Object.fromEntries(
-    Object.entries(readEnvFile(envPath)).filter(([key]) => process.env[key] === undefined),
-  ));
+  Object.assign(
+    process.env,
+    Object.fromEntries(
+      Object.entries(readEnvFile(envPath)).filter(([key]) => process.env[key] === undefined),
+    ),
+  );
 }
 
 /* ---------------------------------------------------------------- postgres --- */
@@ -177,10 +183,13 @@ async function ensurePostgres(): Promise<void> {
   const dataDir = path.join(devDir, 'postgres');
   if (!existsSync(path.join(dataDir, 'PG_VERSION'))) {
     const user = process.env.USER ?? 'netlabor';
-    const init = Bun.spawnSync([initdb, '-D', dataDir, '-U', user, '--auth=trust', '--encoding=UTF8'], {
-      stdout: 'pipe',
-      stderr: 'pipe',
-    });
+    const init = Bun.spawnSync(
+      [initdb, '-D', dataDir, '-U', user, '--auth=trust', '--encoding=UTF8'],
+      {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    );
     if (init.exitCode !== 0) {
       throw new Error(`initdb failed: ${init.stderr.toString().trim()}`);
     }

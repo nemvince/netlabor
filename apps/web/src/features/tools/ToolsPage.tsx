@@ -48,10 +48,7 @@ function ToolSection({
   children: ReactNode;
 }) {
   return (
-    <section
-      className={`mt-4 flex flex-col gap-3 ${narrow ? 'max-w-3xl' : ''}`}
-      aria-label={label}
-    >
+    <section className={`mt-4 flex flex-col gap-3 ${narrow ? 'max-w-3xl' : ''}`} aria-label={label}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="max-w-2xl text-[12px]" style={{ color: 'var(--color-ink-faint)' }}>
           {description}
@@ -328,9 +325,7 @@ function VlsmPlanner() {
                 aria-label={`Remove ${requirement.name || 'requirement'}`}
                 title="Remove requirement"
                 onClick={() =>
-                  setRequirements((current) =>
-                    current.filter((row) => row.id !== requirement.id),
-                  )
+                  setRequirements((current) => current.filter((row) => row.id !== requirement.id))
                 }
               >
                 <Trash2 size={12} aria-hidden />
@@ -517,8 +512,7 @@ function OverlapCheck() {
       return { value: null, error: errorMessage(error) };
     }
   }, [rightInput]);
-  const overlap =
-    left.value && right.value ? checkOverlap(left.value, right.value) : null;
+  const overlap = left.value && right.value ? checkOverlap(left.value, right.value) : null;
   return (
     <ToolSection
       label="Overlap check"
@@ -588,8 +582,7 @@ function OverlapCheck() {
                   value: (
                     <span className="tabular break-all">
                       {networkLabel(left.value.network, left.value.prefix)} · mask{' '}
-                      {formatIpv4(maskForPrefix(left.value.prefix))} ·{' '}
-                      {hostRange(left.value)}
+                      {formatIpv4(maskForPrefix(left.value.prefix))} · {hostRange(left.value)}
                     </span>
                   ),
                 },
@@ -598,8 +591,7 @@ function OverlapCheck() {
                   value: (
                     <span className="tabular break-all">
                       {networkLabel(right.value.network, right.value.prefix)} · mask{' '}
-                      {formatIpv4(maskForPrefix(right.value.prefix))} ·{' '}
-                      {hostRange(right.value)}
+                      {formatIpv4(maskForPrefix(right.value.prefix))} · {hostRange(right.value)}
                     </span>
                   ),
                 },

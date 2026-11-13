@@ -323,9 +323,7 @@ export function SettingsAdminPage() {
                 <label
                   className="flex min-h-7 cursor-pointer items-center gap-2 rounded-[2px] border px-2.5 py-1 text-[12px]"
                   style={{
-                    borderColor: !idleEnabled
-                      ? 'var(--color-rule-strong)'
-                      : 'var(--color-rule)',
+                    borderColor: !idleEnabled ? 'var(--color-rule-strong)' : 'var(--color-rule)',
                     background: !idleEnabled ? 'var(--color-panel-raised)' : 'transparent',
                   }}
                 >

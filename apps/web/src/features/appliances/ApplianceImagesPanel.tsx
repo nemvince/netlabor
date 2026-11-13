@@ -71,19 +71,11 @@ function Meter({ value, tone = 'var(--color-copper)' }: { value: number; tone?: 
   );
 }
 
-function OsStateBadge({
-  state,
-  progress,
-}: {
-  state: OsArtifactState;
-  progress: number | null;
-}) {
+function OsStateBadge({ state, progress }: { state: OsArtifactState; progress: number | null }) {
   if (state === 'ready') return <Badge tone="up">artifact ready</Badge>;
   if (state === 'downloading') {
     return (
-      <Badge tone="warn">
-        downloading{progress !== null ? ` ${Math.round(progress)}%` : ''}
-      </Badge>
+      <Badge tone="warn">downloading{progress !== null ? ` ${Math.round(progress)}%` : ''}</Badge>
     );
   }
   if (state === 'error') return <Badge tone="down">download failed</Badge>;
@@ -100,8 +92,6 @@ function EntryShell({ children }: { children: ReactNode }) {
     </div>
   );
 }
-
-
 
 function OsImageEntry({
   row,
@@ -291,8 +281,14 @@ function OsImageDetailDialog({
                 <span style={{ color: 'var(--color-ink-faint)' }}>no source URL</span>
               ),
             },
-            { label: 'Added', value: <span className="tabular">{formatStamp(row.createdAt)}</span> },
-            { label: 'Updated', value: <span className="tabular">{formatStamp(row.updatedAt)}</span> },
+            {
+              label: 'Added',
+              value: <span className="tabular">{formatStamp(row.createdAt)}</span>,
+            },
+            {
+              label: 'Updated',
+              value: <span className="tabular">{formatStamp(row.updatedAt)}</span>,
+            },
           ]}
         />
       </div>
@@ -365,7 +361,10 @@ function BuildEntry({
   const progress = Math.max(0, Math.min(100, build.progress));
   const desktop = build.desktop === 'none' ? 'server' : desktopLabel(build.desktop);
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-3 py-2.5 last:border-b-0" style={{ borderColor: 'var(--color-rule)' }}>
+    <li
+      className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b px-3 py-2.5 last:border-b-0"
+      style={{ borderColor: 'var(--color-rule)' }}
+    >
       <div className="min-w-0 flex-1">
         <button
           type="button"
@@ -531,8 +530,14 @@ function BuildDetailDialog({
                   <span style={{ color: 'var(--color-ink-faint)' }}>none</span>
                 ),
             },
-            { label: 'Created', value: <span className="tabular">{formatStamp(build.createdAt)}</span> },
-            { label: 'Updated', value: <span className="tabular">{formatStamp(build.updatedAt)}</span> },
+            {
+              label: 'Created',
+              value: <span className="tabular">{formatStamp(build.createdAt)}</span>,
+            },
+            {
+              label: 'Updated',
+              value: <span className="tabular">{formatStamp(build.updatedAt)}</span>,
+            },
           ]}
         />
 

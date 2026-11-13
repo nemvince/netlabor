@@ -32,7 +32,7 @@ test.describe('network tools', () => {
     await expect(page.getByText('A contains B')).toBeVisible();
   });
 
-  test('keeps each tool\'s inputs when switching tabs', async ({ page }) => {
+  test("keeps each tool's inputs when switching tabs", async ({ page }) => {
     await page.goto('/tools');
     const prefix = page.getByLabel('New prefix');
     await expect(prefix).toHaveValue('24');
