@@ -292,7 +292,7 @@ function PortsMappingEditor({
         const portType = typeof row.type === 'string' ? row.type : '';
         return (
           <div
-            // biome-ignore lint/suspicious/noArrayIndexKey: port rows are positional and carry no id
+            // port rows are positional and carry no id
             key={index}
             className="grid grid-cols-2 gap-1.5 rounded-[2px] border p-1.5"
             style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}

@@ -812,7 +812,7 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
     };
   }, [linkId, refresh, request]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only reacts to frame arrival.
+  // only reacts to frame arrival.
   useEffect(() => {
     if (!loaded || frames.length === 0) return;
     if (selectedFrame !== null) return;

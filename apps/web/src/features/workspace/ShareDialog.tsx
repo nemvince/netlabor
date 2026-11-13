@@ -70,7 +70,7 @@ export function ShareDialog({
   });
   const subjectType = form.watch('subjectType');
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset subject when type changes.
+  // reset subject when type changes.
   useEffect(() => {
     form.setValue('subjectId', '');
   }, [subjectType, form]);

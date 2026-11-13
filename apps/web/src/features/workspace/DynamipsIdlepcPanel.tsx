@@ -38,7 +38,7 @@ export function DynamipsIdlepcPanel({
   const [applying, setApplying] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset when platform/image changes.
+  // reset when platform/image changes.
   useEffect(() => {
     setProposals([]);
     setError(null);

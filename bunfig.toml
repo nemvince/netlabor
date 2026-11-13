@@ -1,5 +1,4 @@
-# Bun's built-in formatter (`bun fmt`) is the formatter for this repo.
-# Linting stays with Biome through `bun run lint`.
+# Bun's built-in formatter (`bun fmt`) and type checker (`bun check`) are the tools for this repo.
 [fmt]
 singleQuote = true
 printWidth = 100

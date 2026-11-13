@@ -10,8 +10,7 @@
   ],
   "scripts": {
     "dev": "bun run scripts/dev.ts",
-    "typecheck": "bunx tsc -b --pretty false",
-    "lint": "bunx biome check --error-on-warnings .",
+    "typecheck": "bun check",
     "test": "bun test",
     "test:integration": "bun test --preload ./test/preload.ts",
     "test:agent": "bun test apps/agent/test",
@@ -27,13 +26,11 @@
     "gen:migrations": "bun run scripts/gen-migrations.ts"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.6",
     "@netlabor/db": "workspace:*",
     "@netlabor/shared": "workspace:*",
     "@orpc/client": "^1.16.2",
     "@orpc/contract": "^1.16.2",
     "@playwright/test": "^1.65.0",
-    "@types/bun": "latest",
-    "typescript": "^7.0.2"
+    "@types/bun": "latest"
   }
 }

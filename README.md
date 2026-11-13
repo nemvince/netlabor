@@ -34,8 +34,7 @@ and starting nodes fails with a warning printed at boot.
 ```bash
 bun install
 bun run dev                # provisions + controller + agent + Vite (see scripts/dev.ts)
-bun run typecheck          # tsc -b
-bun run lint               # Biome checks; Bun ships no built-in lint command
+bun run typecheck          # bun check
 bun fmt                    # Bun's built-in formatter (options in bunfig.toml)
 bun test                   # unit tests
 bun run test:integration   # needs NB_TEST_DATABASE_URL and a test database
@@ -51,6 +50,5 @@ bun run scripts/load.ts    # 100-VPCS start/stop and orphan check
 bun run scripts/fetch-test-assets.ts   # Alpine qcow2 into e2e/assets
 ```
 
-Formatting is Bun's built-in `bun fmt` (Prettier-compatible; `[fmt]` section in
-`bunfig.toml`). Linting remains Biome (`bun run lint`); Biome's formatter is
-disabled so the two tools never fight over whitespace.
+Formatting and type checking are Bun's built-in `bun fmt` and `bun check`
+(`[fmt]` section in `bunfig.toml`).

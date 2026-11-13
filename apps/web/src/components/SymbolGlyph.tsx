@@ -38,7 +38,7 @@ export function SymbolGlyph({
         title={title}
         role="img"
         aria-label={title}
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: symbols are sanitized on write and again above.
+        // symbols are sanitized on write and again above.
         dangerouslySetInnerHTML={{ __html: safe }}
       />
     );
@@ -48,7 +48,7 @@ export function SymbolGlyph({
       className={className ? `nb-glyph ${className}` : 'nb-glyph'}
       style={style}
       aria-hidden
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: symbols are sanitized on write and again above.
+      // symbols are sanitized on write and again above.
       dangerouslySetInnerHTML={{ __html: safe }}
     />
   );

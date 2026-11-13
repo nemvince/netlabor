@@ -214,7 +214,7 @@ export function Canvas({
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState<FlowEdge>([]);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: refs keep cursor updates out of topology rebuilds.
+  // refs keep cursor updates out of topology rebuilds.
   useEffect(() => {
     setFlowNodes(
       buildFlowNodes(
