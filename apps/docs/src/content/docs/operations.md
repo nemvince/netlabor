@@ -5,7 +5,7 @@ description: Environment variables, first start, computes, NAT, backups, upgrade
 
 ## Host prerequisites
 
-Controller: Bun 1.4 or the compiled binary, PostgreSQL 18, a 32-byte base64 `NB_SECRET_KEY`, and
+Controller: Bun 1.4 or the compiled binary, PostgreSQL 17 or newer, a 32-byte base64 `NB_SECRET_KEY`, and
 `NB_PUBLIC_URL` matching the browser origin. Mutations are also accepted when `Origin` matches the
 request `Host`, so a lab reachable by hostname or LAN address still works; behind a proxy set
 `NB_PUBLIC_URL` to the proxy origin.
@@ -23,7 +23,11 @@ modules; `xorriso` for cloud-init; optional emulators (`qemu-system-x86_64`, `dy
 1. `bun run build` produces `dist/netlabor-controller`, `dist/netlabor-agent`, and
    `apps/web/dist`.
 2. Install with `scripts/install-controller.sh` and `scripts/install-agent.sh`, then edit
-   `/etc/netlabor/*.env`.
+   `/etc/netlabor/*.env`. On Debian 13 both scripts install their host dependencies (PostgreSQL,
+   database and role, QEMU, vpcs, tshark, nftables, xorriso, and a source-built ubridge) and copy
+   the web bundle; pass `--skip-deps` when those are managed separately, `--with-docker` for
+   container nodes, or `--with-nat` to provision the NAT bridge. Build the binaries on Debian 13
+   (or a host with an equal or older glibc) so the compiled executable runs there.
 3. `systemctl enable --now netlabor-controller` — migrations run automatically, and with
    `NB_ADMIN_PASSWORD` set the first administrator is created.
 4. Register the compute in the UI (**Computes → Add compute**). The dialog prints the agent token

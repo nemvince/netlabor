@@ -6,7 +6,7 @@ description: Processes, control-plane invariants, the Linux dataplane, storage a
 ```
 browser ──oRPC/HTTP+SSE+WS── controller ──oRPC── agent ──netns── emulators + ubridge
                                   │
-                            PostgreSQL 18
+                            PostgreSQL 17+
                                   │
                            image/blob store
 ```

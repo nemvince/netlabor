@@ -14,7 +14,7 @@ TAP devices, `ubridge`, and emulator processes.
 
 | Host       | Requirements                                                                                                                                                                                       |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controller | Bun 1.4 or the compiled binary, PostgreSQL 18 reachable through `NB_DATABASE_URL`, a 32-byte base64 `NB_SECRET_KEY`, `NB_PUBLIC_URL`.                                                              |
+| Controller | Bun 1.4 or the compiled binary, PostgreSQL 17 or newer (18 recommended) reachable through `NB_DATABASE_URL`, a 32-byte base64 `NB_SECRET_KEY`, `NB_PUBLIC_URL`.                                  |
 | Agent      | Linux with `ip`, `nft`, `tc`, `/dev/net/tun`, root or `CAP_NET_ADMIN`/`CAP_NET_RAW`/`CAP_SYS_ADMIN`, `ubridge` built with the marker and `iol_bridge` modules, `xorriso` for cloud-init templates. |
 | Emulators  | Only the ones you use: `qemu-system-x86_64` with KVM, `dynamips`, `iou`, `vpcs`, Docker Engine or a Podman compatibility socket, `sharkd`/`tshark`, `tcpdump`.                                     |
 
@@ -57,7 +57,11 @@ For a packaged install:
 1. `bun run build` produces `dist/netlabor-controller`, `dist/netlabor-agent`, and
    `apps/web/dist`.
 2. Run `scripts/install-controller.sh` and `scripts/install-agent.sh`, then edit the environment
-   files under `/etc/netlabor/`.
+   files under `/etc/netlabor/`. On Debian 13 they install their host dependencies automatically:
+   the controller gets PostgreSQL plus a database and role, the agent gets QEMU, vpcs, tshark,
+   nftables, xorriso, and a source-built ubridge. Use `--skip-deps` for managed dependencies,
+   `--with-docker` for Docker nodes, and `--with-nat` for the NAT bridge. Build on Debian 13 (or a
+   host with glibc no newer than the target) so the compiled binaries run there.
 3. `systemctl enable --now netlabor-controller`. Migrations run at startup; with
    `NB_ADMIN_PASSWORD` set, the first administrator account is created on the same start.
 4. In the UI, open **Computes → Add compute**. The dialog prints the agent token and its
