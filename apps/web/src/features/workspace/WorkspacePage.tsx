@@ -8,7 +8,7 @@ import type {
   TemplateRow,
 } from '@netlabor/contract';
 import { MarkerHit } from '@netlabor/contract';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { ReactFlowProvider, useReactFlow } from '@xyflow/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -213,6 +213,20 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
   const paletteOpen = useWorkspaceStore((state) => state.paletteOpen);
   const minimapVisible = useWorkspaceStore((state) => state.minimapVisible);
   const portLabelsAlways = useWorkspaceStore((state) => state.portLabelsAlways);
+  const canvasBackground =
+    typeof project.scene.background === 'string' ? project.scene.background : '';
+  const saveScene = useMutation({
+    ...orpc.projects.update.mutationOptions(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: orpc.projects.get.key() });
+    },
+  });
+  function setCanvasBackground(color: string) {
+    const scene = { ...project.scene };
+    if (color) scene.background = color;
+    else delete scene.background;
+    saveScene.mutate({ id: projectId, scene });
+  }
   const setPortLabelsAlways = useWorkspaceStore((state) => state.setPortLabelsAlways);
   const setMinimapVisible = useWorkspaceStore((state) => state.setMinimapVisible);
   const setPaletteOpen = useWorkspaceStore((state) => state.setPaletteOpen);
@@ -1101,7 +1115,17 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         requestDelete();
         return;
       }
-      if (!mod) return;
+      if (!mod) {
+        const plain = event.key.toLowerCase();
+        if (plain === 'l') {
+          event.preventDefault();
+          toggleConnectMode();
+        } else if (plain === 'p') {
+          event.preventDefault();
+          setPaletteOpen(!paletteOpen);
+        }
+        return;
+      }
       const key = event.key.toLowerCase();
       if (key === 'c' && selection.nodes.length > 0) {
         event.preventDefault();
@@ -1228,6 +1252,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                 snapEnabled={snapEnabled}
                 minimapVisible={minimapVisible}
                 portLabelsAlways={portLabelsAlways}
+                canvasBackground={canvasBackground}
                 onSelectionChange={setSelection}
                 onNodeDragStop={handleNodeDragStop}
                 connectMode={connectMode}
@@ -1290,6 +1315,8 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                 portLabelsAlways={portLabelsAlways}
                 onToggleMinimap={() => setMinimapVisible(!minimapVisible)}
                 onTogglePortLabels={() => setPortLabelsAlways(!portLabelsAlways)}
+                canvasBackground={canvasBackground}
+                onChangeCanvasBackground={setCanvasBackground}
                 onUndo={() => void undo()}
                 onRedo={() => void redo()}
                 onCopy={copySelection}

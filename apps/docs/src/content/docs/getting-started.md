@@ -54,19 +54,23 @@ controller and rewrites the proxy origin so the controller's same-origin mutatio
 
 For a packaged install:
 
-1. `bun run build` produces `dist/netlabor-controller`, `dist/netlabor-agent`, and
-   `apps/web/dist`.
-2. Run `scripts/install-controller.sh` and `scripts/install-agent.sh`, then edit the environment
-   files under `/etc/netlabor/`. On Debian 13 they install their host dependencies automatically:
-   the controller gets PostgreSQL plus a database and role, the agent gets QEMU, vpcs, tshark,
-   nftables, xorriso, and a source-built ubridge. Use `--skip-deps` for managed dependencies,
-   `--with-docker` for Docker nodes, and `--with-nat` for the NAT bridge. Build on Debian 13 (or a
-   host with glibc no newer than the target) so the compiled binaries run there.
-3. `systemctl enable --now netlabor-controller`. Migrations run at startup; with
+1. One script installs either or both roles from a release, no clone needed:
+   `curl -fsSL https://raw.githubusercontent.com/nemvince/netlabor/main/scripts/install.sh | sudo bash`.
+   It is interactive, or scriptable with `--controller`, `--agent`, `--all`, `--yes`,
+   `--skip-deps`, `--public-url`, `--admin-password`, `--token`, `--with-docker`, `--with-nat`.
+   On Debian 13 it installs the host dependencies: the controller gets PostgreSQL plus a database
+   and role, the agent gets QEMU, vpcs, tshark, nftables, xorriso, and a source-built ubridge.
+   `bun run build` builds the same binaries locally in `dist/` for
+   `scripts/install.sh --binary-dir dist`. Re-running the script updates the install: it keeps the
+   environment files, skips dependencies, and restarts the services.
+2. `systemctl enable --now netlabor-controller`. Migrations run at startup; with
    `NB_ADMIN_PASSWORD` set, the first administrator account is created on the same start.
-4. In the UI, open **Computes → Add compute**. The dialog prints the agent token and its
-   environment block once. Put them in `/etc/netlabor/agent.env` and start `netlabor-agent`.
-5. The compute turns online on the next heartbeat (every 10 seconds) and reports its capabilities.
+3. The installer registers the compute when it installs the agent next to the controller, or when
+   it has `--controller-url` plus admin credentials: it creates the compute, writes its token to
+   `/etc/netlabor/agent.env`, and starts the agent. Without those it prints the token step: open
+   **Computes → Add compute**, copy the token and environment block into `/etc/netlabor/agent.env`,
+   and start `netlabor-agent`.
+4. The compute turns online on the next heartbeat (every 10 seconds) and reports its capabilities.
 
 <div class="docs-callout" data-tone="info">
   <span class="docs-callout__label">Agent tokens</span>

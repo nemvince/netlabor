@@ -40,7 +40,7 @@ bun test                   # unit tests
 bun run test:integration   # needs NB_TEST_DATABASE_URL and a test database
 bun run test:agent         # needs root and the dataplane tools
 bun run test:e2e           # Playwright against a running stack
-bun run build              # compiled controller/agent binaries and web bundle
+bun run build              # compiled controller (UI embedded) and agent binaries
 bun run docs:dev           # Astro docs site with live reload
 bun run docs:check         # astro check over the docs site
 bun run docs:build         # static docs site into apps/docs/dist
@@ -58,6 +58,23 @@ Formatting and type checking are Bun's built-in `bun fmt` and `bun check`
 Controllers installed from a release build update themselves from GitHub. Set
 the release channel under **Settings → Controller → Controller updates**: stable
 follows tagged releases, nightly follows every commit on `main`. The updater
-verifies `SHA256SUMS`, replaces the binary and web bundle in `/opt/netlabor`, and
-restarts through systemd. Re-run `scripts/install-controller.sh` once on an
-existing install so the service group can write that directory.
+verifies `SHA256SUMS` and replaces the binary in `/opt/netlabor`, then restarts
+through systemd. The UI ships inside the binary, so a binary update also updates
+the frontend.
+
+## Installing from a release
+
+One script installs either or both roles on Debian/Ubuntu, without cloning the
+repository:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/nemvince/netlabor/main/scripts/install.sh | sudo bash
+```
+
+It asks which roles to install and prompts for the settings it needs (public URL,
+admin password, compute token, underlay). For scripted installs, pass flags:
+`--controller`, `--agent`, `--all`, `--yes`, `--skip-deps`, `--public-url`,
+`--admin-password`, `--database-url`, `--token`, `--with-docker`, `--with-nat`,
+`--version <tag|nightly>`; `scripts/install.sh --help` lists them all. Run the
+same command again to update: it detects the installed roles, keeps
+`/etc/netlabor/*.env`, skips dependency installation, and restarts the services.

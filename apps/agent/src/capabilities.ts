@@ -3,6 +3,7 @@
 import { existsSync } from 'node:fs';
 import type { AgentCapabilities } from '@netlabor/contract';
 import type { AgentConfig } from './config.ts';
+import { kvmGroupWritable } from './sys.ts';
 
 interface Probe {
   path: string | null;
@@ -71,7 +72,9 @@ export async function probeCapabilities(config: AgentConfig): Promise<AgentCapab
   const kernelRelease = await readKernelRelease();
 
   let qemuKvm = false;
-  if (qemu.path) {
+  // A qemu build with KVM support still needs the emulator account to open the
+  // device; the agent grants it the device's group at spawn time.
+  if (qemu.path && kvmGroupWritable()) {
     try {
       const proc = Bun.spawn([qemu.path, '-accel', 'help'], { stdout: 'pipe', stderr: 'pipe' });
       const text = await new Response(proc.stdout).text();

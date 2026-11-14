@@ -58,6 +58,8 @@ export interface MarketplaceAppliance {
   registryFile: string;
   /** simple-icons slug of the vendor's brand mark; null falls back to a generic icon. */
   brandIcon: string | null;
+  /** Node name template for the installed template; `{name}-{index}` when absent. */
+  defaultNameFormat?: string;
 }
 
 const SF = 'https://downloads.sourceforge.net/project/gns-3/Qemu%20Appliances';
@@ -66,6 +68,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'alpine-linux-virt',
     name: 'Alpine Linux Virt',
+    defaultNameFormat: 'alpine-{index}',
     vendor: 'Alpine Linux Development Team',
     category: 'End devices',
     description:
@@ -95,6 +98,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'tinycore-linux',
     name: 'Tiny Core Linux',
+    defaultNameFormat: 'tinycore-{index}',
     vendor: 'Team Tiny Core',
     category: 'End devices',
     description: 'A graphical Linux desktop in a few MiB, useful as a fast GUI endpoint.',
@@ -123,6 +127,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'microcore-linux',
     name: 'Micro Core Linux',
+    defaultNameFormat: 'microcore-{index}',
     vendor: 'Team Tiny Core',
     category: 'End devices',
     description: 'Tiny Core without a desktop: a complete Linux system needing very little RAM.',
@@ -151,6 +156,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'frr',
     name: 'FRR',
+    defaultNameFormat: 'frr-{index}',
     vendor: 'FRRouting Project',
     category: 'Routers',
     description:
@@ -180,6 +186,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'bird',
     name: 'BIRD',
+    defaultNameFormat: 'bird-{index}',
     vendor: 'CZ.NIC Labs',
     category: 'Routers',
     description:
@@ -209,6 +216,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'openwrt',
     name: 'OpenWrt',
+    defaultNameFormat: 'openwrt-{index}',
     vendor: 'OpenWrt Project',
     category: 'Firewalls',
     description:
@@ -240,6 +248,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'ipfire',
     name: 'IPFire',
+    defaultNameFormat: 'ipfire-{index}',
     vendor: 'IPFire Team',
     category: 'Firewalls',
     description:
@@ -271,6 +280,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'opnsense',
     name: 'OPNsense',
+    defaultNameFormat: 'opnsense-{index}',
     vendor: 'Deciso B.V.',
     category: 'Firewalls',
     description:
@@ -303,6 +313,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'alpine-docker',
     name: 'Alpine Linux (Docker)',
+    defaultNameFormat: 'alpine-{index}',
     vendor: 'Alpine Linux Development Team',
     category: 'End devices',
     description: 'Minimal Alpine container; the image pulls on the compute when the node starts.',
@@ -324,6 +335,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
   {
     id: 'frr-docker-lite',
     name: 'FRR Docker (lite)',
+    defaultNameFormat: 'frr-{index}',
     vendor: 'FRRouting Project',
     category: 'Routers',
     description: 'FRR container running only zebra with OSPFv2/v3 — the lowest-RAM FRR option.',

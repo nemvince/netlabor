@@ -12,7 +12,8 @@ export interface ControllerConfig {
   listen: { hostname: string; port: number };
   publicUrl: string;
   secretKey: Uint8Array;
-  webRoot: string;
+  /** null serves the UI embedded in the binary. */
+  webRoot: string | null;
   stagingDir: string;
   storageDriver: 'local' | 'nfs';
   nfsImageDir: string | null;
@@ -70,7 +71,7 @@ export function loadControllerConfig(overrides?: Partial<ControllerConfig>): Con
     listen: parseListen(env('NB_LISTEN') ?? '0.0.0.0:8080'),
     publicUrl: (env('NB_PUBLIC_URL') ?? 'http://localhost:8080').replace(/\/$/, ''),
     secretKey: parseSecretKey(required('NB_SECRET_KEY')),
-    webRoot: env('NB_WEB_ROOT') ?? 'apps/web/dist',
+    webRoot: env('NB_WEB_ROOT') ?? null,
     stagingDir: env('NB_STAGING_DIR') ?? '/var/lib/netlabor/staging',
     storageDriver,
     nfsImageDir,

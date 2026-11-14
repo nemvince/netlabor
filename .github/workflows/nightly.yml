@@ -40,16 +40,13 @@ jobs:
           version=$(git rev-parse --short=7 HEAD)
           mkdir -p dist
           for target in x64 arm64; do
-            bun build apps/controller/src/index.ts --compile --target="bun-linux-$target" --define "NB_BUILD_VERSION=\"$version\"" --outfile "dist/netlabor-controller-linux-$target"
+            bun build apps/controller/src/index.ts --compile --target="bun-linux-$target" --asset apps/web/dist --define "NB_BUILD_VERSION=\"$version\"" --define 'NB_WEB_EMBED_DIR="apps/web/dist"' --outfile "dist/netlabor-controller-linux-$target"
             bun build apps/agent/src/index.ts --compile --target="bun-linux-$target" --outfile "dist/netlabor-agent-linux-$target"
           done
 
-      - name: Package web bundle
-        run: tar -czf dist/netlabor-web.tar.gz -C apps/web/dist .
-
       - name: Write checksums
         working-directory: dist
-        run: sha256sum netlabor-controller-linux-x64 netlabor-controller-linux-arm64 netlabor-agent-linux-x64 netlabor-agent-linux-arm64 netlabor-web.tar.gz > SHA256SUMS
+        run: sha256sum netlabor-controller-linux-x64 netlabor-controller-linux-arm64 netlabor-agent-linux-x64 netlabor-agent-linux-arm64 > SHA256SUMS
 
       - name: Publish the rolling nightly release
         env:
@@ -68,5 +65,4 @@ jobs:
             dist/netlabor-controller-linux-arm64 \
             dist/netlabor-agent-linux-x64 \
             dist/netlabor-agent-linux-arm64 \
-            dist/netlabor-web.tar.gz \
             dist/SHA256SUMS

@@ -13,12 +13,6 @@ const EMBED_DIR = Bun.isStandaloneExecutable
   ? `${import.meta.dir}/${path.basename(EMBED_REL)}`
   : path.resolve(EMBED_REL);
 
-/** The binary's own copy of a web asset, or null when it was not embedded. */
-const embedded = async (key: string): Promise<Blob | null> => {
-  const file = Bun.file(path.join(EMBED_DIR, key));
-  return (await file.exists()) ? file : null;
-};
-
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -47,11 +41,11 @@ export async function serveStatic(
   const url = new URL(request.url);
   if (request.method !== 'GET' && request.method !== 'HEAD') return null;
 
-  const root = path.resolve(config.webRoot);
+  // The UI lives in the binary unless NB_WEB_ROOT points at an unpacked copy.
+  const root = config.webRoot === null ? EMBED_DIR : path.resolve(config.webRoot);
   const indexPath = path.join(root, 'index.html');
-  const diskIndex = await Bun.file(indexPath).exists();
-  if (!diskIndex && !(await embedded('index.html'))) {
-    // No built frontend at all (e.g. unit tests): let the caller 404.
+  if (!(await Bun.file(indexPath).exists())) {
+    // No built frontend (e.g. unit tests): let the caller 404.
     return null;
   }
 
@@ -62,32 +56,21 @@ export async function serveStatic(
     return new Response('bad path', { status: 400 });
   }
 
-  const rel = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
-  const file =
-    url.pathname === '/'
-      ? diskIndex
-        ? Bun.file(target)
-        : await embedded('index.html')
-      : (await Bun.file(target).exists())
-        ? Bun.file(target)
-        : await embedded(rel);
-  if (file) {
+  const file = Bun.file(target);
+  if (await file.exists()) {
     const headers = new Headers({
-      'content-type': MIME[path.extname(rel)] ?? 'application/octet-stream',
+      'content-type': MIME[path.extname(target)] ?? 'application/octet-stream',
     });
-    if (IMMUTABLE.test(rel)) headers.set('cache-control', 'public, max-age=31536000, immutable');
-    else if (rel.endsWith('.html')) headers.set('cache-control', 'no-cache');
+    if (IMMUTABLE.test(target)) headers.set('cache-control', 'public, max-age=31536000, immutable');
+    else if (target.endsWith('.html')) headers.set('cache-control', 'no-cache');
     return new Response(request.method === 'HEAD' ? null : file.stream(), { headers });
   }
 
   // SPA fallback: unknown non-asset routes render the app shell.
   if (path.extname(url.pathname) === '') {
-    const shell = diskIndex ? Bun.file(indexPath) : await embedded('index.html');
-    if (shell) {
-      return new Response(request.method === 'HEAD' ? null : shell.stream(), {
-        headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' },
-      });
-    }
+    return new Response(request.method === 'HEAD' ? null : Bun.file(indexPath).stream(), {
+      headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-cache' },
+    });
   }
   return new Response('not found', { status: 404 });
 }

@@ -262,7 +262,7 @@ async function runInstall(
     nodeType: app.nodeType,
     category: app.category,
     symbol: app.symbol,
-    defaultNameFormat: '{name}-{index}',
+    defaultNameFormat: app.defaultNameFormat ?? '{name}-{index}',
     properties,
     requiredImages:
       app.image && sha256 && imageId

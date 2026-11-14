@@ -2,11 +2,10 @@
 
 import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
-import { access, chmod, mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { access, chmod, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { AppError, type UpdateChannel, type UpdateStatus } from '@netlabor/contract';
 import type { AppDeps } from '../implementer.ts';
-import { untarGzip } from './archives.ts';
 import { getSettings } from './rbac.ts';
 
 const REPO = 'nemvince/netlabor';
@@ -191,61 +190,33 @@ export async function applyUpdate(deps: AppDeps): Promise<UpdateStatus> {
     throw new AppError('INTERNAL', `updates are not published for ${process.arch}`);
   }
   const binaryName = `netlabor-controller-linux-${platform}`;
-  const webName = 'netlabor-web.tar.gz';
   const sumsName = 'SHA256SUMS';
   const assets = new Map(release.assets.map((asset) => [asset.name, asset.browser_download_url]));
-  for (const name of [binaryName, webName, sumsName]) {
+  for (const name of [binaryName, sumsName]) {
     if (!assets.has(name)) {
       throw new AppError('INTERNAL', `release ${release.tag_name} has no ${name}`);
     }
   }
 
-  const [binary, web, sums] = await Promise.all([
+  const [binary, sums] = await Promise.all([
     download(assets.get(binaryName)!),
-    download(assets.get(webName)!),
     download(assets.get(sumsName)!),
   ]);
   const expected = parseChecksums(new TextDecoder().decode(sums));
-  if (expected.get(binaryName) !== sha256(binary) || expected.get(webName) !== sha256(web)) {
+  if (expected.get(binaryName) !== sha256(binary)) {
     throw new AppError('INTERNAL', 'the downloaded update does not match SHA256SUMS');
   }
 
   const execPath = process.execPath;
-  const webRoot = path.resolve(deps.config.webRoot);
   await writable(path.dirname(execPath));
-  await writable(path.dirname(webRoot));
 
   const binaryNext = `${execPath}.new`;
-  const webNext = `${webRoot}.new`;
-  const webOld = `${webRoot}.old`;
   await rm(binaryNext, { force: true });
-  await rm(webNext, { recursive: true, force: true });
-  await rm(webOld, { recursive: true, force: true });
   await writeFile(binaryNext, binary, { mode: 0o755 });
   await chmod(binaryNext, 0o755);
-  await mkdir(webNext, { recursive: true });
-  for (const [name, data] of await untarGzip(web)) {
-    const target = path.resolve(webNext, name);
-    if (!target.startsWith(`${webNext}${path.sep}`)) continue;
-    await mkdir(path.dirname(target), { recursive: true });
-    await writeFile(target, data);
-  }
 
   try {
     await rename(binaryNext, execPath);
-    // A pure-binary install may have no web dir on disk; the embedded UI is used instead.
-    const hadWeb = await access(webRoot).then(
-      () => true,
-      () => false,
-    );
-    if (hadWeb) await rename(webRoot, webOld);
-    try {
-      await rename(webNext, webRoot);
-    } catch (error) {
-      if (hadWeb) await rename(webOld, webRoot);
-      throw error;
-    }
-    await rm(webOld, { recursive: true, force: true });
   } catch (error) {
     throw new AppError('INTERNAL', 'could not install the update', { details: String(error) });
   }

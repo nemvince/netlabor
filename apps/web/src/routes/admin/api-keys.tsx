@@ -16,7 +16,6 @@ import { Loading, Page, PageHeader } from '../../components/Page.tsx';
 import { PrivilegeGrid } from '../../components/PrivilegeGrid.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
-import { SettingsNav } from '../../features/settings/SettingsNav.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
@@ -265,7 +264,6 @@ export function ApiKeysAdminPage() {
           </button>
         }
       />
-      <SettingsNav />
 
       <div className="mt-5">
         {keys.isPending ? (

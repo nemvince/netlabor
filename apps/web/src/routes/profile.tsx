@@ -16,7 +16,6 @@ import { Table, TBody, Td, THead, Th, Tr } from '../components/Table.tsx';
 import { toast } from '../components/Toast.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import { CardRows, SettingsCard, SettingsIcon } from '../features/settings/SettingsCard.tsx';
-import { SettingsNav } from '../features/settings/SettingsNav.tsx';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp, formatUserAgent, shortId } from '../lib/format.ts';
@@ -167,7 +166,6 @@ export function ProfilePage() {
         description="Your identity, credentials, sessions, and the defaults this browser uses for you."
         actions={<Badge tone="copper">@{me.username}</Badge>}
       />
-      <SettingsNav />
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <SettingsCard

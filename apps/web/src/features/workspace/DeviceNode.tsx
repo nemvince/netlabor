@@ -36,7 +36,7 @@ function DeviceNodeComponent({ data, selected }: NodeProps<FlowNode>) {
     <div
       className="relative flex flex-col items-center justify-center"
       style={{ width: NODE_WIDTH, height: NODE_HEIGHT }}
-      title={`${node.name} · ${node.nodeType} · ${node.status}${node.isolated ? ' · isolated' : ''}`}
+      aria-label={`${node.name} · ${node.nodeType} · ${node.status}${node.isolated ? ' · isolated' : ''}`}
     >
       <div
         className="relative flex items-center justify-center rounded-[6px] transition-colors"

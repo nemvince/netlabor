@@ -39,9 +39,9 @@ export class ComputeMonitor {
   }
 
   private async tick(): Promise<void> {
-    const computes = await this.deps.db.unsafe<{ id: string; name: string; status: string }[]>(
-      'SELECT id, name, status FROM computes',
-    );
+    const computes = await this.deps.db.unsafe<
+      { id: string; name: string; status: string; version: string | null }[]
+    >('SELECT id, name, status, version FROM computes');
     for (const compute of computes) {
       try {
         await this.deps.agents.call(compute.id, (agent) => agent.heartbeat({}));
@@ -70,6 +70,10 @@ export class ComputeMonitor {
             capabilities,
           });
           await this.markStatus(compute.id, compute.name, 'online');
+        }
+        // An upgraded agent reports a new version while it stays online.
+        else if (compute.version !== info.version) {
+          await setComputeStatus(this.deps.db, compute.id, 'online', { version: info.version });
         }
         // A restarted agent has no emulator processes: its snapshot is the truth,
         // so nodes are not left "started" without a console.

@@ -16,7 +16,7 @@ import {
   Trash2,
   Wrench,
 } from 'lucide-react';
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Badge } from '../../components/Badge.tsx';
 import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
 import { DetailList } from '../../components/DetailList.tsx';
@@ -677,9 +677,25 @@ export function ApplianceImagesPanel({
     retry: false,
   });
 
+  // An image only boots on a compute of its architecture, so hide the ones no
+  // registered compute can run (until a compute has reported capabilities).
+  const computeArchs = useMemo(() => {
+    const archs = new Set<string>();
+    for (const compute of computes.data ?? []) {
+      const arch = compute.capabilities?.arch;
+      if (arch) archs.add(arch);
+    }
+    return archs;
+  }, [computes.data]);
+  const supported = useCallback(
+    (row: OsImageRow) => computeArchs.size === 0 || computeArchs.has(row.arch),
+    [computeArchs],
+  );
+
   const osRows = useMemo(() => {
     const needle = search.trim().toLowerCase();
     return (osImages.data ?? []).filter((row) => {
+      if (!supported(row)) return false;
       if (family !== 'all' && row.family !== family) return false;
       if (needle === '') return true;
       return (
@@ -689,9 +705,11 @@ export function ApplianceImagesPanel({
         (row.description ?? '').toLowerCase().includes(needle)
       );
     });
-  }, [osImages.data, search, family]);
+  }, [osImages.data, search, family, supported]);
 
-  const readyOsImages = (osImages.data ?? []).filter((row) => row.imageId !== null);
+  const readyOsImages = (osImages.data ?? []).filter(
+    (row) => row.imageId !== null && supported(row),
+  );
   const buildRows = builds.data ?? [];
   const filtersActive = search.trim() !== '' || family !== 'all';
   const detailRow = detailTarget

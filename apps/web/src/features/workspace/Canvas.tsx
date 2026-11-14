@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { DrawingRow, LinkRow, NodeRow, ProjectRow } from '@netlabor/contract';
 import {
   Background,
@@ -15,9 +16,11 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { type DragEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { DeviceNode } from './DeviceNode.tsx';
 import { DrawingNode } from './DrawingNode.tsx';
 import { LinkEdge } from './LinkEdge.tsx';
+import { NodeHoverCard } from './NodeHoverCard.tsx';
 import { TEMPLATE_MIME } from './Palette.tsx';
 import type { Selection } from './store.ts';
 import {
@@ -47,6 +50,7 @@ interface CanvasProps {
   snapEnabled: boolean;
   minimapVisible: boolean;
   portLabelsAlways: boolean;
+  canvasBackground: string;
   onSelectionChange: (selection: Selection) => void;
   onNodeDragStop: (node: NodeRow, x: number, y: number) => void;
   onNodeDragMove: (nodeId: string, x: number, y: number) => void;
@@ -181,6 +185,7 @@ export function Canvas({
   snapEnabled,
   minimapVisible,
   portLabelsAlways,
+  canvasBackground,
   onSelectionChange,
   onNodeDragStop,
   onNodeDragMove,
@@ -196,7 +201,7 @@ export function Canvas({
   onLinkOpen,
   onZoomChange,
 }: CanvasProps) {
-  const { screenToFlowPosition, fitView } = useReactFlow();
+  const { screenToFlowPosition, flowToScreenPosition, fitView } = useReactFlow();
   const viewport = useViewport();
   const fittedRef = useRef(false);
   const selectionRef = useRef(selection);
@@ -213,6 +218,14 @@ export function Canvas({
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState<FlowNode>([]);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState<FlowEdge>([]);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<{
+    id: string;
+    x: number;
+    y: number;
+  } | null>(null);
+  const hoverTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
 
   // refs keep cursor updates out of topology rebuilds.
   useEffect(() => {
@@ -321,14 +334,17 @@ export function Canvas({
         onEdgesChange={onEdgesChange}
         onSelectionChange={handleSelectionChange}
         onNodeDrag={(_, node) => onNodeDragMove(node.id, node.position.x, node.position.y)}
+        onNodeDragStart={() => {
+          window.clearTimeout(hoverTimer.current);
+          setHoveredNode(null);
+        }}
         onNodeDragStop={(_, node) => {
           const row = nodes.find((candidate) => candidate.id === node.id);
           if (row) onNodeDragStop(row, node.position.x, node.position.y);
         }}
-        onNodeClick={(_, node) => {
+        onNodeClick={(event, node) => {
           if (connectMode && node.type === 'device') {
-            const mouse = event as MouseEvent | undefined;
-            onConnectNode(node.id, { x: mouse?.clientX ?? 0, y: mouse?.clientY ?? 0 });
+            onConnectNode(node.id, { x: event.clientX, y: event.clientY });
           }
         }}
         nodesConnectable={false}
@@ -338,6 +354,21 @@ export function Canvas({
           if (!row) return;
           event.preventDefault();
           onNodeContextMenu(row, event.clientX, event.clientY);
+        }}
+        onNodeMouseEnter={(_, node) => {
+          if (node.type !== 'device') return;
+          window.clearTimeout(hoverTimer.current);
+          const anchor = flowToScreenPosition({
+            x: node.position.x + (node.measured?.width ?? NODE_WIDTH) / 2,
+            y: node.position.y + (node.measured?.height ?? NODE_HEIGHT),
+          });
+          hoverTimer.current = window.setTimeout(() => {
+            setHoveredNode({ id: node.id, x: anchor.x, y: anchor.y });
+          }, 450);
+        }}
+        onNodeMouseLeave={() => {
+          window.clearTimeout(hoverTimer.current);
+          setHoveredNode(null);
         }}
         onEdgeClick={(_, edge) => onLinkOpen(edge.id)}
         onEdgeMouseEnter={(_, edge) => setHoveredEdgeId(edge.id)}
@@ -356,6 +387,11 @@ export function Canvas({
         onlyRenderVisibleElements
         snapToGrid={snapEnabled}
         snapGrid={[10, 10]}
+        style={
+          canvasBackground
+            ? ({ '--xy-background-color': canvasBackground } as CSSProperties)
+            : undefined
+        }
         fitViewOptions={{ padding: 0.22, maxZoom: 1.15 }}
         minZoom={0.1}
         maxZoom={2.5}
@@ -396,6 +432,17 @@ export function Canvas({
           />
         ) : null}
       </ReactFlow>
+      {hoveredNode
+        ? createPortal(
+            <NodeHoverCard
+              key={hoveredNode.id}
+              node={nodes.find((row) => row.id === hoveredNode.id)}
+              links={links}
+              point={hoveredNode}
+            />,
+            document.body,
+          )
+        : null}
       <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
         {collaborators
           .filter((participant) => participant.id !== selfCollabId && participant.cursor)
@@ -432,3 +479,4 @@ export function Canvas({
     </div>
   );
 }
+

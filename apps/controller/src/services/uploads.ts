@@ -8,6 +8,23 @@ import { newId } from '@netlabor/shared';
 import type { SQL } from 'bun';
 import type { ControllerConfig } from '../config.ts';
 
+/**
+ * Create the staging store at startup so a wrong owner fails loudly at boot
+ * instead of at the first download, with the chown that fixes it.
+ */
+export async function ensureStagingDir(config: ControllerConfig): Promise<void> {
+  try {
+    await mkdir(config.stagingDir, { recursive: true, mode: 0o755 });
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code ?? 'unknown';
+    throw new Error(
+      `cannot create the staging directory ${config.stagingDir} (${code}); ` +
+        `make it writable by the controller user or set NB_STAGING_DIR`,
+      { cause: error },
+    );
+  }
+}
+
 /** Chunk size advertised to upload clients (8 MiB). */
 export const UPLOAD_CHUNK_SIZE = 8 * 1024 * 1024;
 

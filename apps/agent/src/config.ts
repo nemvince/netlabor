@@ -2,6 +2,11 @@
 
 import { type LogLevel, parseLogLevel } from '@netlabor/shared';
 
+/** Baked in by `bun run build`; undeclared when running from source. */
+declare const NB_BUILD_VERSION: string;
+
+const buildVersion = typeof NB_BUILD_VERSION === 'string' ? NB_BUILD_VERSION : 'development';
+
 export interface AgentConfig {
   listen: { hostname: string; port: number };
   token: string;
@@ -85,7 +90,7 @@ export function loadAgentConfig(overrides?: Partial<AgentConfig>): AgentConfig {
     logLevel: parseLogLevel(env('NB_LOG_LEVEL')),
     tlsCert: env('NB_TLS_CERT') ?? null,
     tlsKey: env('NB_TLS_KEY') ?? null,
-    version: env('NB_VERSION') ?? '0.1.0',
+    version: env('NB_VERSION') ?? buildVersion,
     controllerUrl: env('NB_CONTROLLER_URL') ?? null,
     dockerAutoPull: env('NB_DOCKER_AUTO_PULL') === '1',
     ...overrides,

@@ -265,7 +265,7 @@ export function ProjectTopBar({
                 icon={paletteOpen ? <Check size={13} /> : <PanelLeft size={13} />}
                 onSelect={onTogglePalette}
               >
-                Palette
+                Palette <span style={{ color: 'var(--color-ink-faint)' }}>P</span>
               </MenuItem>
               <MenuItem
                 icon={inspectorOpen ? <Check size={13} /> : <PanelRight size={13} />}

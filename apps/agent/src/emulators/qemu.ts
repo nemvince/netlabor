@@ -1,7 +1,7 @@
 /** QEMU adapter: argument builder, qcow2 overlays, QMP lifecycle, consoles. */
 
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir, rm, stat } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { anchorHash } from '@netlabor/catalog/anchors';
 import { AppError } from '@netlabor/contract';
@@ -18,7 +18,7 @@ import {
 import { ubridgeClientFor } from '../dataplane/project.ts';
 import { startNodeProcess, stopProcess } from '../process.ts';
 import type { ProjectRegistry } from '../state.ts';
-import { chownForEmulator } from '../sys.ts';
+import { chownForEmulator, kvmGid, kvmGroupWritable } from '../sys.ts';
 import { prepareCloudInit } from './cloud-init.ts';
 import { QmpClient } from './qemu-qmp.ts';
 
@@ -63,7 +63,8 @@ async function hasKvm(binary: string): Promise<boolean> {
     const proc = Bun.spawn([binary, '-accel', 'help'], { stdout: 'pipe', stderr: 'pipe' });
     const text = await new Response(proc.stdout).text();
     await proc.exited;
-    supported = /\bkvm\b/.test(text) && existsSync('/dev/kvm');
+    // KVM only helps when the unprivileged emulator can open the device.
+    supported = /\bkvm\b/.test(text) && existsSync('/dev/kvm') && kvmGroupWritable();
   } catch {
     supported = false;
   }
@@ -128,16 +129,17 @@ async function prepareDisks(ctx: NodeContext): Promise<DiskSpec[]> {
             details: stderr.trim(),
           });
         }
-        await chownForEmulator(target, ctx.config.emulatorUid, ctx.config.emulatorGid);
       }
       disk.imagePath = target;
     } else if (!(await Bun.file(target).exists())) {
       await copyFile(disk.imagePath, target);
-      await chownForEmulator(target, ctx.config.emulatorUid, ctx.config.emulatorGid);
       disk.imagePath = target;
     } else {
       disk.imagePath = target;
     }
+    // Existing overlays from older agents can be root-owned; QEMU runs as the
+    // emulator account and needs them writable.
+    await chownForEmulator(target, ctx.config.emulatorUid, ctx.config.emulatorGid);
   }
   return specs;
 }
@@ -225,6 +227,10 @@ export async function buildQemuArgs(
 
   // UNIX socket paths are capped at 108 bytes; keep QMP out of the node path.
   const qmpSocket = qmpPath(ctx.config, ctx.spec.nodeId);
+  // The run dir can be recreated under a running agent (tmpfiles, manual
+  // cleanup); QEMU cannot create its socket without this directory and owner.
+  await mkdir(path.dirname(qmpSocket), { recursive: true, mode: 0o750 });
+  await chownForEmulator(path.dirname(qmpSocket), ctx.config.emulatorUid, ctx.config.emulatorGid);
   await rm(qmpSocket, { force: true });
   args.push('-qmp', `unix:${qmpSocket},server,nowait`);
   args.push('-display', 'none');
@@ -291,6 +297,9 @@ const qemuAdapter: NodeAdapter = {
       ctx.spec.properties.cloudInitEnabled === true ? await prepareCloudInit(ctx) : undefined;
     const args = await buildQemuArgs(ctx, disks, vncDisplay, cloudInitIso);
     const binary = qemuBinary(ctx.spec.properties);
+    // Only a real kvm group matters; gid 0 would hand QEMU the root group.
+    const kvm = args.includes('-enable-kvm') ? kvmGid() : null;
+    const kvmGroups = kvm !== null && kvm !== 0 ? [kvm] : [];
     const pid = await startNodeProcess({
       argv: [binary, ...args],
       netns: ctx.netns,
@@ -298,12 +307,31 @@ const qemuAdapter: NodeAdapter = {
       cwd: ctx.dir,
       uid: ctx.config.emulatorUid,
       gid: ctx.config.emulatorGid,
+      ...(kvmGroups.length > 0 ? { groups: kvmGroups } : {}),
       logFile: path.join(ctx.projectDir, 'logs', `${ctx.spec.nodeId}.log`),
     });
 
     const qmpSocket = qmpPath(ctx.config, ctx.spec.nodeId);
-    const qmp = await QmpClient.connect(qmpSocket, 10_000);
-    qmp.close();
+    const logFile = path.join(ctx.projectDir, 'logs', `${ctx.spec.nodeId}.log`);
+    try {
+      const qmp = await QmpClient.connect(qmpSocket, 10_000);
+      qmp.close();
+    } catch (error) {
+      // A dead QEMU only shows as a missing socket; the log says why it died.
+      await stopProcess(pid, 5_000).catch(() => undefined);
+      const log = await tailFile(logFile, 2_000);
+      const cause = log
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .at(-1);
+      // The last log line is the real cause; put it in the message the UI shows.
+      throw new AppError(
+        'AGENT_ERROR',
+        `QEMU did not start${cause ? `: ${cause.slice(0, 300)}` : ''} (node log ${logFile})`,
+        { details: error instanceof Error ? error.message : String(error) },
+      );
+    }
 
     const serial = args.indexOf('-serial');
     let internalConsolePort: number | null = null;
@@ -450,6 +478,15 @@ export async function resizeDiskImage(
 }
 
 /** Short QMP socket path (< 108 bytes) inside the run directory. */
+async function tailFile(file: string, bytes: number): Promise<string> {
+  try {
+    const text = await readFile(file, 'utf8');
+    return text.length > bytes ? text.slice(-bytes).trim() : text.trim();
+  } catch {
+    return '';
+  }
+}
+
 export function qmpPath(config: AgentConfig, nodeId: string): string {
   return path.join(config.runDir, 'emulators', `${nodeId.replaceAll('-', '').slice(0, 12)}.qmp`);
 }
