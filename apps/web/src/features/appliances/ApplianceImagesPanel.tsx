@@ -1,6 +1,5 @@
 import {
   type ApplianceBuildRow,
-  type JobRow,
   OS_FAMILIES,
   type OsFamily,
   type OsImageRow,
@@ -31,8 +30,8 @@ import { toast } from '../../components/Toast.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
+import { trackOsDownload, useOsDownloadProgress } from '../../lib/downloadToasts.ts';
 import { formatStamp, shortId } from '../../lib/format.ts';
-import { waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/queryClient.ts';
 import {
   AdoptOsImageDialog,
@@ -657,8 +656,7 @@ export function ApplianceImagesPanel({
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [detailTarget, setDetailTarget] = useState<OsImageRow | null>(null);
   const [buildDetail, setBuildDetail] = useState<ApplianceBuildRow | null>(null);
-  const [downloads, setDownloads] = useState<Record<string, { job: JobRow; progress: number }>>({});
-
+  const downloadProgress = useOsDownloadProgress();
   const osImages = useQuery({
     ...orpc.appliances.os.list.queryOptions({ input: { limit: 100, offset: 0 } }),
     refetchInterval: (query) =>
@@ -709,36 +707,17 @@ export function ApplianceImagesPanel({
   }
 
   async function startDownload(row: OsImageRow) {
-    if (downloads[row.id]) return;
+    if (row.status === 'downloading') return;
     try {
       const job = await client.appliances.os.download({ id: row.id });
-      setDownloads((current) => ({ ...current, [row.id]: { job, progress: job.progress } }));
-      try {
-        await waitForJob(job.id, {
-          onUpdate: (update) =>
-            setDownloads((current) =>
-              current[row.id]
-                ? { ...current, [row.id]: { job: update, progress: update.progress } }
-                : current,
-            ),
-        });
-        toast.success(`Downloaded ${row.name}.`);
-      } catch (error) {
-        toast.error(`Download failed: ${messageOf(error)}`);
-      } finally {
-        setDownloads((current) => {
-          const next = { ...current };
-          delete next[row.id];
-          return next;
-        });
-        invalidateOs();
-        void queryClient.invalidateQueries({ queryKey: orpc.jobs.list.key() });
-        void queryClient.invalidateQueries({ queryKey: orpc.images.list.key() });
-      }
+      // Progress is tracked app-wide by the download-toast tracker.
+      trackOsDownload(job);
     } catch (error) {
       toast.error(messageOf(error));
-      invalidateOs();
     }
+    invalidateOs();
+    void queryClient.invalidateQueries({ queryKey: orpc.jobs.list.key() });
+    void queryClient.invalidateQueries({ queryKey: orpc.images.list.key() });
   }
 
   async function performDelete() {
@@ -880,8 +859,8 @@ export function ApplianceImagesPanel({
                 <OsImageEntry
                   key={row.id}
                   row={row}
-                  progress={downloads[row.id]?.progress ?? null}
-                  busy={downloads[row.id] !== undefined}
+                  progress={downloadProgress[row.id] ?? null}
+                  busy={row.status === 'downloading'}
                   canWrite={canWrite}
                   onDownload={() => void startDownload(row)}
                   onOpen={() => setDetailTarget(row)}
@@ -1060,7 +1039,7 @@ export function ApplianceImagesPanel({
       {detailRow ? (
         <OsImageDetailDialog
           row={detailRow}
-          progress={downloads[detailRow.id]?.progress ?? null}
+          progress={downloadProgress[detailRow.id] ?? null}
           canWrite={canWrite}
           onOpenChange={(open) => {
             if (!open) setDetailTarget(null);

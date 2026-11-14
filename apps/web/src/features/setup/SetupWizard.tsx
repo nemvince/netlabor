@@ -5,7 +5,7 @@
  */
 
 import { setupPresets, softwareCatalog } from '@netlabor/catalog';
-import type { Desktop, OsFamily } from '@netlabor/contract';
+import type { Desktop, JobRow, OsFamily } from '@netlabor/contract';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Field, Input, Select } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { client, orpc } from '../../lib/api.ts';
+import { trackOsDownload } from '../../lib/downloadToasts.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { DESKTOP_OPTIONS } from '../appliances/appliance-meta.ts';
 
@@ -278,7 +279,7 @@ function PresetsStep({
       <StepHeader
         step="3 of 4"
         title="Prepare appliance images"
-        hint="Presets download a base cloud image and build it into an offline-ready device template. Tweak each preset before starting."
+        hint="Presets download a base cloud image and build it into an offline-ready device template. They start as-is; expand Customize to tweak desktop and software."
       />
       <div className="flex flex-col gap-2">
         {setupPresets.map((preset) => {
@@ -312,7 +313,14 @@ function PresetsStep({
                 </span>
               </label>
               {choice.selected ? (
-                <div className="mt-2 flex flex-wrap items-start gap-3">
+                <details className="mt-1.5">
+                  <summary
+                    className="cursor-pointer select-none text-[11px]"
+                    style={{ color: 'var(--color-ink-dim)' }}
+                  >
+                    Customize desktop and software
+                  </summary>
+                  <div className="mt-2 flex flex-wrap items-start gap-3">
                   <span
                     className="flex items-center gap-1.5 text-[11px]"
                     style={{ color: 'var(--color-ink-faint)' }}
@@ -369,7 +377,8 @@ function PresetsStep({
                       );
                     })}
                   </span>
-                </div>
+                  </div>
+                </details>
               ) : null}
             </div>
           );
@@ -465,9 +474,15 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
       const osImage = osRows.find((row) => row.id === track.osImageId);
       if (!osImage || osImage.imageId !== null || track.buildId !== null) continue;
       track.buildId = 'waiting-download';
-      void client.appliances.os.download({ id: osImage.id }).catch((error: unknown) => {
-        track.failed = messageOf(error);
-      });
+      void (async () => {
+        const job = await client.appliances.os
+          .download({ id: osImage.id })
+          .catch((error: unknown): JobRow | null => {
+            track.failed = messageOf(error);
+            return null;
+          });
+        if (job) trackOsDownload(job);
+      })();
     }
   }, [osImages.data]);
 
@@ -503,7 +518,8 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
     }
   }, [osImages.data]);
 
-  // Create device templates for completed builds (once per track).
+  // Builds auto-create their device template server-side; the track is done
+  // once its build reaches 'completed'.
   useEffect(() => {
     const buildRows = builds.data ?? [];
     for (const track of tracksRef.current.values()) {
@@ -512,12 +528,6 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
       const build = buildRows.find((row) => row.id === track.buildId);
       if (build?.status !== 'completed') continue;
       track.templateDone = true;
-      void client.appliances.builds
-        .template({ buildId: build.id, name: build.name })
-        .catch((error: unknown) => {
-          track.templateDone = false;
-          track.failed = messageOf(error);
-        });
     }
   }, [builds.data]);
 

@@ -22,6 +22,8 @@ export const MarketplaceApplianceRow = z.object({
   imageFilename: z.string().nullable(),
   sizeBytes: z.number().int().nonnegative(),
   registryFile: z.string(),
+  /** simple-icons slug of the brand mark, when one exists. */
+  brandIcon: z.string().nullable(),
   /** A template with this appliance's name already exists. */
   installed: z.boolean(),
   templateId: Id.nullable(),

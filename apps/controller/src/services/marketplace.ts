@@ -1,6 +1,6 @@
 /** Appliance marketplace: browse the curated catalog and install entries. */
 
-import { mkdir, rm } from 'node:fs/promises';
+import { mkdir, rename, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { type MarketplaceAppliance, marketplaceAppliances } from '@netlabor/catalog';
 import {
@@ -38,6 +38,7 @@ function toRow(app: MarketplaceAppliance, templateId: string | null): Marketplac
     imageFilename: app.image?.filename ?? null,
     sizeBytes: app.image?.sizeBytes ?? 0,
     registryFile: app.registryFile,
+    brandIcon: app.brandIcon,
     installed: templateId !== null,
     templateId,
   };
@@ -154,18 +155,50 @@ async function runInstall(
       if (downloaded.sizeBytes === 0) {
         throw new AppError('BAD_REQUEST', 'the downloaded appliance image is empty');
       }
+      let sha256 = downloaded.sha256;
+      if (app.image.compression) {
+        // Mirrors ship some images compressed; unpack in place and hash the
+        // unpacked bytes, since dedupe and stageBlob work on the real image.
+        // Each tool refuses foreign suffixes, so rename first.
+        const suffix = { bzip2: '.bz2', gzip: '.gz', xz: '.xz' }[app.image.compression];
+        const tool = Bun.which(app.image.compression === 'gzip' ? 'gzip' : app.image.compression);
+        if (!tool) {
+          throw new AppError(
+            'BINARY_MISSING',
+            `${app.image.compression} is required on the controller to unpack this appliance image`,
+          );
+        }
+        const compressed = `${temp}${suffix}`;
+        await rename(temp, compressed);
+        const unpacked = Bun.spawn([tool, '-f', '-d', compressed], {
+          stdout: 'pipe',
+          stderr: 'pipe',
+        });
+        const [stderr, exitCode] = await Promise.all([
+          new Response(unpacked.stderr).text(),
+          unpacked.exited,
+        ]);
+        if (exitCode !== 0) {
+          throw new AppError('BAD_REQUEST', 'the appliance image could not be decompressed', {
+            details: stderr.trim().slice(0, 2_000),
+          });
+        }
+        const hasher = new Bun.CryptoHasher('sha256');
+        for await (const chunk of Bun.file(temp).stream()) hasher.update(chunk);
+        sha256 = hasher.digest('hex');
+      }
       await jobs.progress(jobId, 70, 'validating image');
       const info = await validateArtifact(deps, 'qemu', temp);
       const reused = await deps.db.unsafe<{ id: string; filename: string }[]>(
         'SELECT id, filename FROM images WHERE sha256 = $1 LIMIT 1',
-        [downloaded.sha256],
+        [sha256],
       );
       if (reused[0]) {
         imageId = reused[0].id;
         imageFilename = reused[0].filename;
         action = 'reused';
       } else {
-        const stagedPath = await stageBlob(deps, temp, downloaded.sha256, app.image.filename);
+        const stagedPath = await stageBlob(deps, temp, sha256, app.image.filename);
         imageFilename = app.image.filename;
         imageId = newId();
         const sizeBytes = (await Bun.file(stagedPath).stat()).size;
@@ -176,7 +209,7 @@ async function runInstall(
             imageId,
             `${app.name} ${app.image.version}`,
             app.image.filename,
-            downloaded.sha256,
+            sha256,
             sizeBytes,
             {
               ...info,
@@ -190,7 +223,6 @@ async function runInstall(
           ],
         );
       }
-      sha256 = downloaded.sha256;
       await deps.events.publish({
         type: 'image.updated',
         payload: { imageId, sha256, action, kind: 'qemu' },

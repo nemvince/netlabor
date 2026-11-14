@@ -14,6 +14,8 @@ export interface MarketplaceImage {
   version: string;
   sizeBytes: number;
   url: string;
+  /** Set when the URL serves a compressed artifact the installer must unpack. */
+  compression?: 'bzip2' | 'gzip' | 'xz';
 }
 
 export interface MarketplaceQemu {
@@ -54,6 +56,8 @@ export interface MarketplaceAppliance {
   docker?: MarketplaceDocker;
   /** Upstream registry file for reference. */
   registryFile: string;
+  /** simple-icons slug of the vendor's brand mark; null falls back to a generic icon. */
+  brandIcon: string | null;
 }
 
 const SF = 'https://downloads.sourceforge.net/project/gns-3/Qemu%20Appliances';
@@ -71,11 +75,12 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'pc',
     arch: 'x86_64',
     registryFile: 'alpine-linux-virt.gns3a',
+    brandIcon: 'alpinelinux',
     image: {
       filename: 'alpine-virt-3.24.3-x86_64.qcow2',
       version: '3.24.3',
       sizeBytes: 68_459_520,
-      url: `${SF}/alpine/alpine-virt-3.24.3-x86_64.qcow2/download`,
+      url: `${SF}/alpine/alpine-virt-3.24.3-x86_64.qcow2`,
     },
     qemu: {
       ram: 256,
@@ -98,6 +103,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'pc',
     arch: 'x86_64',
     registryFile: 'tinycore-linux.gns3a',
+    brandIcon: 'linux',
     image: {
       filename: 'linux-tinycore-17.0.qcow2',
       version: '17.0',
@@ -125,6 +131,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'pc',
     arch: 'x86_64',
     registryFile: 'microcore-linux.gns3a',
+    brandIcon: 'linux',
     image: {
       filename: 'linux-microcore-6.4.img',
       version: '6.4',
@@ -153,6 +160,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'router',
     arch: 'x86_64',
     registryFile: 'frr.gns3a',
+    brandIcon: 'linux',
     image: {
       filename: 'alpine-virt-3.24.3-frr-10.6.1-x86_64.qcow2',
       version: '10.6.1',
@@ -181,6 +189,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'router',
     arch: 'x86_64',
     registryFile: 'bird.gns3a',
+    brandIcon: 'debian',
     image: {
       filename: 'debian-13.7-bird2-2.17.5-amd64.qcow2',
       version: '2.17.5',
@@ -198,6 +207,68 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     },
   },
   {
+    id: 'openwrt',
+    name: 'OpenWrt',
+    vendor: 'OpenWrt Project',
+    category: 'Firewalls',
+    description:
+      'Linux router OS for consumer-grade hardware, with the standard package feeds preinstalled.',
+    status: 'stable',
+    nodeType: 'qemu',
+    symbol: 'firewall',
+    arch: 'x86_64',
+    registryFile: 'openwrt.gns3a',
+    brandIcon: 'openwrt',
+    image: {
+      filename: 'openwrt-25.12.6-x86-64-generic-ext4-combined.img',
+      version: '25.12.6',
+      sizeBytes: 126_353_408,
+      url: 'https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/openwrt-25.12.6-x86-64-generic-ext4-combined.img.gz',
+      compression: 'gzip',
+    },
+    qemu: {
+      ram: 128,
+      cpus: 1,
+      adapters: 4,
+      adapterType: 'virtio-net-pci',
+      hdaInterface: 'virtio',
+      format: 'raw',
+      consoleType: 'telnet',
+      options: [],
+    },
+  },
+  {
+    id: 'ipfire',
+    name: 'IPFire',
+    vendor: 'IPFire Team',
+    category: 'Firewalls',
+    description:
+      'Modular firewall, proxy, and VPN gateway built around a hardened Linux distribution.',
+    status: 'stable',
+    nodeType: 'qemu',
+    symbol: 'firewall',
+    arch: 'x86_64',
+    registryFile: 'ipfire.gns3a',
+    brandIcon: null,
+    image: {
+      filename: 'ipfire-2.29-core205-x86_64.img',
+      version: '2.29.305',
+      sizeBytes: 541_050_072,
+      url: 'https://downloads.ipfire.org/releases/ipfire-2.x/2.29-core205/ipfire-2.29-core205-x86_64.img.xz',
+      compression: 'xz',
+    },
+    qemu: {
+      ram: 1024,
+      cpus: 1,
+      adapters: 4,
+      adapterType: 'virtio-net-pci',
+      hdaInterface: 'virtio',
+      format: 'raw',
+      consoleType: 'vnc',
+      options: [],
+    },
+  },
+  {
     id: 'opnsense',
     name: 'OPNsense',
     vendor: 'Deciso B.V.',
@@ -209,11 +280,14 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'firewall',
     arch: 'x86_64',
     registryFile: 'opnsense.gns3a',
+    brandIcon: 'opnsense',
     image: {
       filename: 'OPNsense-25.7-nano-amd64.img',
       version: '25.7',
       sizeBytes: 3_221_225_472,
-      url: 'https://opnsense.c0urier.net/releases/25.7/OPNsense-25.7-nano-amd64.img',
+      // Mirrors ship the raw image only compressed.
+      url: 'https://opnsense.c0urier.net/releases/25.7/OPNsense-25.7-nano-amd64.img.bz2',
+      compression: 'bzip2',
     },
     qemu: {
       ram: 1024,
@@ -237,6 +311,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'pc',
     arch: 'x86_64',
     registryFile: 'alpine-docker.gns3a',
+    brandIcon: 'alpinelinux',
     image: null,
     docker: {
       image: 'alpine:latest',
@@ -257,6 +332,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
     symbol: 'router',
     arch: 'x86_64',
     registryFile: 'frr-docker-lite.gns3a',
+    brandIcon: 'linux',
     image: null,
     docker: {
       image: 'gns3/frr:latest',

@@ -22,12 +22,13 @@ import {
   Wrench,
 } from 'lucide-react';
 import { DropdownMenu } from 'radix-ui';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Badge } from '../components/Badge.tsx';
 import { ToastViewport } from '../components/Toast.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import { useWorkspaceStore } from '../features/workspace/store.ts';
 import { orpc } from './api.ts';
+import { startDownloadTracking } from './downloadToasts.ts';
 import { messageOf } from './errors.ts';
 import { queryClient } from './queryClient.ts';
 import { versionLabel } from './version.ts';
@@ -166,6 +167,8 @@ function NavSection({
 export function AppShell({ children }: { children: ReactNode }) {
   const { me, can } = useMe();
   const navigate = useNavigate();
+  // Progress toasts for OS-image downloads live app-wide, independent of pages.
+  useEffect(() => startDownloadTracking(), []);
   const [railCollapsed, setRailCollapsed] = useState(() => {
     const stored = localStorage.getItem('nb.rail.collapsed');
     if (stored !== null) return stored === '1';
