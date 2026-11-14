@@ -18,6 +18,8 @@ interface CachedAgent {
 }
 
 const REQUEST_TIMEOUT_MS = 30_000;
+/** Calls that only answer after a multi-gigabyte image transfer finishes. */
+const LONG_REQUEST_TIMEOUT_MS = 60 * 60 * 1000;
 
 /** Agent AppErrors arrive as oRPC errors carrying `data.appCode`. */
 function agentAppError(error: unknown): AppError | null {
@@ -45,8 +47,13 @@ export class AgentRegistry {
 
   /** Load a compute's URL and decrypted token, then build a client. */
   async client(computeId: string): Promise<AgentClient> {
-    const cached = this.cache.get(computeId);
-    if (cached) return cached.client;
+    return (await this.cachedClient(computeId, REQUEST_TIMEOUT_MS)).client;
+  }
+
+  private async cachedClient(computeId: string, timeoutMs: number): Promise<CachedAgent> {
+    const key = `${computeId}:${timeoutMs}`;
+    const cached = this.cache.get(key);
+    if (cached) return cached;
 
     const rows = await this.db.unsafe<{ url: string }[]>('SELECT url FROM computes WHERE id = $1', [
       computeId,
@@ -56,9 +63,10 @@ export class AgentRegistry {
     const token = await this.token(computeId);
     if (!token) throw new AppError('AGENT_UNAVAILABLE', `compute ${computeId} has no agent token`);
 
-    const client = this.buildClient(compute.url, token);
-    this.cache.set(computeId, { url: compute.url, token, client });
-    return client;
+    const client = this.buildClient(compute.url, token, timeoutMs);
+    const entry = { url: compute.url, token, client };
+    this.cache.set(key, entry);
+    return entry;
   }
 
   /** Decrypted agent token for a compute; used to build blob fetch sources. */
@@ -84,13 +92,13 @@ export class AgentRegistry {
     }
   }
 
-  private buildClient(baseUrl: string, token: string): AgentClient {
+  private buildClient(baseUrl: string, token: string, timeoutMs: number): AgentClient {
     const link = new RPCLink({
       url: `${baseUrl.replace(/\/$/, '')}/agent/rpc`,
       headers: { authorization: `Bearer ${token}` },
       fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
         const signal = init?.signal
           ? AbortSignal.any([init.signal, controller.signal])
           : controller.signal;
@@ -105,14 +113,29 @@ export class AgentRegistry {
   }
 
   invalidate(computeId: string): void {
-    this.cache.delete(computeId);
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(`${computeId}:`)) this.cache.delete(key);
+    }
   }
 
   /** Wrap a call so transport failures surface as AGENT_UNAVAILABLE. */
   async call<T>(computeId: string, fn: (client: AgentClient) => Promise<T>): Promise<T> {
+    return this.callWithTimeout(computeId, fn, REQUEST_TIMEOUT_MS);
+  }
+
+  /** Image replication blocks until the bytes are on disk; allow that to take a while. */
+  async callLong<T>(computeId: string, fn: (client: AgentClient) => Promise<T>): Promise<T> {
+    return this.callWithTimeout(computeId, fn, LONG_REQUEST_TIMEOUT_MS);
+  }
+
+  private async callWithTimeout<T>(
+    computeId: string,
+    fn: (client: AgentClient) => Promise<T>,
+    timeoutMs: number,
+  ): Promise<T> {
     let client: AgentClient;
     try {
-      client = await this.client(computeId);
+      client = (await this.cachedClient(computeId, timeoutMs)).client;
     } catch (err) {
       if (err instanceof AppError) throw err;
       throw new AppError('AGENT_UNAVAILABLE', `compute ${computeId} is unreachable`, {

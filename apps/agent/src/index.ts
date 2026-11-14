@@ -182,7 +182,9 @@ function tokenMatches(provided: string | null): boolean {
 const server = Bun.serve<WiresharkWsData, never>({
   hostname: config.listen.hostname,
   port: config.listen.port,
-  idleTimeout: 120,
+  // Image replication answers only once the bytes are on disk, which outlasts
+  // Bun's 255 s idle cap on slow links. WebSockets keep their own timeout.
+  idleTimeout: 0,
   websocket: {
     open: wiresharkSockets.open,
     message: wiresharkSockets.message,

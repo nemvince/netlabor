@@ -453,7 +453,7 @@ export async function ensureOnCompute(
 ): Promise<{ path: string; sha256: string; sizeBytes: number }> {
   await setReplicaState(deps.db, image.id, computeId, 'syncing', null);
   try {
-    const result = await deps.agents.call(computeId, (agent) =>
+    const result = await deps.agents.callLong(computeId, (agent) =>
       agent.image.ensure({
         sha256: image.sha256,
         filename: image.filename,

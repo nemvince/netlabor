@@ -155,7 +155,7 @@ async function runInstall(
       if (downloaded.sizeBytes === 0) {
         throw new AppError('BAD_REQUEST', 'the downloaded appliance image is empty');
       }
-      let sha256 = downloaded.sha256;
+      sha256 = downloaded.sha256;
       if (app.image.compression) {
         // Mirrors ship some images compressed; unpack in place and hash the
         // unpacked bytes, since dedupe and stageBlob work on the real image.
