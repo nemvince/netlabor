@@ -14,6 +14,8 @@ export interface MarketplaceImage {
   version: string;
   sizeBytes: number;
   url: string;
+  /** Set when the URL serves a compressed artifact the installer must unpack. */
+  compression?: 'bzip2';
 }
 
 export interface MarketplaceQemu {
@@ -78,7 +80,7 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
       filename: 'alpine-virt-3.24.3-x86_64.qcow2',
       version: '3.24.3',
       sizeBytes: 68_459_520,
-      url: `${SF}/alpine/alpine-virt-3.24.3-x86_64.qcow2/download`,
+      url: `${SF}/alpine/alpine-virt-3.24.3-x86_64.qcow2`,
     },
     qemu: {
       ram: 256,
@@ -221,7 +223,9 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
       filename: 'OPNsense-25.7-nano-amd64.img',
       version: '25.7',
       sizeBytes: 3_221_225_472,
-      url: 'https://opnsense.c0urier.net/releases/25.7/OPNsense-25.7-nano-amd64.img',
+      // Mirrors ship the raw image only compressed.
+      url: 'https://opnsense.c0urier.net/releases/25.7/OPNsense-25.7-nano-amd64.img.bz2',
+      compression: 'bzip2',
     },
     qemu: {
       ram: 1024,
