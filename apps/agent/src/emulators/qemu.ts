@@ -314,12 +314,17 @@ const qemuAdapter: NodeAdapter = {
       // A dead QEMU only shows as a missing socket; the log says why it died.
       await stopProcess(pid, 5_000).catch(() => undefined);
       const log = await tailFile(logFile, 2_000);
-      throw new AppError('AGENT_ERROR', 'QEMU did not start; see the node log for the reason', {
-        details: log
-          ? `${error instanceof Error ? error.message : String(error)}
-${log}`
-          : String(error),
-      });
+      const cause = log
+        .split('\n')
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .at(-1);
+      // The last log line is the real cause; put it in the message the UI shows.
+      throw new AppError(
+        'AGENT_ERROR',
+        `QEMU did not start${cause ? `: ${cause.slice(0, 300)}` : ''} (node log ${logFile})`,
+        { details: error instanceof Error ? error.message : String(error) },
+      );
     }
 
     const serial = args.indexOf('-serial');
