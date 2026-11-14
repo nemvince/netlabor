@@ -61,40 +61,40 @@ export function CatalogPanel({
 
   const rows = catalog.data ?? [];
 
-const CATALOG_ICONS: Record<string, typeof Network> = {
-  pc: Monitor,
-  router: Network,
-  firewall: Shield,
-};
+  const CATALOG_ICONS: Record<string, typeof Network> = {
+    pc: Monitor,
+    router: Network,
+    firewall: Shield,
+  };
 
-/** simple-icons brand marks keyed by the catalog's brandIcon slug. */
-const BRAND_ICONS: Record<string, SimpleIcon> = {
-  alpinelinux: siAlpinelinux,
-  debian: siDebian,
-  linux: siLinux,
-  openwrt: siOpenwrt,
-  opnsense: siOpnsense,
-  docker: siDocker,
-};
+  /** simple-icons brand marks keyed by the catalog's brandIcon slug. */
+  const BRAND_ICONS: Record<string, SimpleIcon> = {
+    alpinelinux: siAlpinelinux,
+    debian: siDebian,
+    linux: siLinux,
+    openwrt: siOpenwrt,
+    opnsense: siOpnsense,
+    docker: siDocker,
+  };
 
-function BrandIcon({ slug, fallback }: { slug: string | null; fallback: string }) {
-  const icon = slug !== null ? BRAND_ICONS[slug] : undefined;
-  if (icon) {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        className="size-3.5"
-        style={{ fill: `#${icon.hex}` }}
-        role="img"
-        aria-label={icon.title}
-      >
-        <path d={icon.path} />
-      </svg>
-    );
+  function BrandIcon({ slug, fallback }: { slug: string | null; fallback: string }) {
+    const icon = slug !== null ? BRAND_ICONS[slug] : undefined;
+    if (icon) {
+      return (
+        <svg
+          viewBox="0 0 24 24"
+          className="size-3.5"
+          style={{ fill: `#${icon.hex}` }}
+          role="img"
+          aria-label={icon.title}
+        >
+          <path d={icon.path} />
+        </svg>
+      );
+    }
+    const Fallback = CATALOG_ICONS[fallback] ?? Monitor;
+    return <Fallback size={12} style={{ color: 'var(--color-copper)' }} aria-hidden />;
   }
-  const Fallback = CATALOG_ICONS[fallback] ?? Monitor;
-  return <Fallback size={12} style={{ color: 'var(--color-copper)' }} aria-hidden />;
-}
 
   return (
     <div className="mt-4 flex flex-col gap-3">

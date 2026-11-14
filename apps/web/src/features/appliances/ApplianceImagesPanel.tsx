@@ -542,7 +542,10 @@ function BuildDetailDialog({
         <section>
           <div className="mb-1.5 flex items-baseline justify-between gap-3">
             <h3 className="text-[12px] font-medium">Build log</h3>
-            <span className="tabular flex items-center gap-2 text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+            <span
+              className="tabular flex items-center gap-2 text-[10px]"
+              style={{ color: 'var(--color-ink-faint)' }}
+            >
               {build.log ? `${logLines} lines` : 'empty'}
               {!active && build.log ? (
                 <button

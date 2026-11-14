@@ -1270,7 +1270,8 @@ async function finishBuild(
   const artifact = status.artifact;
   if (!artifact) {
     throw new AppError('AGENT_ERROR', 'the build reported completion without an artifact');
-  }  if (!/^[0-9a-f]{64}$/.test(artifact.sha256)) {
+  }
+  if (!/^[0-9a-f]{64}$/.test(artifact.sha256)) {
     throw new AppError('AGENT_ERROR', 'the build artifact has an invalid sha256 digest');
   }
   const filename = safeFilename(artifact.filename);
