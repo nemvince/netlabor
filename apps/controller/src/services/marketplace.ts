@@ -32,6 +32,7 @@ function toRow(app: MarketplaceAppliance, templateId: string | null): Marketplac
     description: app.description,
     status: app.status,
     nodeType: app.nodeType,
+    symbol: app.symbol,
     arch: app.arch,
     version: app.image?.version ?? null,
     imageFilename: app.image?.filename ?? null,
@@ -79,7 +80,7 @@ function qemuProperties(app: MarketplaceAppliance, imageId: string): Record<stri
     options: qemu.options,
     linkedClone: true,
     disks: {
-      hda: { imageId, interface: qemu.hdaInterface, format: 'qcow2' },
+      hda: { imageId, interface: qemu.hdaInterface, format: qemu.format ?? 'qcow2' },
     },
   };
 }

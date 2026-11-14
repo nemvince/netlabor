@@ -118,8 +118,7 @@ async function prepareDisks(ctx: NodeContext): Promise<DiskSpec[]> {
     const target = path.join(ctx.dir, `${disk.key}.qcow2`);
     if (disk.linked) {
       if (!(await Bun.file(target).exists())) {
-        const args = ['qemu-img', 'create', '-f', 'qcow2'];
-        if (disk.format === 'qcow2') args.push('-F', 'qcow2', '-b', disk.imagePath);
+        const args = ['qemu-img', 'create', '-f', 'qcow2', '-F', disk.format, '-b', disk.imagePath];
         args.push(target);
         if (disk.sizeBytes) args.push(String(disk.sizeBytes));
         const proc = Bun.spawn(args, { stdout: 'pipe', stderr: 'pipe' });

@@ -1,4 +1,5 @@
-import type { TemplateRow } from '@netlabor/contract';
+import { cloudInitDefaultUser } from '@netlabor/catalog';
+import type { OsFamily, TemplateRow } from '@netlabor/contract';
 import { useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
 import { Field, Input, Select } from '../../components/Field.tsx';
@@ -14,6 +15,12 @@ export interface CloudInitCredentials {
   cloudInitDns: string;
 }
 
+/** Per-node password so two machines never share one by default. */
+function generatedPassword(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
 /** Credentials and network prompt shown before creating a cloud-init node. */
 export function CloudInitCreateDialog({
   template,
@@ -25,12 +32,18 @@ export function CloudInitCreateDialog({
   onCreate: (credentials: CloudInitCredentials) => void;
 }) {
   const properties = template.properties as Record<string, unknown>;
+  const family: OsFamily =
+    typeof properties.osFamily === 'string' ? (properties.osFamily as OsFamily) : 'debian';
   const [user, setUser] = useState(
     typeof properties.cloudInitUser === 'string' && properties.cloudInitUser
       ? properties.cloudInitUser
-      : 'debian',
+      : (cloudInitDefaultUser[family] ?? 'debian'),
   );
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState(
+    typeof properties.cloudInitPassword === 'string' && properties.cloudInitPassword
+      ? properties.cloudInitPassword
+      : generatedPassword(),
+  );
   const [hostname, setHostname] = useState('');
   const [mode, setMode] = useState<'dhcp' | 'static'>(
     properties.cloudInitNetworkMode === 'static' ? 'static' : 'dhcp',
@@ -84,11 +97,15 @@ export function CloudInitCreateDialog({
             onChange={(event) => setUser(event.target.value)}
           />
         </Field>
-        <Field label="Password" htmlFor="cloudinit-password">
+        <Field
+          label="Password"
+          htmlFor="cloudinit-password"
+          hint="Generated once for this node; change it if you like."
+        >
           <Input
             id="cloudinit-password"
-            type="password"
-            autoComplete="new-password"
+            className="tabular"
+            autoComplete="off"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -97,7 +114,7 @@ export function CloudInitCreateDialog({
           <Input
             id="cloudinit-hostname"
             value={hostname}
-            placeholder="debian"
+            placeholder="node name"
             onChange={(event) => setHostname(event.target.value)}
           />
         </Field>

@@ -22,6 +22,8 @@ describe('appliance provisioning script', () => {
     // Desktops install Recommends: xfce4 and lightdm only recommend the X server.
     expect(script).toContain('apt-get install -y xfce4');
     expect(script).not.toContain('--no-install-recommends');
+    expect(script).toContain('thunar');
+    expect(script).toContain('epiphany-browser');
     expect(script).toContain('xorg');
     expect(script).toContain('xserver-xorg-video-vesa');
     expect(script).toContain('systemctl enable lightdm');
@@ -56,6 +58,36 @@ describe('appliance provisioning script', () => {
     expect(script).not.toContain('apt-get');
   });
 
+  test('rocky desktops enable their display manager', () => {
+    const script = applianceProvisioningScript({
+      ...BASE,
+      family: 'rocky',
+      desktop: 'gnome',
+      packages: [],
+    });
+    expect(script).toContain('dnf -y install gnome-shell');
+    expect(script).toContain('systemctl enable gdm');
+    expect(script).toContain('systemctl set-default graphical.target');
+  });
+
+  test('alpine desktops enable their display manager under OpenRC', () => {
+    const script = applianceProvisioningScript({
+      ...BASE,
+      family: 'alpine',
+      desktop: 'xfce',
+      packages: [],
+    });
+    expect(script).toContain('apk add --no-cache xfce4');
+    expect(script).toContain('rc-update add lightdm default');
+    expect(script).not.toContain('systemctl');
+  });
+
+  test('desktop builds are refused when the family has no recipe', () => {
+    expect(() => applianceProvisioningScript({ ...BASE, family: 'rocky', desktop: 'kde' })).toThrow(
+      AppError,
+    );
+  });
+
   test('alpine uses apk and OpenRC-friendly shutdown', () => {
     const script = applianceProvisioningScript({
       ...BASE,
@@ -66,10 +98,6 @@ describe('appliance provisioning script', () => {
     expect(script).toContain('apk add --no-cache nginx');
     expect(script).toContain('poweroff -f');
     expect(script).not.toContain('systemctl');
-  });
-
-  test('desktop builds are refused outside Debian and Ubuntu', () => {
-    expect(() => applianceProvisioningScript({ ...BASE, family: 'alpine' })).toThrow(AppError);
   });
 
   test('emits progress markers, the success marker, and a forced poweroff', () => {

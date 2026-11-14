@@ -183,7 +183,9 @@ export function BottomDock({
         {activeTab ? (
           <button
             type="button"
-            className="ml-auto flex w-7 items-center justify-center"
+            className={`${
+              activeTab.kind === 'console' && consoleTabs.length > 1 ? '' : 'ml-auto '
+            }flex w-7 items-center justify-center`}
             aria-label={expanded ? 'Restore tab to dock' : `Expand ${activeTab.kind}`}
             title={expanded ? 'Restore to dock (Esc)' : 'Expand to full screen'}
             onClick={() => setExpanded((value) => !value)}

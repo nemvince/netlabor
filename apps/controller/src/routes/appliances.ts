@@ -5,6 +5,7 @@ import type { Implementer } from '../implementer.ts';
 import {
   adoptOsImage,
   cancelBuild,
+  clearBuildLog,
   createBuild,
   createOsImage,
   createTemplateFromBuild,
@@ -55,6 +56,9 @@ export function applianceRoutes(os: Implementer, jobs: JobService) {
         }),
         cancel: os.appliances.builds.cancel.handler(async ({ input, context }) =>
           cancelBuild(context, jobs, input),
+        ),
+        clearLog: os.appliances.builds.clearLog.handler(async ({ input, context }) =>
+          clearBuildLog(context, input.id),
         ),
         template: os.appliances.builds.template.handler(async ({ input, context }) =>
           createTemplateFromBuild(context, context.auth.user?.id ?? null, input),

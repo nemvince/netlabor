@@ -30,7 +30,7 @@ export const catalogOsImages: CatalogOsImage[] = [
   },
   {
     id: '0b000000-0000-4000-8000-000000000002',
-    name: 'ubuntu-24.04-cloudimg-amd64',
+    name: 'ubuntu-24.04-server-cloudimg-amd64',
     family: 'ubuntu',
     release: '24.04 LTS (noble)',
     arch: 'amd64',
@@ -63,35 +63,204 @@ export const catalogOsImages: CatalogOsImage[] = [
 ];
 
 export interface DesktopRecipe {
-  /** Packages installed for the desktop environment. */
-  packages: string[];
-  /** systemd target and display manager to enable. */
-  displayManager: string | null;
+  /** Packages per family, with the desktop's browser and file manager included. */
+  packages: Partial<Record<OsFamily, string[]>>;
+  /** Display manager service per family (a systemd unit or an OpenRC service). */
+  displayManager: Partial<Record<OsFamily, string>>;
 }
 
-/** Package sets per desktop environment; desktop builds support Debian/Ubuntu only. */
+/**
+ * Desktop environments per distro family. Rocky has no KDE or LXQt packages, so
+ * those two combinations are refused instead of half-installed.
+ * Ubuntu's browser is epiphany: its `firefox` package is a snap, which needs a
+ * working snapd inside the build VM.
+ */
 export const desktopRecipes: Record<Exclude<Desktop, 'none'>, DesktopRecipe> = {
   xfce: {
-    packages: [
-      'xfce4',
-      'xfce4-terminal',
-      'lightdm',
-      'lightdm-gtk-greeter',
-      'xorg',
-      'xserver-xorg-video-vesa',
-    ],
-    displayManager: 'lightdm',
+    packages: {
+      debian: [
+        'xfce4',
+        'xfce4-terminal',
+        'thunar',
+        'mousepad',
+        'ristretto',
+        'firefox-esr',
+        'lightdm',
+        'lightdm-gtk-greeter',
+        'xorg',
+        'xserver-xorg-video-vesa',
+      ],
+      ubuntu: [
+        'xfce4',
+        'xfce4-terminal',
+        'thunar',
+        'mousepad',
+        'ristretto',
+        'epiphany-browser',
+        'lightdm',
+        'lightdm-gtk-greeter',
+        'xorg',
+        'xserver-xorg-video-vesa',
+      ],
+      rocky: [
+        'epel-release',
+        'xfce4-session',
+        'xfwm4',
+        'xfce4-panel',
+        'xfce4-terminal',
+        'mousepad',
+        'nautilus',
+        'eog',
+        'firefox',
+        'lightdm',
+        'lightdm-gtk',
+        'xorg-x11-server-Xorg',
+      ],
+      alpine: [
+        'xfce4',
+        'xfce4-terminal',
+        'thunar',
+        'mousepad',
+        'ristretto',
+        'firefox',
+        'lightdm',
+        'lightdm-gtk-greeter',
+        'xorg-server',
+        'xf86-video-vesa',
+      ],
+    },
+    displayManager: {
+      debian: 'lightdm',
+      ubuntu: 'lightdm',
+      rocky: 'lightdm',
+      alpine: 'lightdm',
+    },
   },
   gnome: {
-    packages: ['gnome-core', 'gnome-terminal', 'gdm3', 'xorg'],
-    displayManager: 'gdm3',
+    packages: {
+      debian: [
+        'gnome-core',
+        'gnome-terminal',
+        'nautilus',
+        'gnome-text-editor',
+        'eog',
+        'firefox-esr',
+        'gdm3',
+        'xorg',
+      ],
+      ubuntu: [
+        'gnome-core',
+        'gnome-terminal',
+        'nautilus',
+        'gnome-text-editor',
+        'eog',
+        'epiphany-browser',
+        'gdm3',
+        'xorg',
+      ],
+      rocky: [
+        'gnome-shell',
+        'gnome-session',
+        'gnome-terminal',
+        'nautilus',
+        'firefox',
+        'gdm',
+        'xorg-x11-server-Xorg',
+      ],
+      alpine: [
+        'gnome-shell',
+        'gnome-session',
+        'gnome-terminal',
+        'nautilus',
+        'firefox',
+        'gdm',
+        'xorg-server',
+        'xf86-video-vesa',
+      ],
+    },
+    displayManager: { debian: 'gdm3', ubuntu: 'gdm3', rocky: 'gdm', alpine: 'gdm' },
   },
   kde: {
-    packages: ['kde-plasma-desktop', 'sddm', 'xorg'],
-    displayManager: 'sddm',
+    packages: {
+      debian: [
+        'kde-plasma-desktop',
+        'konsole',
+        'dolphin',
+        'kate',
+        'gwenview',
+        'firefox-esr',
+        'sddm',
+        'xorg',
+      ],
+      ubuntu: [
+        'kde-plasma-desktop',
+        'konsole',
+        'dolphin',
+        'kate',
+        'gwenview',
+        'epiphany-browser',
+        'sddm',
+        'xorg',
+      ],
+      alpine: [
+        'plasma-desktop',
+        'konsole',
+        'dolphin',
+        'kate',
+        'gwenview',
+        'firefox',
+        'sddm',
+        'xorg-server',
+        'xf86-video-vesa',
+      ],
+    },
+    displayManager: { debian: 'sddm', ubuntu: 'sddm', alpine: 'sddm' },
   },
   lxqt: {
-    packages: ['lxqt', 'sddm', 'xorg'],
-    displayManager: 'sddm',
+    packages: {
+      debian: [
+        'lxqt',
+        'qterminal',
+        'pcmanfm-qt',
+        'featherpad',
+        'lximage-qt',
+        'firefox-esr',
+        'sddm',
+        'xorg',
+      ],
+      ubuntu: [
+        'lxqt',
+        'qterminal',
+        'pcmanfm-qt',
+        'featherpad',
+        'lximage-qt',
+        'epiphany-browser',
+        'sddm',
+        'xorg',
+      ],
+      alpine: [
+        'lxqt',
+        'qterminal',
+        'pcmanfm-qt',
+        'firefox',
+        'sddm',
+        'xorg-server',
+        'xf86-video-vesa',
+      ],
+    },
+    displayManager: { debian: 'sddm', ubuntu: 'sddm', alpine: 'sddm' },
   },
+};
+
+/** Whether a base-image family can install the desktop. */
+export function desktopAvailable(desktop: Desktop, family: OsFamily): boolean {
+  return desktop === 'none' || (desktopRecipes[desktop].packages[family]?.length ?? 0) > 0;
+}
+
+/** Default cloud-init login on each family's cloud image. */
+export const cloudInitDefaultUser: Record<OsFamily, string> = {
+  debian: 'debian',
+  ubuntu: 'ubuntu',
+  rocky: 'rocky',
+  alpine: 'alpine',
 };

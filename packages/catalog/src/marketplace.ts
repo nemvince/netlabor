@@ -22,6 +22,8 @@ export interface MarketplaceQemu {
   adapters: number;
   adapterType: 'e1000' | 'virtio-net-pci' | 'rtl8139';
   hdaInterface: 'ide' | 'virtio' | 'sata';
+  /** Disk image format of the base image; raw for appliances shipped as .img. */
+  format?: 'qcow2' | 'raw';
   consoleType: 'telnet' | 'vnc';
   machineType?: string;
   cpuModel?: string;
@@ -191,6 +193,35 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
       adapters: 4,
       adapterType: 'virtio-net-pci',
       hdaInterface: 'virtio',
+      consoleType: 'telnet',
+      options: [],
+    },
+  },
+  {
+    id: 'opnsense',
+    name: 'OPNsense',
+    vendor: 'Deciso B.V.',
+    category: 'Firewalls',
+    description:
+      'Open source FreeBSD based firewall and routing platform. Console defaults: root / opnsense, first IP 192.168.1.1.',
+    status: 'stable',
+    nodeType: 'qemu',
+    symbol: 'firewall',
+    arch: 'x86_64',
+    registryFile: 'opnsense.gns3a',
+    image: {
+      filename: 'OPNsense-25.7-nano-amd64.img',
+      version: '25.7',
+      sizeBytes: 3_221_225_472,
+      url: 'https://opnsense.c0urier.net/releases/25.7/OPNsense-25.7-nano-amd64.img',
+    },
+    qemu: {
+      ram: 1024,
+      cpus: 1,
+      adapters: 4,
+      adapterType: 'virtio-net-pci',
+      hdaInterface: 'virtio',
+      format: 'raw',
       consoleType: 'telnet',
       options: [],
     },

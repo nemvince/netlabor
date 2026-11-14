@@ -899,6 +899,32 @@ async function launchBuild(input: LaunchInput): Promise<{ proc: BuildProcess; st
  * and the artifact are reported through {@link buildStatus}. Errors after the
  * process starts are surfaced through the build state, never thrown.
  */
+/** Terminal build workspaces older than this are swept when the next build starts. */
+const PRUNE_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
+
+async function pruneOldWorkspaces(config: AgentConfig): Promise<void> {
+  const root = path.join(config.stateDir, BUILD_DIR);
+  let entries: Dirent[];
+  try {
+    entries = await readdir(root, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  const cutoff = Date.now() - PRUNE_AFTER_MS;
+  await Promise.all(
+    entries
+      .filter((entry) => entry.isDirectory())
+      .map(async (entry) => {
+        const workspace = path.join(root, entry.name);
+        const state = await readState(workspace);
+        if (!state || state.status === 'running') return;
+        if (Date.parse(state.updatedAt) > cutoff) return;
+        if (await isBuildProcessAlive(state.pid, state.buildId)) return;
+        await rm(workspace, { recursive: true, force: true }).catch(() => undefined);
+      }),
+  );
+}
+
 export async function startBuild(
   ctx: ApplianceBuildContext,
   spec: ApplianceBuildSpec,
@@ -910,6 +936,7 @@ export async function startBuild(
   }
   const qemu = findQemu();
   const qemuImg = findQemuImg();
+  await pruneOldWorkspaces(ctx.config).catch(() => undefined);
   const basePath = await blobFile(ctx.config, spec.base.sha256, spec.base.filename);
   if (!basePath) {
     throw new AppError('IMAGE_MISSING', 'the base cloud image is not present on this compute');

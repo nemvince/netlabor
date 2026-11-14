@@ -16,6 +16,17 @@ describe('cloud-init seed content', () => {
     expect(seed.metaData).toMatch(/^instance-id: node-1-[0-9a-f]{12}\n/);
   });
 
+  test('defaults the login to the base image family, not always debian', () => {
+    const seed = cloudInitSeed(context({ osFamily: 'alpine' }));
+    expect(seed.userData).toContain('name: "alpine"');
+  });
+
+  test('uses the node name as hostname so machines differ', () => {
+    const seed = cloudInitSeed(context({ osFamily: 'debian' }));
+    expect(seed.userData).toContain('hostname: "snh-lg"');
+    expect(seed.metaData).toContain('local-hostname: snh-lg');
+  });
+
   test('verbatim user-data and network-config override the generated files', () => {
     const seed = cloudInitSeed(
       context({

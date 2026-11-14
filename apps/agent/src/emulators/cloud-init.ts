@@ -2,7 +2,8 @@
 
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { AppError } from '@netlabor/contract';
+import { cloudInitDefaultUser } from '@netlabor/catalog';
+import { AppError, type OsFamily } from '@netlabor/contract';
 import type { NodeContext } from '../dataplane/node.ts';
 
 function quoted(value: string): string {
@@ -58,7 +59,7 @@ function userData(ctx: NodeContext, properties: Record<string, unknown>): string
   const user =
     typeof properties.cloudInitUser === 'string' && properties.cloudInitUser.trim()
       ? properties.cloudInitUser.trim()
-      : 'debian';
+      : (cloudInitDefaultUser[properties.osFamily as OsFamily] ?? 'debian');
   const password =
     typeof properties.cloudInitPassword === 'string' ? properties.cloudInitPassword : '';
   const hostname =

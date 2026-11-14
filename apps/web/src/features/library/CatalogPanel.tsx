@@ -1,7 +1,7 @@
 /** Appliance marketplace: browse the curated catalog and install entries. */
 
 import { useQuery } from '@tanstack/react-query';
-import { Check, Download } from 'lucide-react';
+import { Check, Container, Download, Monitor, Network, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '../../components/Badge.tsx';
 import { Loading } from '../../components/Page.tsx';
@@ -52,6 +52,13 @@ export function CatalogPanel({
 
   const rows = catalog.data ?? [];
 
+const CATALOG_ICONS: Record<string, typeof Network> = {
+  pc: Monitor,
+  router: Network,
+  firewall: Shield,
+  docker: Container,
+};
+
   return (
     <div className="mt-4 flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
@@ -96,6 +103,16 @@ export function CatalogPanel({
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className="flex size-5 shrink-0 items-center justify-center rounded-[2px]"
+                        style={{ background: 'var(--color-panel-sunken)' }}
+                        aria-hidden
+                      >
+                        {(() => {
+                          const Icon = CATALOG_ICONS[appliance.symbol] ?? Monitor;
+                          return <Icon size={12} style={{ color: 'var(--color-copper)' }} />;
+                        })()}
+                      </span>
                       <span className="text-[13px] font-medium">{appliance.name}</span>
                       <Badge tone={appliance.status === 'stable' ? 'up' : 'warn'}>
                         {appliance.status}
