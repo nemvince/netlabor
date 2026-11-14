@@ -287,6 +287,7 @@ install_controller() {
   # The controller installs its own updates, so its service group writes the prefix.
   install -d -m 0775 -o root -g netlabor-controller "$PREFIX"
   install -d -m 0750 -o netlabor-controller -g netlabor-controller /var/lib/netlabor
+  install -d -m 0755 -o netlabor-controller -g netlabor-controller /var/lib/netlabor/staging
   install -m 0755 "$binary" "$PREFIX/netlabor-controller"
 
   if [[ $fresh -eq 0 ]]; then

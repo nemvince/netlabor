@@ -149,42 +149,48 @@ function LinkEdgeComponent({
             {port.text}
           </div>
         ))}
-        <div
-          className="pointer-events-none absolute flex items-center gap-1.5 rounded-[2px] border px-1.5 py-[1px] text-[10px] whitespace-nowrap"
-          style={{
-            transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-            color: selected ? 'var(--color-copper)' : 'var(--color-ink-dim)',
-            borderColor: selected ? 'var(--color-copper)' : 'var(--color-rule)',
-            background: 'var(--color-panel-sunken)',
-            fontFamily: 'var(--font-mono)',
-          }}
-          title={`${link.nodeAName}:${link.adapterA}/${link.portA} ↔ ${link.nodeBName}:${link.adapterB}/${link.portB} · ${link.status}`}
-        >
-          <span
-            aria-hidden
-            className="inline-block size-[5px] rounded-full"
-            style={{ background: STATUS_LAMP[link.status] }}
-          />
-          <span>{link.status}</span>
-          {link.style.label ? (
+        {emphasized ||
+        link.style.label ||
+        filterParts.length > 0 ||
+        recording ||
+        link.status !== 'active' ? (
+          <div
+            className="pointer-events-none absolute flex items-center gap-1.5 rounded-[2px] border px-1.5 py-[1px] text-[10px] whitespace-nowrap"
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
+              color: selected ? 'var(--color-copper)' : 'var(--color-ink-dim)',
+              borderColor: selected ? 'var(--color-copper)' : 'var(--color-rule)',
+              background: 'var(--color-panel-sunken)',
+              fontFamily: 'var(--font-mono)',
+            }}
+            title={`${link.nodeAName}:${link.adapterA}/${link.portA} ↔ ${link.nodeBName}:${link.adapterB}/${link.portB} · ${link.status}`}
+          >
             <span
-              className="max-w-32 truncate border-l pl-1.5"
-              style={{ borderColor: 'var(--color-rule)' }}
-            >
-              {link.style.label}
-            </span>
-          ) : null}
-          {recording ? (
-            <span title="capture active" style={{ color: 'var(--color-signal-down)' }}>
-              REC
-            </span>
-          ) : null}
-          {filterParts.length > 0 ? (
-            <span className="border-l pl-1.5" style={{ borderColor: 'var(--color-rule)' }}>
-              {filterParts.join(' ')}
-            </span>
-          ) : null}
-        </div>
+              role="img"
+              aria-label={link.status}
+              className="inline-block size-[5px] rounded-full"
+              style={{ background: STATUS_LAMP[link.status] }}
+            />
+            {link.style.label ? (
+              <span
+                className="max-w-32 truncate border-l pl-1.5"
+                style={{ borderColor: 'var(--color-rule)' }}
+              >
+                {link.style.label}
+              </span>
+            ) : null}
+            {recording ? (
+              <span title="capture active" style={{ color: 'var(--color-signal-down)' }}>
+                REC
+              </span>
+            ) : null}
+            {filterParts.length > 0 ? (
+              <span className="border-l pl-1.5" style={{ borderColor: 'var(--color-rule)' }}>
+                {filterParts.join(' ')}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </EdgeLabelRenderer>
     </>
   );

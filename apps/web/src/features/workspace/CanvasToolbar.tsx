@@ -15,6 +15,7 @@ import {
   Link2,
   Magnet,
   Map as MapIcon,
+  PaintBucket,
   Play,
   RectangleHorizontal,
   Redo2,
@@ -49,6 +50,8 @@ interface CanvasToolbarProps {
   portLabelsAlways: boolean;
   onToggleMinimap: () => void;
   onTogglePortLabels: () => void;
+  canvasBackground: string;
+  onChangeCanvasBackground: (color: string) => void;
   onUndo: () => void;
   onRedo: () => void;
   onCopy: () => void;
@@ -167,6 +170,8 @@ export function CanvasToolbar({
   snapEnabled,
   minimapVisible,
   portLabelsAlways,
+  canvasBackground,
+  onChangeCanvasBackground,
   onToggleMinimap,
   onTogglePortLabels,
   onUndo,
@@ -215,7 +220,7 @@ export function CanvasToolbar({
       </ToolButton>
       <Separator />
       <ToolButton
-        label={connectMode ? 'Cancel connection' : 'Connect nodes'}
+        label={connectMode ? 'Cancel connection (Esc)' : 'Connect nodes (L)'}
         onClick={onToggleConnect}
         disabled={!canEdit}
         active={connectMode}
@@ -370,6 +375,31 @@ export function CanvasToolbar({
             <ViewToggle checked={portLabelsAlways} onCheckedChange={onTogglePortLabels}>
               <Cable size={13} aria-hidden /> Always show port numbers
             </ViewToggle>
+            <label
+              className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12px] hover:bg-white/[0.06]"
+              title="Canvas background colour"
+            >
+              <PaintBucket size={13} aria-hidden style={{ color: 'var(--color-ink-faint)' }} />
+              Background
+              <input
+                type="color"
+                aria-label="Canvas background colour"
+                value={canvasBackground || '#12161b'}
+                onChange={(event) => onChangeCanvasBackground(event.target.value)}
+                className="ml-auto size-5 cursor-pointer rounded-[2px] border-0 bg-transparent p-0"
+              />
+              {canvasBackground ? (
+                <button
+                  type="button"
+                  aria-label="Reset canvas background"
+                  className="text-[10px] hover:text-[var(--color-copper)]"
+                  style={{ color: 'var(--color-ink-faint)' }}
+                  onClick={() => onChangeCanvasBackground('')}
+                >
+                  reset
+                </button>
+              ) : null}
+            </label>
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>

@@ -26,7 +26,7 @@ modules; `xorriso` for cloud-init; optional emulators (`qemu-system-x86_64`, `dy
    `--skip-deps` when those are managed separately, `--with-docker` for container nodes, or
    `--with-nat` to provision the NAT bridge. `bun run build` produces the same binaries locally in
    `dist/`, which `scripts/install.sh --binary-dir dist` installs. Run the same command again
-to update: it keeps the environment files, skips dependencies, and restarts the services.
+   to update: it keeps the environment files, skips dependencies, and restarts the services.
 2. `systemctl enable --now netlabor-controller` — migrations run automatically, and with
    `NB_ADMIN_PASSWORD` set the first administrator is created.
 3. Installing the agent next to the controller (or with `--controller-url` and admin credentials)

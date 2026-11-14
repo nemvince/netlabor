@@ -19,7 +19,6 @@ import { SecretsSection } from '../../features/admin/SecretsSection.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
 import { SettingsCard, SettingsIcon } from '../../features/settings/SettingsCard.tsx';
-import { SettingsNav } from '../../features/settings/SettingsNav.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
@@ -253,7 +252,6 @@ export function SettingsAdminPage() {
         title="Controller settings"
         description="Defaults the controller hands to every new console and project, its update channel, and the encrypted secrets it stores."
       />
-      <SettingsNav />
 
       <div className="mt-4 flex flex-col gap-2">
         {error ? <Notice tone="error">{error}</Notice> : null}

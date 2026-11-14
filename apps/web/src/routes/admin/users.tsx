@@ -17,7 +17,6 @@ import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
 import { GroupsSection } from '../../features/admin/GroupSection.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
-import { SettingsNav } from '../../features/settings/SettingsNav.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
@@ -546,7 +545,6 @@ export function UsersAdminPage() {
           </>
         }
       />
-      <SettingsNav />
 
       <div className="mt-5">
         {users.isPending ? (
