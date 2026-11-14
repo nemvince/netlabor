@@ -98,6 +98,8 @@ export async function probeCapabilities(config: AgentConfig): Promise<AgentCapab
 
   return {
     kernel: kernelRelease,
+    // Maps to the OS image arch vocabulary: amd64 | arm64.
+    arch: process.arch === 'arm64' ? 'arm64' : 'amd64',
     kernelDataplane: kernel.ok && ubridge.path !== null,
     ubridge: ubridge.version,
     ubridgeFeatures: kernel.ubridgeFeatures,

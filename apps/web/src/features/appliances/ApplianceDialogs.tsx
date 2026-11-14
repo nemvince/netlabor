@@ -627,6 +627,21 @@ export function ApplianceBuildDialog({
             first; builds boot that exact file.
           </Notice>
         ) : null}
+        {(() => {
+          // Selected arch vs the compute the build would run on; qemu can
+          // emulate the other arch, but it is slow and KVM is unavailable then.
+          const target =
+            computes.find((compute) => compute.id === computeId) ??
+            computes.find((compute) => compute.status === 'online');
+          const hostArch = target?.capabilities?.arch;
+          if (!selectedOs || !hostArch || hostArch === selectedOs.arch) return null;
+          return (
+            <Notice tone="warn">
+              This image is {selectedOs.arch} but compute “{target.name}” runs {hostArch}. The build
+              will fall back to emulation and may be very slow.
+            </Notice>
+          );
+        })()}
         <div className="grid grid-cols-[1fr_200px] gap-2">
           <Field
             label="Base OS image"

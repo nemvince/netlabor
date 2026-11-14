@@ -8,6 +8,8 @@ export const ComputeStatus = z.enum(COMPUTE_STATUSES);
 
 export const AgentCapabilities = z.object({
   kernel: z.string(),
+  /** Host architecture as the OS-image arch vocabulary: amd64 | arm64. */
+  arch: z.string().optional(),
   kernelDataplane: z.boolean(),
   ubridge: z.string().nullable(),
   ubridgeFeatures: z.array(z.string()),
