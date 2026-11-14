@@ -123,7 +123,7 @@ export function OsImageCreateDialog({
             >
               {OS_FAMILIES.map((value) => (
                 <option key={value} value={value}>
-                  {value === 'debian' ? 'Debian' : 'Ubuntu'}
+                  {familyLabel(value)}
                 </option>
               ))}
             </Select>

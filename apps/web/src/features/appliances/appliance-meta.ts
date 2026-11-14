@@ -1,4 +1,4 @@
-import type { ApplianceBuildStatus, Desktop, OsImageRow } from '@netlabor/contract';
+import type { ApplianceBuildStatus, Desktop, OsFamily, OsImageRow } from '@netlabor/contract';
 import type { BadgeTone } from '../../components/Badge.tsx';
 
 export const DESKTOP_OPTIONS: { value: Desktop; label: string; hint: string }[] = [
@@ -8,6 +8,10 @@ export const DESKTOP_OPTIONS: { value: Desktop; label: string; hint: string }[] 
   { value: 'kde', label: 'KDE Plasma', hint: 'full desktop' },
   { value: 'lxqt', label: 'LXQt', hint: 'minimal desktop' },
 ];
+
+export function familyLabel(value: OsFamily): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 export function desktopLabel(value: Desktop): string {
   return DESKTOP_OPTIONS.find((option) => option.value === value)?.label ?? value;

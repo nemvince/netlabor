@@ -30,7 +30,7 @@ export const catalogOsImages: CatalogOsImage[] = [
   },
   {
     id: '0b000000-0000-4000-8000-000000000002',
-    name: 'ubuntu-24.04-cloudimg-amd64',
+    name: 'ubuntu-24.04-server-cloudimg-amd64',
     family: 'ubuntu',
     release: '24.04 LTS (noble)',
     arch: 'amd64',

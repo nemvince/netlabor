@@ -43,13 +43,10 @@ import {
 import {
   BUILD_STATUS_TONE,
   desktopLabel,
+  familyLabel,
   type OsArtifactState,
   osArtifactState,
 } from './appliance-meta.ts';
-
-function familyLabel(family: OsFamily): string {
-  return family.charAt(0).toUpperCase() + family.slice(1);
-}
 
 function barWidth(value: number): string {
   return `${Math.max(2, Math.min(100, value))}%`;
