@@ -1,11 +1,15 @@
 import { describe, expect, test } from 'bun:test';
+import path from 'node:path';
 import type { ControllerConfig } from '../src/config.ts';
 import { serveStatic } from '../src/routes/static.ts';
 
+const webDist = path.resolve(import.meta.dir, '../../web/dist');
+// Unit tests run before the web bundle is built.
+const built = await Bun.file(path.join(webDist, 'index.html')).exists();
 const embedded = { webRoot: null } as ControllerConfig;
-const fromDisk = { webRoot: 'apps/web/dist' } as ControllerConfig;
+const fromDisk = { webRoot: webDist } as ControllerConfig;
 
-describe('serveStatic', () => {
+describe.skipIf(!built)('serveStatic', () => {
   test('serves the embedded index.html when no web root is configured', async () => {
     const response = await serveStatic(new Request('http://x/'), embedded);
     expect(response?.status).toBe(200);
