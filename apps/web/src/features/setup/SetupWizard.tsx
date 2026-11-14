@@ -321,62 +321,62 @@ function PresetsStep({
                     Customize desktop and software
                   </summary>
                   <div className="mt-2 flex flex-wrap items-start gap-3">
-                  <span
-                    className="flex items-center gap-1.5 text-[11px]"
-                    style={{ color: 'var(--color-ink-faint)' }}
-                  >
-                    <label htmlFor={`setup-desktop-${preset.id}`}>Desktop</label>
-                    <Select
-                      id={`setup-desktop-${preset.id}`}
-                      className="h-6 py-0 text-[11px]"
-                      style={{ width: 130 }}
-                      value={choice.desktop}
-                      onChange={(event) =>
-                        update(preset.id, { desktop: event.target.value as Desktop })
-                      }
+                    <span
+                      className="flex items-center gap-1.5 text-[11px]"
+                      style={{ color: 'var(--color-ink-faint)' }}
                     >
-                      {DESKTOP_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </span>
-                  <span className="flex max-w-[420px] flex-wrap gap-1">
-                    {softwareCatalog.map((entry) => {
-                      if (entry.group === 'gui' && choice.desktop === 'none') return null;
-                      const active = choice.software.includes(entry.id);
-                      const IconName = SOFTWARE_ICONS[entry.icon] ?? Circle;
-                      return (
-                        <button
-                          key={entry.id}
-                          type="button"
-                          aria-pressed={active}
-                          title={entry.description}
-                          className="inline-flex items-center gap-1 rounded-[3px] border px-1.5 py-px text-[10px]"
-                          style={{
-                            borderColor: active
-                              ? 'var(--color-copper)'
-                              : 'var(--color-rule-strong)',
-                            background: active
-                              ? 'color-mix(in oklab, var(--color-copper) 14%, var(--color-panel-sunken))'
-                              : 'var(--color-panel-sunken)',
-                            color: active ? 'var(--color-copper)' : 'var(--color-ink-faint)',
-                          }}
-                          onClick={() =>
-                            update(preset.id, {
-                              software: active
-                                ? choice.software.filter((id) => id !== entry.id)
-                                : [...choice.software, entry.id],
-                            })
-                          }
-                        >
-                          <IconName size={11} aria-hidden />
-                          {entry.name}
-                        </button>
-                      );
-                    })}
-                  </span>
+                      <label htmlFor={`setup-desktop-${preset.id}`}>Desktop</label>
+                      <Select
+                        id={`setup-desktop-${preset.id}`}
+                        className="h-6 py-0 text-[11px]"
+                        style={{ width: 130 }}
+                        value={choice.desktop}
+                        onChange={(event) =>
+                          update(preset.id, { desktop: event.target.value as Desktop })
+                        }
+                      >
+                        {DESKTOP_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </Select>
+                    </span>
+                    <span className="flex max-w-[420px] flex-wrap gap-1">
+                      {softwareCatalog.map((entry) => {
+                        if (entry.group === 'gui' && choice.desktop === 'none') return null;
+                        const active = choice.software.includes(entry.id);
+                        const IconName = SOFTWARE_ICONS[entry.icon] ?? Circle;
+                        return (
+                          <button
+                            key={entry.id}
+                            type="button"
+                            aria-pressed={active}
+                            title={entry.description}
+                            className="inline-flex items-center gap-1 rounded-[3px] border px-1.5 py-px text-[10px]"
+                            style={{
+                              borderColor: active
+                                ? 'var(--color-copper)'
+                                : 'var(--color-rule-strong)',
+                              background: active
+                                ? 'color-mix(in oklab, var(--color-copper) 14%, var(--color-panel-sunken))'
+                                : 'var(--color-panel-sunken)',
+                              color: active ? 'var(--color-copper)' : 'var(--color-ink-faint)',
+                            }}
+                            onClick={() =>
+                              update(preset.id, {
+                                software: active
+                                  ? choice.software.filter((id) => id !== entry.id)
+                                  : [...choice.software, entry.id],
+                              })
+                            }
+                          >
+                            <IconName size={11} aria-hidden />
+                            {entry.name}
+                          </button>
+                        );
+                      })}
+                    </span>
                   </div>
                 </details>
               ) : null}

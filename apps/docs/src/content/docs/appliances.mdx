@@ -66,13 +66,13 @@ Desktops install a browser, file manager, terminal, editor, and image viewer as 
 image is usable as soon as it boots. Rocky has no KDE or LXQt packages and is limited to XFCE and
 GNOME; Alpine desktops use OpenRC services instead of `graphical.target`.
 
-| Desktop | Debian/Ubuntu packages                                  | Display manager (systemd / OpenRC) |
-| ------- | ------------------------------------------------------- | ---------------------------------- |
-| `none`  | none                                                    | —                                  |
-| `xfce`  | `xfce4`, `thunar`, `mousepad`, `firefox(-esr)`          | `lightdm`                          |
-| `gnome` | `gnome-core`, `nautilus`, `gnome-text-editor`, browser  | `gdm3` / `gdm`                     |
-| `kde`   | `kde-plasma-desktop`, `dolphin`, `kate`, browser        | `sddm`                             |
-| `lxqt`  | `lxqt`, `pcmanfm-qt`, `qterminal`, browser              | `sddm`                             |
+| Desktop | Debian/Ubuntu packages                                 | Display manager (systemd / OpenRC) |
+| ------- | ------------------------------------------------------ | ---------------------------------- |
+| `none`  | none                                                   | —                                  |
+| `xfce`  | `xfce4`, `thunar`, `mousepad`, `firefox(-esr)`         | `lightdm`                          |
+| `gnome` | `gnome-core`, `nautilus`, `gnome-text-editor`, browser | `gdm3` / `gdm`                     |
+| `kde`   | `kde-plasma-desktop`, `dolphin`, `kate`, browser       | `sddm`                             |
+| `lxqt`  | `lxqt`, `pcmanfm-qt`, `qterminal`, browser             | `sddm`                             |
 
 GUI-only catalog entries (Thunderbird, GIMP, VLC, Remmina, desktop fonts) appear in the build
 dialog only after a desktop is selected. Headless builds preselect the SSH server.

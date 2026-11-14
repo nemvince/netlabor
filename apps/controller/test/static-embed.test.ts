@@ -28,8 +28,8 @@ describe('serveStatic with an embedded web dist', () => {
 
   test('404s a missing asset and rejects traversal', async () => {
     expect((await serveStatic(new Request('http://x/nope.js'), config))?.status).toBe(404);
-    expect((await serveStatic(new Request('http://x/..%2f..%2fetc%2fpasswd'), config))?.status).toBe(
-      400,
-    );
+    expect(
+      (await serveStatic(new Request('http://x/..%2f..%2fetc%2fpasswd'), config))?.status,
+    ).toBe(400);
   });
 });
