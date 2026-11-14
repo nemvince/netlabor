@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { JobRow, ProjectRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Download, Plus, Upload, X } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
@@ -360,7 +360,9 @@ export function ImportProjectDialog({
   const [phase, setPhase] = useState<'idle' | 'uploading' | 'importing' | 'done'>('idle');
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const form = useForm<ImportValues>({
     resolver: zodResolver(importSchema),
     defaultValues: { name: '' },
@@ -372,10 +374,17 @@ export function ImportProjectDialog({
       return;
     }
     setError(null);
+    setNotice(null);
     setProgress(0);
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
       setPhase('uploading');
-      const uploadId = await uploadFile(file, (fraction) => setProgress(Math.round(fraction * 50)));
+      const uploadId = await uploadFile(
+        file,
+        (fraction) => setProgress(Math.round(fraction * 50)),
+        { signal: controller.signal },
+      );
       setPhase('importing');
       const started = await client.projects.import({
         uploadId,
@@ -391,7 +400,13 @@ export function ImportProjectDialog({
       if (projectId) onCompleted?.(projectId);
     } catch (submitError) {
       setPhase('idle');
-      setError(messageOf(submitError));
+      if (submitError instanceof DOMException && submitError.name === 'AbortError') {
+        setNotice('Upload cancelled.');
+      } else {
+        setError(messageOf(submitError));
+      }
+    } finally {
+      abortRef.current = null;
     }
   }
 
@@ -440,6 +455,7 @@ export function ImportProjectDialog({
         }}
       >
         {error ? <Notice tone="error">{error}</Notice> : null}
+        {notice ? <Notice tone="info">{notice}</Notice> : null}
         <Field label="Archive" htmlFor="import-file" hint="A project export from this controller.">
           <input
             id="import-file"
@@ -485,8 +501,16 @@ export function ImportProjectDialog({
           </div>
         ) : null}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
-            Cancel
+          <button
+            type="button"
+            className="nb-button"
+            disabled={phase === 'importing'}
+            onClick={() => {
+              if (phase === 'uploading') abortRef.current?.abort();
+              else onOpenChange(false);
+            }}
+          >
+            {phase === 'uploading' ? 'Stop upload' : 'Cancel'}
           </button>
           <button
             type="submit"

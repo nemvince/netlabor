@@ -1,6 +1,6 @@
 import type { EventEnvelope, LinkFilters } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Pause, Play, Radio, Square, Waves } from 'lucide-react';
+import { Download, Pause, Play, Radio, RotateCcw, Square, Waves } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '../../components/Badge.tsx';
 import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
@@ -211,6 +211,22 @@ export function LinkDialog({
     }
   }
 
+  async function resetDataplane() {
+    if (!linkData) return;
+    setBusy('reset');
+    setError(null);
+    setNotice(null);
+    try {
+      await client.links.reset({ id: linkData.id });
+      setNotice('Link dataplane recreated.');
+      invalidateLink();
+    } catch (resetError) {
+      setError(messageOf(resetError));
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function toggleSuspend() {
     if (!linkData) return;
     setBusy('suspend');
@@ -262,23 +278,34 @@ export function LinkDialog({
               {linkData.nodeAName}:{linkData.adapterA}/{linkData.portA} ↔ {linkData.nodeBName}:
               {linkData.adapterB}/{linkData.portB} · {linkData.dataplane?.mode ?? 'inactive'}
             </span>
-            <button
-              type="button"
-              className="nb-button ml-auto"
-              data-size="sm"
-              disabled={busy !== null || linkData.status === 'pending'}
-              onClick={() => void toggleSuspend()}
-            >
-              {linkData.suspend ? (
-                <>
-                  <Play size={12} aria-hidden /> Resume link
-                </>
-              ) : (
-                <>
-                  <Pause size={12} aria-hidden /> Suspend link
-                </>
-              )}
-            </button>
+            <div className="ml-auto flex items-center gap-1">
+              <button
+                type="button"
+                className="nb-button"
+                data-size="sm"
+                disabled={busy !== null || linkData.status === 'pending'}
+                onClick={() => void resetDataplane()}
+              >
+                <RotateCcw size={12} aria-hidden /> {busy === 'reset' ? 'Resetting…' : 'Reset'}
+              </button>
+              <button
+                type="button"
+                className="nb-button"
+                data-size="sm"
+                disabled={busy !== null || linkData.status === 'pending'}
+                onClick={() => void toggleSuspend()}
+              >
+                {linkData.suspend ? (
+                  <>
+                    <Play size={12} aria-hidden /> Resume link
+                  </>
+                ) : (
+                  <>
+                    <Pause size={12} aria-hidden /> Suspend link
+                  </>
+                )}
+              </button>
+            </div>
           </div>
           {error ? <Notice tone="error">{error}</Notice> : null}
           {notice ? <Notice tone="success">{notice}</Notice> : null}

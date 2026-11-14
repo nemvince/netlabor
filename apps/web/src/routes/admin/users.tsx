@@ -358,6 +358,7 @@ function EditUserDialog({
           onToggle={(id) => toggle('groupIds', id)}
           emptyText="No groups exist yet."
         />
+        <LinkedIdentities userId={user.id} />
         <DialogFooter>
           <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
             Cancel
@@ -720,5 +721,50 @@ export function UsersAdminPage() {
         }}
       />
     </Page>
+  );
+}
+
+/** Read-only list of OIDC identities linked to a local account. */
+function LinkedIdentities({ userId }: { userId: string }) {
+  const identities = useQuery({
+    ...orpc.auth.oidc.identities.queryOptions({ input: { userId } }),
+    retry: false,
+  });
+  return (
+    <fieldset
+      className="flex flex-col gap-1.5 rounded-[3px] border px-3 py-2"
+      style={{ borderColor: 'var(--color-rule)' }}
+    >
+      <legend className="nb-rule-label px-1">Linked single sign-on</legend>
+      {identities.isPending ? (
+        <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
+          Reading external identities…
+        </p>
+      ) : identities.isError ? (
+        <Notice tone="error">{messageOf(identities.error)}</Notice>
+      ) : identities.data.length === 0 ? (
+        <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
+          No external identity is linked. The next OIDC sign-in creates one when the provider allows
+          auto-create.
+        </p>
+      ) : (
+        <ul className="flex flex-col gap-1 text-[11px]">
+          {identities.data.map((identity) => (
+            <li
+              key={`${identity.providerId}:${identity.subject}`}
+              className="flex flex-wrap items-center gap-x-2"
+            >
+              <span className="font-medium">{identity.providerName}</span>
+              <span className="tabular break-all" style={{ color: 'var(--color-ink-faint)' }}>
+                {identity.subject}
+              </span>
+              {identity.email ? (
+                <span style={{ color: 'var(--color-ink-dim)' }}>{identity.email}</span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </fieldset>
   );
 }

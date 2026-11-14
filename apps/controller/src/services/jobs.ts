@@ -7,6 +7,26 @@ import { newId } from '@netlabor/shared';
 import type { SQL } from 'bun';
 import type { EventBus } from '../realtime/events.ts';
 
+/** Concurrent job caps keep a burst from exhausting the compute fleet. */
+const JOB_KIND_LIMITS: Record<string, number> = {
+  'appliance.build': 2,
+  'appliance.install': 2,
+  'os.download': 2,
+  'image.sync': 4,
+  'project.import': 2,
+  'project.duplicate': 2,
+  'project.export': 4,
+  'snapshot.create': 2,
+  'snapshot.restore': 2,
+  'docker.pull': 4,
+};
+const DEFAULT_JOB_LIMIT = 8;
+
+/** How many jobs of this kind may run at once. */
+export function runningJobLimit(kind: string): number {
+  return JOB_KIND_LIMITS[kind] ?? DEFAULT_JOB_LIMIT;
+}
+
 interface JobRecord {
   id: string;
   kind: string;
@@ -42,11 +62,29 @@ export class JobService {
 
   async create(kind: string, payload: Record<string, unknown> = {}): Promise<JobRow> {
     const id = newId();
-    const rows = await this.db.unsafe<JobRecord[]>(
-      `INSERT INTO jobs (id, kind, state, progress, payload) VALUES ($1, $2, 'running', 0, $3::jsonb)
-       RETURNING id, kind, state, progress, payload, result, error, created_at, updated_at`,
-      [id, kind, payload],
-    );
+    const limit = runningJobLimit(kind);
+    const rows = await this.db.begin(async (tx) => {
+      const sql = tx as SQL;
+      // Serialize the count and insert per kind so two callers cannot both
+      // pass the quota check.
+      await sql.unsafe('SELECT pg_advisory_xact_lock(hashtext($1)::bigint)', [`jobs:${kind}`]);
+      const counts = await sql.unsafe<{ count: string }[]>(
+        "SELECT count(*)::text AS count FROM jobs WHERE state = 'running' AND kind = $1",
+        [kind],
+      );
+      if (Number(counts[0]?.count ?? '0') >= limit) {
+        throw new AppError(
+          'TOO_MANY_REQUESTS',
+          `too many ${kind} jobs are already running; wait for one to finish`,
+          { details: { limit }, retryable: true },
+        );
+      }
+      return sql.unsafe<JobRecord[]>(
+        `INSERT INTO jobs (id, kind, state, progress, payload) VALUES ($1, $2, 'running', 0, $3::jsonb)
+         RETURNING id, kind, state, progress, payload, result, error, created_at, updated_at`,
+        [id, kind, payload],
+      );
+    });
     const job = toRow(rows[0] as JobRecord);
     await this.publish(job);
     return job;

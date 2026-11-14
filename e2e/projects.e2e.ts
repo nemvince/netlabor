@@ -52,6 +52,33 @@ test.describe('projects', () => {
     await expect(page.getByRole('link', { name: 'Back to projects' })).toBeVisible();
   });
 
+  test('opens project settings from the list', async ({ page }) => {
+    const projects = await rpcJson<{ id: string; name: string }[]>(page, 'projects/list', {
+      limit: 1,
+      offset: 0,
+      includeClosed: true,
+    });
+    test.skip(projects === null, 'project list is not readable for this account');
+    if (projects === null) return;
+
+    await page.goto('/projects');
+    if (projects.length === 0) {
+      await expect(page.getByText('No projects match', { exact: true })).toBeVisible();
+      return;
+    }
+
+    const row = page.getByRole('table', { name: 'Projects' }).locator('tbody tr').first();
+    const settings = row.getByRole('button', { name: /^Settings for / });
+    test.skip((await settings.count()) === 0, 'account cannot edit this project');
+    await settings.click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    if ((await page.getByRole('button', { name: 'Save settings' }).count()) > 0) {
+      await expect(page.getByRole('button', { name: 'Save settings' })).toBeVisible();
+    } else {
+      await expect(page.getByRole('button', { name: 'Add grant' })).toBeVisible();
+    }
+  });
+
   test('filters the project list by search text', async ({ page }) => {
     const projects = await rpcJson<{ id: string }[]>(page, 'projects/list', {
       limit: 1,

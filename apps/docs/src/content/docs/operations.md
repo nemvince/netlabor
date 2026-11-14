@@ -53,6 +53,23 @@ Agent: `NB_AGENT_LISTEN` (default `0.0.0.0:8081`), `NB_AGENT_TOKEN`, `NB_STATE_D
 `NB_STORAGE_DRIVER`, `NB_IMAGE_DIR`, `NB_NFS_IMAGE_DIR`, `NB_MAX_SHARKD_SESSIONS`,
 `NB_TLS_CERT`/`NB_TLS_KEY`.
 
+## Load and abuse limits
+
+The controller refuses work instead of letting a burst exhaust it:
+
+- a project stops accepting new nodes at `NB_MAX_NODES_PER_PROJECT` (default 500), including nodes
+  added through `projects.apply`;
+- background job kinds have a concurrent cap: appliance builds, OS downloads, imports, duplicates,
+  and snapshot create/restore run at most 2 at a time; image sync, project export, and Docker pulls
+  at most 4; other kinds at most 8. Excess calls return `TOO_MANY_REQUESTS`;
+- `projects.apply` accepts at most 2 000 nodes, 10 000 links, 5 000 drawings, and 500 files per
+  node in one manifest;
+- project and node file writes accept at most 32 MiB of content per call and a 1 024-character path;
+- uploads are bounded by `NB_MAX_UPLOAD_BYTES` (default 64 GiB) and chunked, and the upload start
+  endpoint is rate-limited per IP;
+- login, WebSocket upgrades, console tickets, and upload starts have per-IP rate limits; set
+  `NB_DISABLE_RATE_LIMITS=1` only in tests.
+
 ## Computes and agents
 
 The controller marks a compute offline when heartbeats stop and re-reconciles on reconnect. Agent

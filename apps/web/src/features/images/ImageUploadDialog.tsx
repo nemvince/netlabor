@@ -33,7 +33,9 @@ export function ImageUploadDialog({
   const [progress, setProgress] = useState(0);
   const [stage, setStage] = useState<'idle' | 'uploading' | 'creating'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   function chooseFile(next: File | null) {
     if (!next) return;
@@ -61,9 +63,14 @@ export function ImageUploadDialog({
     }
     setStage('uploading');
     setError(null);
+    setNotice(null);
     setProgress(0);
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      const uploadId = await uploadFile(file, (fraction) => setProgress(fraction));
+      const uploadId = await uploadFile(file, (fraction) => setProgress(fraction), {
+        signal: controller.signal,
+      });
       setStage('creating');
       const image = await client.images.createFromUpload({
         uploadId,
@@ -72,8 +79,14 @@ export function ImageUploadDialog({
       });
       onCreated(image);
     } catch (uploadError) {
-      setError(messageOf(uploadError));
+      if (uploadError instanceof DOMException && uploadError.name === 'AbortError') {
+        setNotice('Upload cancelled.');
+      } else {
+        setError(messageOf(uploadError));
+      }
       setStage('idle');
+    } finally {
+      abortRef.current = null;
     }
   }
 
@@ -91,6 +104,7 @@ export function ImageUploadDialog({
     >
       <div className="flex flex-col gap-3">
         {error ? <Notice tone="error">{error}</Notice> : null}
+        {notice ? <Notice tone="info">{notice}</Notice> : null}
         <button
           type="button"
           aria-label="Drop an image file or choose one"
@@ -190,10 +204,13 @@ export function ImageUploadDialog({
           <button
             type="button"
             className="nb-button"
-            disabled={busy}
-            onClick={() => onOpenChange(false)}
+            disabled={stage === 'creating'}
+            onClick={() => {
+              if (stage === 'uploading') abortRef.current?.abort();
+              else onOpenChange(false);
+            }}
           >
-            Cancel
+            {stage === 'uploading' ? 'Stop upload' : 'Cancel'}
           </button>
           <button
             type="button"

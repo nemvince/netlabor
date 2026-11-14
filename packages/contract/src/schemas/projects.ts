@@ -97,8 +97,8 @@ export const ProjectFileEntry = z.object({
 
 export const ProjectFileWriteInput = z.object({
   projectId: Id,
-  path: z.string().min(1),
-  content: z.string(),
+  path: z.string().min(1).max(1_024),
+  content: z.string().max(32 * 1024 * 1024),
   /** When 'base64', content decodes to raw bytes; text (utf8) otherwise. */
   encoding: z.enum(['base64']).optional(),
 });
