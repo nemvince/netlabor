@@ -11,13 +11,18 @@ import {
   Waves,
   X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { ConsoleTab } from './ConsoleTab.tsx';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { EventLog } from './EventLog.tsx';
 import { type DockTabSpec, useWorkspaceStore } from './store.ts';
 import type { SseStatus } from './useProjectEvents.ts';
-import { VncTab } from './VncTab.tsx';
-import { WiresharkTab } from './WiresharkTab.tsx';
+
+// Terminal, VNC, and packet tabs pull in their own heavy clients only when a
+// dock tab of that kind exists.
+const ConsoleTab = lazy(() => import('./ConsoleTab.tsx').then((m) => ({ default: m.ConsoleTab })));
+const VncTab = lazy(() => import('./VncTab.tsx').then((m) => ({ default: m.VncTab })));
+const WiresharkTab = lazy(() =>
+  import('./WiresharkTab.tsx').then((m) => ({ default: m.WiresharkTab })),
+);
 
 const SPLITS = [1, 2, 4] as const;
 
@@ -248,7 +253,9 @@ export function BottomDock({
                   {tab.title}
                 </span>
                 <div className="relative min-h-0 flex-1">
-                  <ConsoleTab nodeId={tab.nodeId} label={tab.title} />
+                  <Suspense fallback={null}>
+                    <ConsoleTab nodeId={tab.nodeId} label={tab.title} />
+                  </Suspense>
                 </div>
               </div>
             ))}
@@ -267,9 +274,13 @@ export function BottomDock({
                   inert={!active}
                 >
                   {tab.kind === 'vnc' ? (
-                    <VncTab nodeId={tab.nodeId} label={tab.title} />
+                    <Suspense fallback={null}>
+                      <VncTab nodeId={tab.nodeId} label={tab.title} />
+                    </Suspense>
                   ) : tab.kind === 'wireshark' ? (
-                    <WiresharkTab linkId={tab.linkId} label={tab.title} />
+                    <Suspense fallback={null}>
+                      <WiresharkTab linkId={tab.linkId} label={tab.title} />
+                    </Suspense>
                   ) : tab.kind === 'http' ? (
                     <iframe
                       title={`Web console for ${tab.title}`}
@@ -279,7 +290,9 @@ export function BottomDock({
                       allow="clipboard-read; clipboard-write"
                     />
                   ) : (
-                    <ConsoleTab nodeId={tab.nodeId} label={tab.title} />
+                    <Suspense fallback={null}>
+                      <ConsoleTab nodeId={tab.nodeId} label={tab.title} />
+                    </Suspense>
                   )}
                 </div>
               );

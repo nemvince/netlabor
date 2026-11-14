@@ -3,6 +3,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   Link,
   Outlet,
   RouterProvider,
@@ -13,28 +14,54 @@ import { createRoot } from 'react-dom/client';
 import { Notice } from './components/Notice.tsx';
 import { Loading } from './components/Page.tsx';
 import { requireAuth } from './features/auth/require-auth.tsx';
-import { LibraryPage } from './features/library/LibraryPage.tsx';
 import { SetupWizard } from './features/setup/SetupWizard.tsx';
-import { ToolsPage } from './features/tools/ToolsPage.tsx';
-import { WorkspacePage } from './features/workspace/WorkspacePage.tsx';
 import { AppShell } from './lib/AppShell.tsx';
 import { client, orpc } from './lib/api.ts';
 import { messageOf } from './lib/errors.ts';
 import { queryClient } from './lib/queryClient.ts';
-import { ApiKeysAdminPage } from './routes/admin/api-keys.tsx';
-import { AuditAdminPage } from './routes/admin/audit.tsx';
-import { OidcAdminPage } from './routes/admin/oidc.tsx';
-import { RolesAdminPage } from './routes/admin/roles.tsx';
-import { SettingsAdminPage } from './routes/admin/settings.tsx';
-import { UsersAdminPage } from './routes/admin/users.tsx';
-import { ComputesPage } from './routes/computes.tsx';
 import { LoginPage } from './routes/login.tsx';
 import { NotFoundPage } from './routes/not-found.tsx';
-import { OverviewPage } from './routes/overview.tsx';
-import { ProfilePage } from './routes/profile.tsx';
-import { ProjectsPage } from './routes/projects.tsx';
 import { RouteError } from './routes/route-error.tsx';
 import './styles.css';
+
+/**
+ * Every page after sign-in is code-split: the login and setup screens must not
+ * download the workspace (React Flow, terminals, VNC) before anyone uses them.
+ */
+const OverviewPage = lazyRouteComponent(() => import('./routes/overview.tsx'), 'OverviewPage');
+const ProjectsPage = lazyRouteComponent(() => import('./routes/projects.tsx'), 'ProjectsPage');
+const ComputesPage = lazyRouteComponent(() => import('./routes/computes.tsx'), 'ComputesPage');
+const LibraryPage = lazyRouteComponent(
+  () => import('./features/library/LibraryPage.tsx'),
+  'LibraryPage',
+);
+const ToolsPage = lazyRouteComponent(() => import('./features/tools/ToolsPage.tsx'), 'ToolsPage');
+const WorkspacePage = lazyRouteComponent(
+  () => import('./features/workspace/WorkspacePage.tsx'),
+  'WorkspacePage',
+);
+const ProfilePage = lazyRouteComponent(() => import('./routes/profile.tsx'), 'ProfilePage');
+const UsersAdminPage = lazyRouteComponent(
+  () => import('./routes/admin/users.tsx'),
+  'UsersAdminPage',
+);
+const RolesAdminPage = lazyRouteComponent(
+  () => import('./routes/admin/roles.tsx'),
+  'RolesAdminPage',
+);
+const AuditAdminPage = lazyRouteComponent(
+  () => import('./routes/admin/audit.tsx'),
+  'AuditAdminPage',
+);
+const OidcAdminPage = lazyRouteComponent(() => import('./routes/admin/oidc.tsx'), 'OidcAdminPage');
+const ApiKeysAdminPage = lazyRouteComponent(
+  () => import('./routes/admin/api-keys.tsx'),
+  'ApiKeysAdminPage',
+);
+const SettingsAdminPage = lazyRouteComponent(
+  () => import('./routes/admin/settings.tsx'),
+  'SettingsAdminPage',
+);
 
 function loginSearch(search: Record<string, unknown>): {
   redirect?: string;
@@ -260,6 +287,12 @@ const routeTree = rootRoute.addChildren([
 export const router = createRouter({
   routeTree,
   defaultPreload: 'intent',
+  defaultPendingMs: 150,
+  defaultPendingComponent: () => (
+    <div className="p-6">
+      <Loading label="Loading…" />
+    </div>
+  ),
   scrollRestoration: true,
 });
 

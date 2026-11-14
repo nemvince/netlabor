@@ -18,7 +18,7 @@ describe('embedded migrations', () => {
   test('every migration is non-trivial SQL', () => {
     for (const migration of MIGRATIONS) {
       expect(migration.sql.length).toBeGreaterThan(100);
-      expect(migration.sql).toMatch(/CREATE TABLE|ALTER TABLE|DO \$\$/);
+      expect(migration.sql).toMatch(/CREATE TABLE|ALTER TABLE|CREATE INDEX|DO \$\$/);
     }
   });
 });
