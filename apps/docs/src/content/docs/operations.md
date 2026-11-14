@@ -29,8 +29,10 @@ modules; `xorriso` for cloud-init; optional emulators (`qemu-system-x86_64`, `dy
 to update: it keeps the environment files, skips dependencies, and restarts the services.
 2. `systemctl enable --now netlabor-controller` — migrations run automatically, and with
    `NB_ADMIN_PASSWORD` set the first administrator is created.
-3. Register the compute in the UI (**Computes → Add compute**). The dialog prints the agent token
-   and environment block once; put them in `/etc/netlabor/agent.env` and start `netlabor-agent`.
+3. Installing the agent next to the controller (or with `--controller-url` and admin credentials)
+   registers the compute automatically and writes the token to `/etc/netlabor/agent.env`. Otherwise
+   register it in the UI (**Computes → Add compute**) and copy the printed token and environment
+   block into that file, then start `netlabor-agent`.
 4. The compute turns online on the next heartbeat (10 s) and reports capabilities.
 
 ## Environment reference

@@ -29,6 +29,11 @@ LISTEN="0.0.0.0:8080"
 WEB_ROOT=""
 
 TOKEN=""
+REG_TOKEN=""
+REG_INDEX=""
+CONTROLLER_URL=""
+AGENT_URL=""
+COMPUTE_NAME=""
 UNDERLAY_HOST="10.0.0.1"
 UNDERLAY_INDEX="1"
 UNDERLAY_INTERFACE="wg0"
@@ -59,7 +64,10 @@ Controller (fresh installs only):
   --web-root <dir>        serve the UI from disk instead of the copy embedded in the binary
 
 Agent (fresh installs only):
-  --token <token>         compute token printed by the controller
+  --controller-url <url>  controller that registers this compute (asked for agent-only installs)
+  --agent-url <url>       URL the controller uses to reach this agent (default http://<host>:8081)
+  --compute-name <name>   compute name in the controller (default hostname)
+  --token <token>         skip registration and use this compute token
   --underlay-host <ip>    controller underlay address the agent dials
   --underlay-index <n>    underlay address index (default 1)
   --underlay-interface <if>  default wg0
@@ -97,6 +105,9 @@ while [[ $# -gt 0 ]]; do
     --listen) LISTEN="${2:?--listen needs a value}" && shift ;;
     --web-root) WEB_ROOT="${2:?--web-root needs a value}" && shift ;;
     --token) TOKEN="${2:?--token needs a value}" && shift ;;
+    --controller-url) CONTROLLER_URL="${2:?--controller-url needs a value}" && shift ;;
+    --agent-url) AGENT_URL="${2:?--agent-url needs a value}" && shift ;;
+    --compute-name) COMPUTE_NAME="${2:?--compute-name needs a value}" && shift ;;
     --underlay-host) UNDERLAY_HOST="${2:?--underlay-host needs a value}" && shift ;;
     --underlay-index) UNDERLAY_INDEX="${2:?--underlay-index needs a value}" && shift ;;
     --underlay-interface) UNDERLAY_INTERFACE="${2:?--underlay-interface needs a value}" && shift ;;
@@ -330,6 +341,54 @@ provision_nat_bridge() {
   say "NAT bridge nb-nat ready: 10.10.99.1/24 via $uplink"
 }
 
+# --- compute registration --------------------------------------------------
+
+json_escape() {
+  local value=${1//\\/\\\\}
+  printf '%s' "${value//\"/\\\"}"
+}
+
+controller_base() {
+  if [[ $INSTALL_CONTROLLER -eq 1 ]]; then
+    printf 'http://127.0.0.1:%s' "${LISTEN##*:}"
+  else
+    printf '%s' "${CONTROLLER_URL%/}"
+  fi
+}
+
+controller_healthy() {
+  curl -fsS --max-time 2 "$1/healthz" >/dev/null 2>&1
+}
+
+start_controller_wait() { # <base-url>
+  controller_healthy "$1" && return 0
+  command -v systemctl >/dev/null 2>&1 || return 1
+  say "Starting netlabor-controller"
+  systemctl enable --now netlabor-controller >/dev/null 2>&1 || true
+  local i
+  for i in $(seq 1 30); do
+    controller_healthy "$1" && return 0
+    sleep 1
+  done
+  return 1
+}
+
+# Sets REG_TOKEN and REG_INDEX when the controller accepts the new compute.
+register_compute() { # <base-url> <admin-user> <admin-password> <name> <agent-url> <underlay-host>
+  local base=${1%/} cookie body
+  cookie=$(curl -fsS -D - -o /dev/null -X POST "$base/rpc/auth/login" \
+    -H 'content-type: application/json' \
+    -d "{\"json\":{\"username\":\"$(json_escape "$2")\",\"password\":\"$(json_escape "$3")\"}}" 2>/dev/null |
+    sed -n 's/^[Ss]et-[Cc]ookie: *\([^;]*\).*/\1/p' | tr -d '\r')
+  [[ -n "$cookie" ]] || return 1
+  body=$(curl -fsS -X POST "$base/rpc/computes/create" \
+    -H 'content-type: application/json' -H "cookie: $cookie" \
+    -d "{\"json\":{\"name\":\"$(json_escape "$4")\",\"url\":\"$(json_escape "$5")\",\"underlayHost\":\"$(json_escape "$6")\"}}" 2>/dev/null) || return 1
+  REG_TOKEN=$(printf '%s' "$body" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+  REG_INDEX=$(printf '%s' "$body" | sed -n 's/.*"underlayIndex":\([0-9]*\).*/\1/p')
+  [[ -n "$REG_TOKEN" ]]
+}
+
 install_agent() {
   local binary="$TMP/netlabor-agent"
   local fresh=0
@@ -371,9 +430,49 @@ install_agent() {
   if [[ $fresh -eq 0 ]]; then
     say "Keeping $ENV_DIR/agent.env"
   else
-    [[ -n "$TOKEN" ]] || ask TOKEN "Compute token (printed by the controller; empty = add it later)"
-    [[ -n "$UNDERLAY_HOST" ]] || ask UNDERLAY_HOST "Controller underlay address" "$UNDERLAY_HOST"
-    ask UNDERLAY_INDEX "Underlay address index" "$UNDERLAY_INDEX"
+    local base="" agent_url="$AGENT_URL"
+    [[ -n "$agent_url" ]] || agent_url="http://$(hostname -f 2>/dev/null || hostname):8081"
+    [[ -n "$COMPUTE_NAME" ]] || COMPUTE_NAME=$(hostname -f 2>/dev/null || hostname)
+    if [[ -z "$TOKEN" ]]; then
+      base=$(controller_base)
+      if [[ -z "$base" ]]; then
+        ask CONTROLLER_URL "Controller URL" "http://$(hostname -f 2>/dev/null || hostname):8080"
+        base=$(controller_base)
+      fi
+      ask COMPUTE_NAME "Compute name" "$COMPUTE_NAME"
+      ask AGENT_URL "Agent URL reachable from the controller" "$agent_url"
+      agent_url=$AGENT_URL
+      [[ -n "$UNDERLAY_HOST" ]] || ask UNDERLAY_HOST "Controller underlay address" "$UNDERLAY_HOST"
+      if [[ -z "$ADMIN_PASSWORD" && $INSTALL_CONTROLLER -eq 0 ]]; then
+        ask_secret ADMIN_PASSWORD "Controller admin password (empty = register later in the UI)"
+      fi
+      if [[ -n "$ADMIN_PASSWORD" ]]; then
+        # Plain-HTTP agents need this on the controller; it would be the same
+        # setting an admin ticks in the UI for a manual registration.
+        if [[ "$agent_url" == http://* && -f "$ENV_DIR/controller.env" ]] &&
+          ! grep -q '^NB_ALLOW_INSECURE_AGENT=' "$ENV_DIR/controller.env"; then
+          echo 'NB_ALLOW_INSECURE_AGENT=1' >>"$ENV_DIR/controller.env"
+          say "Added NB_ALLOW_INSECURE_AGENT=1 to controller.env"
+        fi
+        if start_controller_wait "$base"; then
+          if register_compute "$base" "$ADMIN_USER" "$ADMIN_PASSWORD" "$COMPUTE_NAME" "$agent_url" "$UNDERLAY_HOST"; then
+            TOKEN=$REG_TOKEN
+            [[ -n "$REG_INDEX" ]] && UNDERLAY_INDEX=$REG_INDEX
+            say "Registered compute $COMPUTE_NAME (underlay index $UNDERLAY_INDEX)"
+          else
+            echo "warning: the controller refused the compute; register it in the UI and add the token" >&2
+          fi
+        else
+          echo "warning: controller at $base is unreachable; register the compute in the UI" >&2
+        fi
+      else
+        echo "note: no admin password; register the compute in the UI and put the token in agent.env" >&2
+      fi
+      [[ -n "$TOKEN" ]] || ask TOKEN "Compute token (empty = add it later)"
+    fi
+    if [[ -z "$REG_TOKEN" ]]; then
+      ask UNDERLAY_INDEX "Underlay address index" "$UNDERLAY_INDEX"
+    fi
     ask UNDERLAY_INTERFACE "Underlay interface" "$UNDERLAY_INTERFACE"
     umask 077
     cat >"$ENV_DIR/agent.env" <<ENV
@@ -391,6 +490,9 @@ NB_NAT_BRIDGE=nb-nat
 NB_LOG_LEVEL=info
 ENV
     say "Wrote $ENV_DIR/agent.env"
+    if [[ -n "$REG_TOKEN" ]] && command -v systemctl >/dev/null 2>&1; then
+      systemctl enable --now netlabor-agent >/dev/null 2>&1 && say "Started netlabor-agent"
+    fi
   fi
 
   if [[ $WITH_NAT -eq 1 ]]; then provision_nat_bridge; fi
@@ -475,10 +577,11 @@ if [[ $UPDATE -eq 1 ]]; then
 else
   say "Installing $ROLES${TAG:+ $TAG}"
 fi
-[[ $INSTALL_CONTROLLER -eq 1 ]] && install_controller
-[[ $INSTALL_AGENT -eq 1 ]] && install_agent
+# Units first: registering a compute starts the controller it talks to.
 write_units
 command -v systemctl >/dev/null 2>&1 && systemctl daemon-reload || true
+[[ $INSTALL_CONTROLLER -eq 1 ]] && install_controller
+[[ $INSTALL_AGENT -eq 1 ]] && install_agent
 [[ $INSTALL_CONTROLLER -eq 1 ]] && restart_if_running netlabor-controller
 [[ $INSTALL_AGENT -eq 1 ]] && restart_if_running netlabor-agent
 
@@ -489,7 +592,7 @@ else
   echo "Installed: $ROLES."
   [[ $INSTALL_CONTROLLER -eq 1 ]] && echo "  start the controller: systemctl enable --now netlabor-controller"
   [[ $INSTALL_AGENT -eq 1 ]] && echo "  start the agent:      systemctl enable --now netlabor-agent"
-  if [[ $INSTALL_CONTROLLER -eq 0 && $INSTALL_AGENT -eq 1 ]]; then
+  if [[ $INSTALL_CONTROLLER -eq 0 && $INSTALL_AGENT -eq 1 && -z "$REG_TOKEN" ]]; then
     echo "  register this compute under Computes → Add compute in the controller, then put the token in $ENV_DIR/agent.env"
   fi
 fi

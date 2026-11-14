@@ -65,8 +65,11 @@ For a packaged install:
    environment files, skips dependencies, and restarts the services.
 2. `systemctl enable --now netlabor-controller`. Migrations run at startup; with
    `NB_ADMIN_PASSWORD` set, the first administrator account is created on the same start.
-3. In the UI, open **Computes → Add compute**. The dialog prints the agent token and its
-   environment block once. Put them in `/etc/netlabor/agent.env` and start `netlabor-agent`.
+3. The installer registers the compute when it installs the agent next to the controller, or when
+   it has `--controller-url` plus admin credentials: it creates the compute, writes its token to
+   `/etc/netlabor/agent.env`, and starts the agent. Without those it prints the token step: open
+   **Computes → Add compute**, copy the token and environment block into `/etc/netlabor/agent.env`,
+   and start `netlabor-agent`.
 4. The compute turns online on the next heartbeat (every 10 seconds) and reports its capabilities.
 
 <div class="docs-callout" data-tone="info">
