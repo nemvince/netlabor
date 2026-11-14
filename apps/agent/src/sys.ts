@@ -1,5 +1,7 @@
 /** Process helpers: argv-only spawning with captured output and timeouts. */
 
+import { statSync } from 'node:fs';
+
 export interface CommandResult {
   code: number;
   stdout: string;
@@ -70,6 +72,29 @@ export async function chownForEmulator(target: string, uid: number, gid: number)
     await chown(target, uid, gid);
   } catch {
     // best effort: the emulator will fail with a clear permission error
+  }
+}
+
+/**
+ * Supplementary group that owns /dev/kvm, or null when the device is absent.
+ * QEMU runs with cleared groups, so this gid must be passed explicitly.
+ */
+export function kvmGid(): number | null {
+  try {
+    const stat = statSync('/dev/kvm');
+    return stat.gid;
+  } catch {
+    return null;
+  }
+}
+
+/** True when /dev/kvm grants its group read/write access. */
+export function kvmGroupWritable(): boolean {
+  try {
+    const mode = statSync('/dev/kvm').mode;
+    return (mode & 0o060) === 0o060;
+  } catch {
+    return false;
   }
 }
 

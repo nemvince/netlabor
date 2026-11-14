@@ -18,6 +18,8 @@ export interface StartProcessOptions {
   uid?: number;
   gid?: number;
   env?: Record<string, string>;
+  /** Supplementary groups to grant; omit to clear them entirely. */
+  groups?: number[];
   /** Keep an open stdin pipe; some daemons exit immediately on EOF. */
   keepStdinOpen?: boolean;
 }
@@ -38,7 +40,9 @@ export async function startNodeProcess(options: StartProcessOptions): Promise<nu
     'setpriv',
     `--reuid=${uid}`,
     `--regid=${gid}`,
-    '--clear-groups',
+    ...(options.groups && options.groups.length > 0
+      ? [`--groups=${options.groups.join(',')}`]
+      : ['--clear-groups']),
     ...argv,
   ];
 

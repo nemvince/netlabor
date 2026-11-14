@@ -18,7 +18,7 @@ import {
 import { ubridgeClientFor } from '../dataplane/project.ts';
 import { startNodeProcess, stopProcess } from '../process.ts';
 import type { ProjectRegistry } from '../state.ts';
-import { chownForEmulator } from '../sys.ts';
+import { chownForEmulator, kvmGid, kvmGroupWritable } from '../sys.ts';
 import { prepareCloudInit } from './cloud-init.ts';
 import { QmpClient } from './qemu-qmp.ts';
 
@@ -63,7 +63,8 @@ async function hasKvm(binary: string): Promise<boolean> {
     const proc = Bun.spawn([binary, '-accel', 'help'], { stdout: 'pipe', stderr: 'pipe' });
     const text = await new Response(proc.stdout).text();
     await proc.exited;
-    supported = /\bkvm\b/.test(text) && existsSync('/dev/kvm');
+    // KVM only helps when the unprivileged emulator can open the device.
+    supported = /\bkvm\b/.test(text) && existsSync('/dev/kvm') && kvmGroupWritable();
   } catch {
     supported = false;
   }
@@ -128,16 +129,17 @@ async function prepareDisks(ctx: NodeContext): Promise<DiskSpec[]> {
             details: stderr.trim(),
           });
         }
-        await chownForEmulator(target, ctx.config.emulatorUid, ctx.config.emulatorGid);
       }
       disk.imagePath = target;
     } else if (!(await Bun.file(target).exists())) {
       await copyFile(disk.imagePath, target);
-      await chownForEmulator(target, ctx.config.emulatorUid, ctx.config.emulatorGid);
       disk.imagePath = target;
     } else {
       disk.imagePath = target;
     }
+    // Existing overlays from older agents can be root-owned; QEMU runs as the
+    // emulator account and needs them writable.
+    await chownForEmulator(target, ctx.config.emulatorUid, ctx.config.emulatorGid);
   }
   return specs;
 }
@@ -295,6 +297,9 @@ const qemuAdapter: NodeAdapter = {
       ctx.spec.properties.cloudInitEnabled === true ? await prepareCloudInit(ctx) : undefined;
     const args = await buildQemuArgs(ctx, disks, vncDisplay, cloudInitIso);
     const binary = qemuBinary(ctx.spec.properties);
+    // Only a real kvm group matters; gid 0 would hand QEMU the root group.
+    const kvm = args.includes('-enable-kvm') ? kvmGid() : null;
+    const kvmGroups = kvm !== null && kvm !== 0 ? [kvm] : [];
     const pid = await startNodeProcess({
       argv: [binary, ...args],
       netns: ctx.netns,
@@ -302,6 +307,7 @@ const qemuAdapter: NodeAdapter = {
       cwd: ctx.dir,
       uid: ctx.config.emulatorUid,
       gid: ctx.config.emulatorGid,
+      ...(kvmGroups.length > 0 ? { groups: kvmGroups } : {}),
       logFile: path.join(ctx.projectDir, 'logs', `${ctx.spec.nodeId}.log`),
     });
 
