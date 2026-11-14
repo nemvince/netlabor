@@ -1270,8 +1270,7 @@ async function finishBuild(
   const artifact = status.artifact;
   if (!artifact) {
     throw new AppError('AGENT_ERROR', 'the build reported completion without an artifact');
-  }
-  if (!/^[0-9a-f]{64}$/.test(artifact.sha256)) {
+  }  if (!/^[0-9a-f]{64}$/.test(artifact.sha256)) {
     throw new AppError('AGENT_ERROR', 'the build artifact has an invalid sha256 digest');
   }
   const filename = safeFilename(artifact.filename);
@@ -1389,6 +1388,24 @@ async function finishBuild(
           err: errorMessage(error),
         });
       });
+    // Builds create their template with default settings on their own; the
+    // "Create template" dialog exists to redo this with custom settings.
+    await createTemplateFromBuild(deps, null, {
+      buildId: context.buildId,
+      name: context.name,
+      category: 'Appliances',
+      symbol: context.desktop === 'none' ? 'server' : 'pc',
+      projectId: null,
+      adapters: 1,
+      ram: 2048,
+      cpus: 2,
+      cloudInitAutoLogin: true,
+    }).catch((error: unknown) => {
+      deps.logger.warn('automatic template creation skipped', {
+        buildId: context.buildId,
+        err: errorMessage(error),
+      });
+    });
     deps.logger.info('appliance build completed', {
       buildId: context.buildId,
       imageId,
@@ -1446,6 +1463,16 @@ async function cancelBuildRow(
     status: 'cancelled',
   });
   await jobs.cancel(context.jobId).catch(() => undefined);
+}
+
+/** Discard the stored console log of a build; running builds keep logging. */
+export async function clearBuildLog(deps: AppDeps, id: string): Promise<ApplianceBuildRow> {
+  const build = await getBuild(deps.db, id);
+  if (build.status === 'queued' || build.status === 'running') {
+    throw new AppError('CONFLICT', 'the log of a running build cannot be cleared');
+  }
+  await patchBuild(deps, id, { log: null });
+  return getBuild(deps.db, id);
 }
 
 export async function cancelBuild(

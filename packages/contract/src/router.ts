@@ -1173,6 +1173,12 @@ const appliancesRouter = {
     )
       .input(appliances.ApplianceBuildGetInput)
       .output(appliances.ApplianceBuildRow),
+    clearLog: proc(
+      'Discard a finished build console log',
+      authz({ mode: 'any', privilege: 'image.write' }),
+    )
+      .input(appliances.ApplianceBuildGetInput)
+      .output(appliances.ApplianceBuildRow),
     template: proc(
       'Create a device template from a finished appliance build',
       authz({

@@ -467,6 +467,7 @@ function BuildDetailDialog({
   cancelling,
   onOpenChange,
   onCancel,
+  onClearLog,
   onCreateTemplate,
 }: {
   build: ApplianceBuildRow;
@@ -474,6 +475,7 @@ function BuildDetailDialog({
   cancelling: boolean;
   onOpenChange: (open: boolean) => void;
   onCancel: () => void;
+  onClearLog: () => void;
   onCreateTemplate: () => void;
 }) {
   const active = build.status === 'queued' || build.status === 'running';
@@ -541,8 +543,21 @@ function BuildDetailDialog({
         <section>
           <div className="mb-1.5 flex items-baseline justify-between gap-3">
             <h3 className="text-[12px] font-medium">Build log</h3>
-            <span className="tabular text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+            <span className="tabular flex items-center gap-2 text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
               {build.log ? `${logLines} lines` : 'empty'}
+              {!active && build.log ? (
+                <button
+                  type="button"
+                  className="nb-button"
+                  data-size="sm"
+                  data-variant="ghost"
+                  aria-label="Clear the build log"
+                  title="Discard the stored log"
+                  onClick={onClearLog}
+                >
+                  Clear log
+                </button>
+              ) : null}
             </span>
           </div>
           {build.log ? (
@@ -1076,6 +1091,12 @@ export function ApplianceImagesPanel({
             if (!open) setBuildDetail(null);
           }}
           onCancel={() => void cancelBuild(detailBuild)}
+          onClearLog={() => {
+            void client.appliances.builds
+              .clearLog({ id: detailBuild.id })
+              .then(() => invalidateBuilds())
+              .catch((error: unknown) => toast.error(messageOf(error)));
+          }}
           onCreateTemplate={() => {
             setBuildDetail(null);
             setTemplateTarget(detailBuild);
