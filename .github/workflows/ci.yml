@@ -59,7 +59,7 @@ jobs:
           NB_DATABASE_URL: postgres://netlabor:netlabor@127.0.0.1:5432/netlabor_test
         run: bun run db:migrate
 
-      - name: Build binaries and web bundle
+      - name: Build binaries
         run: bun run build
 
       - name: Build docs site

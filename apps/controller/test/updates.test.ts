@@ -21,10 +21,10 @@ describe('update versions', () => {
 describe('SHA256SUMS parsing', () => {
   test('reads sha256sum output with and without the binary marker', () => {
     const sums = parseChecksums(
-      `${'a'.repeat(64)}  netlabor-controller-linux-x64\n${'b'.repeat(64)} *netlabor-web.tar.gz\n`,
+      `${'a'.repeat(64)}  netlabor-controller-linux-x64\n${'b'.repeat(64)} *netlabor-agent-linux-x64\n`,
     );
     expect(sums.get('netlabor-controller-linux-x64')).toBe('a'.repeat(64));
-    expect(sums.get('netlabor-web.tar.gz')).toBe('b'.repeat(64));
+    expect(sums.get('netlabor-agent-linux-x64')).toBe('b'.repeat(64));
   });
 
   test('ignores malformed lines', () => {
