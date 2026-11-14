@@ -40,7 +40,7 @@ import { Notice } from '../../components/Notice.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/queryClient.ts';
-import { DESKTOP_OPTIONS, suggestedBuildName } from './appliance-meta.ts';
+import { DESKTOP_OPTIONS, familyLabel, suggestedBuildName } from './appliance-meta.ts';
 
 /** Add or edit a cloud image entry in the global OS repository. */
 export function OsImageCreateDialog({
