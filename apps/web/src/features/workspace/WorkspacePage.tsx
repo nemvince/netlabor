@@ -37,7 +37,7 @@ import { Palette } from './Palette.tsx';
 import { ProjectFilesDialog } from './ProjectFilesDialog.tsx';
 import { ProjectTemplatesDialog } from './ProjectTemplatesDialog.tsx';
 import { ProjectTopBar } from './ProjectTopBar.tsx';
-import { ShareDialog } from './ShareDialog.tsx';
+import { ProjectSettingsDialog } from '../projects/ProjectSettingsDialog.tsx';
 import { SnapshotsDialog } from './SnapshotsDialog.tsx';
 import type { LinkCreateInput, NodeUpdateInput } from './schema-types.ts';
 import { useWorkspaceStore } from './store.ts';
@@ -254,7 +254,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
   const [duplicateOpen, setDuplicateOpen] = useState(false);
   const [linkDialogId, setLinkDialogId] = useState<string | null>(null);
   const [faultsOpen, setFaultsOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [filesOpen, setFilesOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [markerFlashes, setMarkerFlashes] = useState<Record<string, MarkerFlash>>({});
@@ -554,6 +554,16 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
       });
       invalidateNodes();
       succeed('Node updated.');
+    } catch (error) {
+      fail(error);
+    }
+  }
+
+  async function updateDrawing(drawing: DrawingRow, text: string) {
+    try {
+      await client.drawings.update({ id: drawing.id, text });
+      invalidateDrawings();
+      succeed('Drawing text saved.');
     } catch (error) {
       fail(error);
     }
@@ -1194,14 +1204,14 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         canWrite={can('project.write')}
         canExport={can('project.export')}
         canFault={can('fault.write')}
-        canShare={can('project.members')}
+        canSettings={can('project.members') || can('project.write')}
         onToggleOpen={() => void toggleOpen()}
         onStartAll={() => void startAll()}
         onStopAll={() => void stopAll()}
         onToggleLock={() => void toggleLock()}
         onOpenSnapshots={() => setSnapshotsOpen(true)}
         onOpenFaults={() => setFaultsOpen(true)}
-        onOpenShare={() => setShareOpen(true)}
+        onOpenSettings={() => setSettingsOpen(true)}
         onOpenFiles={() => setFilesOpen(true)}
         onOpenTemplates={() => setTemplatesOpen(true)}
         onExport={() => void runExport(projectId)}
@@ -1379,6 +1389,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                   onDeleteDrawing={(drawing) =>
                     setDeleteTarget({ nodes: [], links: [], drawings: [drawing] })
                   }
+                  onUpdateDrawing={(drawing, text) => void updateDrawing(drawing, text)}
                 />
               </div>
             ) : null}
@@ -1458,7 +1469,13 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         <SnapshotsDialog projectId={projectId} onOpenChange={setSnapshotsOpen} />
       ) : null}
 
-      {shareOpen ? <ShareDialog projectId={projectId} onOpenChange={setShareOpen} /> : null}
+      {settingsOpen ? (
+        <ProjectSettingsDialog
+          project={project}
+          initialTab="access"
+          onOpenChange={setSettingsOpen}
+        />
+      ) : null}
 
       {filesOpen ? <ProjectFilesDialog projectId={projectId} onOpenChange={setFilesOpen} /> : null}
 

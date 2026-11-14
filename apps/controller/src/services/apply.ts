@@ -361,6 +361,15 @@ export async function applyProject(
   }
 
   const manifestNames = new Set<string>();
+  const newNodes = input.nodes.filter((node) => !existingByName.has(node.name)).length;
+  const finalNodeCount = input.prune ? input.nodes.length : existingNodes.length + newNodes;
+  if (finalNodeCount > deps.config.maxNodesPerProject) {
+    throw new AppError(
+      'CONFLICT',
+      `manifest would leave ${finalNodeCount} nodes, above the ${deps.config.maxNodesPerProject}-node limit`,
+      { details: { maxNodesPerProject: deps.config.maxNodesPerProject } },
+    );
+  }
   const resolvedNodes: ResolvedNode[] = [];
   const nodePlans = new Map<string, ApplyNodePlan>();
 

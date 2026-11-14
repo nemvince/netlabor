@@ -52,6 +52,7 @@ interface InspectorProps {
   onOpenLink: (linkId: string) => void;
   onDeleteLink: (link: LinkRow) => void;
   onDeleteDrawing: (drawing: DrawingRow) => void;
+  onUpdateDrawing: (drawing: DrawingRow, text: string) => void;
 }
 
 /** Right-hand inspector: node properties, ports, files, console, link and drawing detail. */
@@ -67,6 +68,7 @@ export function Inspector({
   onOpenLink,
   onDeleteLink,
   onDeleteDrawing,
+  onUpdateDrawing,
 }: InspectorProps) {
   const { can } = useMe();
   const [tab, setTab] = useState<NodeTab>('properties');
@@ -721,8 +723,12 @@ export function Inspector({
             <span className="nb-rule-label">Locked</span>
             <span>{drawing.locked ? 'yes' : 'no'}</span>
           </div>
-          {drawing.text ? (
-            <Textarea className="mt-2 min-h-24 text-[12px]" readOnly value={drawing.text} />
+          {drawing.text !== null ? (
+            <DrawingTextEditor
+              drawing={drawing}
+              editable={can('drawing.write') && !projectLocked}
+              onSave={(text) => onUpdateDrawing(drawing, text)}
+            />
           ) : null}
           {can('drawing.write') && !projectLocked ? (
             <button
@@ -770,5 +776,45 @@ export function Inspector({
         </div>
       )}
     </aside>
+  );
+}
+
+/** Editable text for text and note drawings; solves the read-only canvas gap. */
+function DrawingTextEditor({
+  drawing,
+  editable,
+  onSave,
+}: {
+  drawing: DrawingRow;
+  editable: boolean;
+  onSave: (text: string) => void;
+}) {
+  const [text, setText] = useState(drawing.text ?? '');
+  useEffect(() => {
+    setText(drawing.text ?? '');
+  }, [drawing.id, drawing.text]);
+  if (!editable) {
+    return <Textarea className="mt-2 min-h-24 text-[12px]" readOnly value={text} />;
+  }
+  const dirty = text !== (drawing.text ?? '');
+  return (
+    <div className="mt-2 flex flex-col gap-1.5">
+      <Textarea
+        aria-label="Drawing text"
+        className="min-h-24 text-[12px]"
+        value={text}
+        onChange={(event) => setText(event.target.value)}
+      />
+      <button
+        type="button"
+        className="nb-button self-end"
+        data-size="sm"
+        data-variant="primary"
+        disabled={!dirty}
+        onClick={() => onSave(text)}
+      >
+        <Save size={12} aria-hidden /> Save text
+      </button>
+    </div>
   );
 }

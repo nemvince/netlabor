@@ -1,5 +1,5 @@
 import type { ComputeRow, ImageRow } from '@netlabor/contract';
-import { Pencil, RefreshCw, Trash2 } from 'lucide-react';
+import { Download, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { Badge } from '../../components/Badge.tsx';
 import { CopyButton } from '../../components/CopyButton.tsx';
 import { DetailList } from '../../components/DetailList.tsx';
@@ -148,6 +148,14 @@ export function ImageDetailDialog({
         <button type="button" className="nb-button" onClick={close}>
           Close
         </button>
+        <a
+          className="nb-button"
+          href={`/api/blobs/${image.sha256}/${encodeURIComponent(image.filename)}`}
+          download
+          style={{ textDecoration: 'none' }}
+        >
+          <Download size={12} aria-hidden /> Download
+        </a>
         {canSync ? (
           <button
             type="button"

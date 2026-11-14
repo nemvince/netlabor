@@ -1,14 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ComputeRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Boxes, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
 import { Field, Input } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
-import { orpc } from '../../lib/api.ts';
+import { useMe } from '../../features/auth/use-me.ts';
+import { client, orpc } from '../../lib/api.ts';
+import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
+import { waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/queryClient.ts';
 import { TokenOncePanel } from './TokenOncePanel.tsx';
 
@@ -75,6 +79,7 @@ export function ComputeDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const editing = compute !== undefined;
+  const { can } = useMe();
   const [serverError, setServerError] = useState<string | null>(null);
   const [issued, setIssued] = useState<IssuedToken | null>(null);
   const pools = useQuery(orpc.pools.list.queryOptions({ input: {} }));
@@ -207,6 +212,9 @@ export function ComputeDialog({
           <PoolChoices selected={selectedPools} pools={pools.data ?? []} onToggle={togglePool} />
         </Field>
         {pools.isError ? <Notice tone="error">{messageOf(pools.error)}</Notice> : null}
+        {editing ? (
+          <DockerImagesSection computeId={compute.id} canPull={can('image.write')} />
+        ) : null}
         <DialogFooter>
           <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
             Cancel
@@ -301,5 +309,115 @@ export function RotateTokenDialog({
         </DialogFooter>
       </div>
     </Dialog>
+  );
+}
+
+/** Docker images on one compute, with a pull action that reports job progress. */
+function DockerImagesSection({ computeId, canPull }: { computeId: string; canPull: boolean }) {
+  const [image, setImage] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [pulling, setPulling] = useState<string | null>(null);
+
+  const images = useQuery({
+    ...orpc.computes.dockerImages.list.queryOptions({ input: { id: computeId } }),
+    retry: false,
+  });
+
+  async function pull() {
+    const reference = image.trim();
+    if (reference === '') return;
+    setError(null);
+    setNotice(null);
+    setPulling(reference);
+    try {
+      const job = await client.computes.dockerImages.pull({ id: computeId, image: reference });
+      await waitForJob(job.id);
+      setNotice(`Pulled ${reference}.`);
+      setImage('');
+      void images.refetch();
+    } catch (pullError) {
+      setError(messageOf(pullError));
+    } finally {
+      setPulling(null);
+    }
+  }
+
+  return (
+    <fieldset
+      className="flex flex-col gap-2 rounded-[3px] border px-3 py-2"
+      style={{ borderColor: 'var(--color-rule)' }}
+    >
+      <legend className="nb-rule-label px-1">Docker images</legend>
+      {error ? <Notice tone="error">{error}</Notice> : null}
+      {notice ? <Notice tone="success">{notice}</Notice> : null}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px]" style={{ color: 'var(--color-ink-dim)' }}>
+          {images.data?.length ?? 0} image(s) cached on this compute
+        </span>
+        <button
+          type="button"
+          className="nb-button"
+          data-size="sm"
+          aria-label="Reload Docker images"
+          disabled={images.isFetching}
+          onClick={() => void images.refetch()}
+        >
+          <RefreshCw size={12} aria-hidden />
+        </button>
+      </div>
+      {images.isPending ? (
+        <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
+          Reading Docker images…
+        </p>
+      ) : images.isError ? (
+        <Notice tone="error">{messageOf(images.error)}</Notice>
+      ) : images.data.length === 0 ? (
+        <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
+          No Docker image is cached yet. Pull one before starting a Docker node here.
+        </p>
+      ) : (
+        <ul className="max-h-40 overflow-y-auto text-[11px]">
+          {images.data.map((entry) => (
+            <li key={entry.id} className="flex items-center justify-between gap-2 py-0.5">
+              <span className="tabular min-w-0 truncate" title={entry.tags.join(', ')}>
+                {entry.tags.length > 0 ? entry.tags.join(', ') : entry.id.slice(0, 19)}
+              </span>
+              <span className="tabular shrink-0" style={{ color: 'var(--color-ink-faint)' }}>
+                {formatBytes(entry.sizeBytes)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {canPull ? (
+        <div className="flex items-end gap-2">
+          <Field label="Pull an image" htmlFor="compute-docker-image">
+            <Input
+              id="compute-docker-image"
+              placeholder="alpine:3.21"
+              value={image}
+              disabled={pulling !== null}
+              onChange={(event) => setImage(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                void pull();
+              }}
+            />
+          </Field>
+          <button
+            type="button"
+            className="nb-button"
+            data-size="sm"
+            data-variant="primary"
+            disabled={pulling !== null || image.trim() === ''}
+            onClick={() => void pull()}
+          >
+            <Boxes size={12} aria-hidden /> {pulling ? 'Pulling…' : 'Pull'}
+          </button>
+        </div>
+      ) : null}
+    </fieldset>
   );
 }

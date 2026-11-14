@@ -4,10 +4,12 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   Copy,
   Download,
+  FileJson2,
   FolderKanban,
   Lock,
   Play,
   Plus,
+  Settings2,
   Square,
   Trash2,
   Unlock,
@@ -30,6 +32,8 @@ import {
   ExportNotice,
   ImportProjectDialog,
 } from '../features/projects/ProjectDialogs.tsx';
+import { ApplyManifestDialog } from '../features/projects/ApplyManifestDialog.tsx';
+import { ProjectSettingsDialog } from '../features/projects/ProjectSettingsDialog.tsx';
 import { useProjectExport } from '../features/projects/use-project-export.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
@@ -49,6 +53,7 @@ export function ProjectsPage() {
   const navigate = useNavigate();
   const canRead = can('project.read');
   const canWrite = can('project.write');
+  const canMembers = can('project.members');
   const [search, setSearch] = useState('');
   const deferredSearch = useDeferredValue(search.trim());
   const [status, setStatus] = useState<'' | 'opened' | 'closed'>('');
@@ -56,6 +61,9 @@ export function ProjectsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [duplicate, setDuplicate] = useState<ProjectRow | null>(null);
+  const [settingsTarget, setSettingsTarget] = useState<ProjectRow | null>(null);
+  const [applyOpen, setApplyOpen] = useState(false);
+  const [applyTarget, setApplyTarget] = useState<ProjectRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProjectRow | null>(null);
   const { state: exportState, run: runExport, clear: clearExport } = useProjectExport();
 
@@ -119,6 +127,16 @@ export function ProjectsPage() {
           <span className="flex items-center gap-2">
             {canWrite ? (
               <>
+                <button
+                  type="button"
+                  className="nb-button"
+                  onClick={() => {
+                    setApplyTarget(null);
+                    setApplyOpen(true);
+                  }}
+                >
+                  <FileJson2 size={14} aria-hidden /> Apply manifest
+                </button>
                 <button type="button" className="nb-button" onClick={() => setImportOpen(true)}>
                   <Upload size={14} aria-hidden /> Import
                 </button>
@@ -352,6 +370,35 @@ export function ProjectsPage() {
                             <Copy size={13} aria-hidden />
                           </button>
                         ) : null}
+                        {canWrite ? (
+                          <button
+                            type="button"
+                            className="nb-button"
+                            data-size="sm"
+                            data-variant="ghost"
+                            title={`Apply a manifest to ${project.name}`}
+                            aria-label={`Apply a manifest to ${project.name}`}
+                            onClick={() => {
+                              setApplyTarget(project);
+                              setApplyOpen(true);
+                            }}
+                          >
+                            <FileJson2 size={13} aria-hidden />
+                          </button>
+                        ) : null}
+                        {canWrite || canMembers ? (
+                          <button
+                            type="button"
+                            className="nb-button"
+                            data-size="sm"
+                            data-variant="ghost"
+                            title={`Settings for ${project.name}`}
+                            aria-label={`Settings for ${project.name}`}
+                            onClick={() => setSettingsTarget(project)}
+                          >
+                            <Settings2 size={13} aria-hidden />
+                          </button>
+                        ) : null}
                         {can('project.delete') ? (
                           <button
                             type="button"
@@ -402,6 +449,22 @@ export function ProjectsPage() {
           }}
           onCompleted={(projectId) => {
             toast.success(`Project duplicated as ${projectId.slice(0, 8)}.`);
+          }}
+        />
+      ) : null}
+
+      {applyOpen ? (
+        <ApplyManifestDialog
+          {...(applyTarget ? { project: applyTarget } : {})}
+          onOpenChange={setApplyOpen}
+        />
+      ) : null}
+
+      {settingsTarget ? (
+        <ProjectSettingsDialog
+          project={settingsTarget}
+          onOpenChange={(open) => {
+            if (!open) setSettingsTarget(null);
           }}
         />
       ) : null}
