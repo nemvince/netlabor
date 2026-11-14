@@ -1,14 +1,16 @@
 import type { NodeRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { File, Folder, RefreshCw, Save } from 'lucide-react';
+import { Download, File, Folder, RefreshCw, Save, Trash2 } from 'lucide-react';
 import { useDeferredValue, useEffect, useState } from 'react';
+import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
 import { Input } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading } from '../../components/Page.tsx';
-import { orpc } from '../../lib/api.ts';
+import { client, orpc } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
+import { triggerDownload } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/queryClient.ts';
 
 /** Node working-directory browser with an in-place text editor. */
@@ -16,7 +18,9 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
   const [directory, setDirectory] = useState('');
   const [selected, setSelected] = useState('');
   const [draft, setDraft] = useState('');
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ text: string; tone: 'success' | 'error' } | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const deferredDirectory = useDeferredValue(directory);
 
   useEffect(() => {
@@ -48,16 +52,48 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
   const writeFile = useMutation({
     ...orpc.nodes.files.write.mutationOptions(),
     onSuccess: (result) => {
-      setNotice(`Saved ${result.path} · ${formatBytes(result.sizeBytes)}`);
+      setNotice({
+        text: `Saved ${result.path} · ${formatBytes(result.sizeBytes)}`,
+        tone: 'success',
+      });
       void queryClient.invalidateQueries({ queryKey: orpc.nodes.files.list.key() });
       void queryClient.invalidateQueries({ queryKey: orpc.nodes.files.read.key() });
     },
-    onError: (error) => setNotice(messageOf(error)),
+    onError: (error) => setNotice({ text: messageOf(error), tone: 'error' }),
   });
+
+  const deleteFile = useMutation({
+    ...orpc.nodes.files.delete.mutationOptions(),
+    onSuccess: () => {
+      setNotice({ text: `Deleted ${selected}`, tone: 'success' });
+      setDeleteOpen(false);
+      setSelected('');
+      setDraft('');
+      void queryClient.invalidateQueries({ queryKey: orpc.nodes.files.list.key() });
+      void queryClient.invalidateQueries({ queryKey: orpc.nodes.files.read.key() });
+    },
+    onError: (error) => setNotice({ text: messageOf(error), tone: 'error' }),
+  });
+
+  async function downloadFile() {
+    setDownloading(true);
+    setNotice(null);
+    try {
+      const file = await client.nodes.files.download({ nodeId: node.id, path: selected });
+      const url = URL.createObjectURL(file);
+      triggerDownload(url);
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      setNotice({ text: `Downloaded ${selected}`, tone: 'success' });
+    } catch (error) {
+      setNotice({ text: messageOf(error), tone: 'error' });
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-2">
-      {notice ? <Notice tone={writeFile.isError ? 'error' : 'success'}>{notice}</Notice> : null}
+      {notice ? <Notice tone={notice.tone}>{notice.text}</Notice> : null}
       <div className="flex items-center gap-1.5">
         <Input
           aria-label="Directory path"
@@ -133,19 +169,40 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
             >
               {selected}
             </span>
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              data-variant="primary"
-              disabled={writeFile.isPending || content.isPending}
-              onClick={() => {
-                setNotice(null);
-                writeFile.mutate({ nodeId: node.id, path: selected, content: draft });
-              }}
-            >
-              <Save size={12} aria-hidden /> {writeFile.isPending ? 'Saving…' : 'Save'}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className="nb-button"
+                data-size="sm"
+                disabled={downloading}
+                onClick={() => void downloadFile()}
+              >
+                <Download size={12} aria-hidden /> {downloading ? 'Downloading…' : 'Download'}
+              </button>
+              <button
+                type="button"
+                className="nb-button"
+                data-size="sm"
+                data-variant="danger"
+                disabled={deleteFile.isPending}
+                onClick={() => setDeleteOpen(true)}
+              >
+                <Trash2 size={12} aria-hidden /> Delete
+              </button>
+              <button
+                type="button"
+                className="nb-button"
+                data-size="sm"
+                data-variant="primary"
+                disabled={writeFile.isPending || content.isPending}
+                onClick={() => {
+                  setNotice(null);
+                  writeFile.mutate({ nodeId: node.id, path: selected, content: draft });
+                }}
+              >
+                <Save size={12} aria-hidden /> {writeFile.isPending ? 'Saving…' : 'Save'}
+              </button>
+            </div>
           </div>
           {content.isPending ? (
             <Loading label="Reading file…" />
@@ -162,6 +219,15 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
           )}
         </div>
       ) : null}
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={`Delete ${selected}?`}
+        description="The file is removed from the node's working directory. Stop a started node first."
+        confirmLabel="Delete file"
+        pending={deleteFile.isPending}
+        onConfirm={() => deleteFile.mutate({ nodeId: node.id, path: selected })}
+      />
     </div>
   );
 }

@@ -97,10 +97,7 @@ function Metric({
           {value}
           {value === '—' ? null : <span className="text-[10px]">%</span>}
         </span>
-        <span
-          className="tabular truncate text-[9.5px]"
-          style={{ color: 'var(--color-ink-faint)' }}
-        >
+        <span className="tabular truncate text-[9.5px]" style={{ color: 'var(--color-ink-faint)' }}>
           {detail}
         </span>
       </div>
@@ -159,7 +156,10 @@ export function NodeHoverCard({
   useEffect(() => {
     if (!node || !live) return;
     const own = live.processes.filter((process) => process.nodeId === node.id);
-    const cpu = Math.min(100, own.reduce((sum, process) => sum + process.cpuPercent, 0));
+    const cpu = Math.min(
+      100,
+      own.reduce((sum, process) => sum + process.cpuPercent, 0),
+    );
     const ram = numberProperty(node.properties.ram);
     const memoryBytes = own.reduce((sum, process) => sum + process.memoryBytes, 0);
     const memory = ram && ram > 0 ? Math.min(100, (memoryBytes / (ram * 1024 * 1024)) * 100) : 0;
@@ -176,9 +176,7 @@ export function NodeHoverCard({
   const centered = point.x - CARD_WIDTH / 2;
   const left = Math.max(8, Math.min(centered, window.innerWidth - CARD_WIDTH - 8));
   const fitsBelow = point.y + CARD_GAP + CARD_HEIGHT <= window.innerHeight - 8;
-  const top = fitsBelow
-    ? point.y + CARD_GAP
-    : Math.max(8, point.y - CARD_HEIGHT - CARD_GAP);
+  const top = fitsBelow ? point.y + CARD_GAP : Math.max(8, point.y - CARD_HEIGHT - CARD_GAP);
   const cpus = numberProperty(node.properties.cpus);
   const ram = numberProperty(node.properties.ram);
   const disks = diskSizes(node.properties);
@@ -340,9 +338,7 @@ export function NodeHoverCard({
               );
             })}
             {node.ports.length > 6 ? (
-              <span style={{ color: 'var(--color-ink-faint)' }}>
-                +{node.ports.length - 6} more
-              </span>
+              <span style={{ color: 'var(--color-ink-faint)' }}>+{node.ports.length - 6} more</span>
             ) : null}
           </div>
         )}

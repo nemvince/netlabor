@@ -317,6 +317,17 @@ export async function createNode(
     [input.projectId],
   );
   if (!project[0]) throw new AppError('NOT_FOUND', 'project not found');
+  const nodeCounts = await deps.db.unsafe<{ count: string }[]>(
+    'SELECT count(*)::text AS count FROM nodes WHERE project_id = $1',
+    [input.projectId],
+  );
+  if (Number(nodeCounts[0]?.count ?? '0') >= deps.config.maxNodesPerProject) {
+    throw new AppError(
+      'CONFLICT',
+      `project has reached its ${deps.config.maxNodesPerProject}-node limit`,
+      { details: { maxNodesPerProject: deps.config.maxNodesPerProject } },
+    );
+  }
 
   const template = input.templateId
     ? ((

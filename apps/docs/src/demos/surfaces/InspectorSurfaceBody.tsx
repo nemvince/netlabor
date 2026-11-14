@@ -51,6 +51,7 @@ export default function InspectorSurface({ nodeName, height = 380 }: InspectorSu
           onOpenLink={noop}
           onDeleteLink={noop}
           onDeleteDrawing={noop}
+          onUpdateDrawing={noop}
         />
       </div>
     </QueryClientProvider>

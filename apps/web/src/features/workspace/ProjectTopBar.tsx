@@ -15,7 +15,7 @@ import {
   PanelRight,
   Play,
   Power,
-  Share2,
+  Settings2,
   Square,
   Unlock,
   Zap,
@@ -64,14 +64,14 @@ export function ProjectTopBar({
   canWrite,
   canExport,
   canFault,
-  canShare,
+  canSettings,
   onToggleOpen,
   onStartAll,
   onStopAll,
   onToggleLock,
   onOpenSnapshots,
   onOpenFaults,
-  onOpenShare,
+  onOpenSettings,
   onOpenFiles,
   onOpenTemplates,
   onExport,
@@ -94,14 +94,14 @@ export function ProjectTopBar({
   canWrite: boolean;
   canExport: boolean;
   canFault: boolean;
-  canShare: boolean;
+  canSettings: boolean;
   onToggleOpen: () => void;
   onStartAll: () => void;
   onStopAll: () => void;
   onToggleLock: () => void;
   onOpenSnapshots: () => void;
   onOpenFaults: () => void;
-  onOpenShare: () => void;
+  onOpenSettings: () => void;
   onOpenFiles: () => void;
   onOpenTemplates: () => void;
   onExport: () => void;
@@ -310,9 +310,9 @@ export function ProjectTopBar({
                   Faults…
                 </MenuItem>
               ) : null}
-              {canShare ? (
-                <MenuItem icon={<Share2 size={13} />} onSelect={onOpenShare}>
-                  Share…
+              {canSettings ? (
+                <MenuItem icon={<Settings2 size={13} />} onSelect={onOpenSettings}>
+                  Settings…
                 </MenuItem>
               ) : null}
               <DropdownMenu.Separator

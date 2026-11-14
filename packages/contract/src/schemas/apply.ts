@@ -6,8 +6,8 @@ import { DrawingStyle, DrawingType, LinkStyle } from './links.ts';
 import { ProjectRow } from './projects.ts';
 
 export const ProjectApplyFile = z.object({
-  path: z.string().min(1),
-  content: z.string(),
+  path: z.string().min(1).max(1_024),
+  content: z.string().max(32 * 1024 * 1024),
 });
 
 export const ProjectApplyNode = z.object({
@@ -24,7 +24,7 @@ export const ProjectApplyNode = z.object({
   locked: z.boolean().optional(),
   consoleAutoStart: z.boolean().optional(),
   properties: z.record(z.string(), z.unknown()).optional(),
-  files: z.array(ProjectApplyFile).default([]),
+  files: z.array(ProjectApplyFile).max(500).default([]),
 });
 
 export const ProjectApplyLink = z.object({
@@ -61,9 +61,9 @@ export const ProjectApplyInput = z.object({
   description: z.string().max(2000).nullable().optional(),
   variables: z.record(z.string(), z.string()).optional(),
   scene: z.record(z.string(), z.unknown()).optional(),
-  nodes: z.array(ProjectApplyNode).default([]),
-  links: z.array(ProjectApplyLink).default([]),
-  drawings: z.array(ProjectApplyDrawing).default([]),
+  nodes: z.array(ProjectApplyNode).max(2_000).default([]),
+  links: z.array(ProjectApplyLink).max(10_000).default([]),
+  drawings: z.array(ProjectApplyDrawing).max(5_000).default([]),
   /** Delete unlisted nodes, links, and keyed drawings. Default false. */
   prune: z.boolean().default(false),
   /** Start every node in the manifest after applying. Default false. */

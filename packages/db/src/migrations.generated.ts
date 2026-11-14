@@ -23,3 +23,6 @@ export const migration_0007_share_links =
 
 export const migration_0008_os_families =
   "-- More base distributions for appliance builds.\nALTER TABLE os_images DROP CONSTRAINT IF EXISTS os_images_family_check;\nALTER TABLE os_images\n  ADD CONSTRAINT os_images_family_check\n  CHECK (family IN ('debian', 'ubuntu', 'rocky', 'alpine'));\n";
+
+export const migration_0009_auth_lookup_indexes =
+  '-- Indexes for the per-request privilege lookup: both tables are queried by\n-- the second column of their primary/unique key, so they were scanned whole.\n\nCREATE INDEX IF NOT EXISTS group_members_user_idx ON group_members(user_id);\n\nCREATE INDEX IF NOT EXISTS project_grants_subject_idx\n  ON project_grants(subject_type, subject_id);\n';

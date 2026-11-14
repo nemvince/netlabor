@@ -12,6 +12,7 @@ import {
   migration_0006_link_style_straight,
   migration_0007_share_links,
   migration_0008_os_families,
+  migration_0009_auth_lookup_indexes,
 } from './migrations.generated.ts';
 
 export interface Migration {
@@ -28,4 +29,5 @@ export const MIGRATIONS: Migration[] = [
   { version: '0006_link_style_straight.sql', sql: migration_0006_link_style_straight },
   { version: '0007_share_links.sql', sql: migration_0007_share_links },
   { version: '0008_os_families.sql', sql: migration_0008_os_families },
+  { version: '0009_auth_lookup_indexes.sql', sql: migration_0009_auth_lookup_indexes },
 ];
