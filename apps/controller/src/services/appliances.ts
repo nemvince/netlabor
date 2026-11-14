@@ -7,7 +7,7 @@
 import { randomBytes } from 'node:crypto';
 import { mkdir, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
-import { catalogOsImages, type DesktopRecipe, desktopRecipes } from '@netlabor/catalog';
+import { catalogOsImages, desktopAvailable, desktopRecipes } from '@netlabor/catalog';
 import {
   AppError,
   type AppErrorCode,
@@ -617,25 +617,30 @@ export function applianceProvisioningScript(
 ): string {
   const extraPackages = assertPackageNames(input.packages);
   const commands = assertCommands(input.commands);
-  const debianLike = input.family === 'debian' || input.family === 'ubuntu';
-  if (input.desktop !== 'none' && !debianLike) {
+  const recipe = input.desktop === 'none' ? null : desktopRecipes[input.desktop];
+  const displayManager = recipe?.displayManager[input.family] ?? null;
+  if (recipe && (!displayManager || !desktopAvailable(input.desktop, input.family))) {
     throw new AppError(
       'BAD_REQUEST',
-      `desktop builds are not supported on ${input.family}; choose the None desktop`,
+      `${input.desktop} desktop is not available on ${input.family}; choose another desktop or None`,
     );
   }
-  const recipe = input.desktop === 'none' ? null : desktopRecipes[input.desktop];
-  const packages = [...(recipe?.packages ?? []), ...extraPackages];
-  if (input.family === 'alpine') return alpineProvisioningScript(packages, commands);
-  if (input.family === 'rocky') return rockyProvisioningScript(packages, commands);
-  return debianProvisioningScript(packages, commands, recipe);
+  const packages = [...(recipe?.packages[input.family] ?? []), ...extraPackages];
+  if (input.family === 'alpine') {
+    return alpineProvisioningScript(packages, commands, displayManager);
+  }
+  if (input.family === 'rocky') {
+    return rockyProvisioningScript(packages, commands, displayManager);
+  }
+  return debianProvisioningScript(packages, commands, displayManager);
 }
 
 function debianProvisioningScript(
   packages: string[],
   commands: string[],
-  recipe: DesktopRecipe | null,
+  displayManager: string | null,
 ): string {
+  const desktop = displayManager !== null;
   const lines = [
     '#!/bin/bash',
     'set -Eeuo pipefail',
@@ -657,16 +662,16 @@ function debianProvisioningScript(
   if (packages.length > 0) {
     lines.push('progress 20 "installing packages"');
     lines.push(
-      `apt-get install -y ${recipe ? '' : '--no-install-recommends '}${packages.join(' ')}`,
+      `apt-get install -y ${desktop ? '' : '--no-install-recommends '}${packages.join(' ')}`,
     );
   } else {
     lines.push('progress 20 "no packages to install"');
   }
-  if (recipe) {
+  if (displayManager) {
     lines.push('progress 80 "enabling the desktop"');
-    lines.push(`systemctl enable ${recipe.displayManager}`);
+    lines.push(`systemctl enable ${displayManager}`);
     lines.push('systemctl set-default graphical.target');
-    if (recipe.displayManager === 'lightdm') {
+    if (displayManager === 'lightdm') {
       // The Debian cloud kernel ships no DRM driver, so logind never marks the
       // seat graphical and lightdm would wait forever for it.
       lines.push('progress 85 "configuring the display manager"');
@@ -684,7 +689,11 @@ function debianProvisioningScript(
   return `${lines.join('\n')}\n`;
 }
 
-function rockyProvisioningScript(packages: string[], commands: string[]): string {
+function rockyProvisioningScript(
+  packages: string[],
+  commands: string[],
+  displayManager: string | null,
+): string {
   const lines = [
     '#!/bin/bash',
     'set -Eeuo pipefail',
@@ -703,10 +712,26 @@ function rockyProvisioningScript(packages: string[], commands: string[]): string
     'dnf -y makecache',
   ];
   if (packages.length > 0) {
-    lines.push('progress 20 "installing packages"');
-    lines.push(`dnf -y install ${packages.join(' ')}`);
+    // EPEL ships its own repo definition, so it has to be installed before dnf
+    // can resolve the packages that live in it.
+    const bootstrap = packages.filter((name) => name === 'epel-release');
+    const rest = packages.filter((name) => name !== 'epel-release');
+    if (bootstrap.length > 0) {
+      lines.push('progress 15 "enabling package repositories"');
+      lines.push(`dnf -y install ${bootstrap.join(' ')}`);
+      lines.push('dnf -y makecache');
+    }
+    if (rest.length > 0) {
+      lines.push('progress 20 "installing packages"');
+      lines.push(`dnf -y install ${rest.join(' ')}`);
+    }
   } else {
     lines.push('progress 20 "no packages to install"');
+  }
+  if (displayManager) {
+    lines.push('progress 80 "enabling the desktop"');
+    lines.push(`systemctl enable ${displayManager}`);
+    lines.push('systemctl set-default graphical.target');
   }
   if (commands.length > 0) {
     lines.push('progress 90 "running custom commands"');
@@ -716,7 +741,11 @@ function rockyProvisioningScript(packages: string[], commands: string[]): string
   return `${lines.join('\n')}\n`;
 }
 
-function alpineProvisioningScript(packages: string[], commands: string[]): string {
+function alpineProvisioningScript(
+  packages: string[],
+  commands: string[],
+  displayManager: string | null,
+): string {
   const lines = [
     '#!/bin/sh',
     'set -eu',
@@ -749,6 +778,11 @@ function alpineProvisioningScript(packages: string[], commands: string[]): strin
     lines.push(`apk add --no-cache ${packages.join(' ')} || fail`);
   } else {
     lines.push('progress 20 "no packages to install"');
+  }
+  if (displayManager) {
+    lines.push('progress 80 "enabling the desktop"');
+    lines.push('rc-update add dbus default || fail');
+    lines.push(`rc-update add ${displayManager} default || fail`);
   }
   if (commands.length > 0) {
     lines.push('progress 90 "running custom commands"');
@@ -988,10 +1022,10 @@ export async function createBuild(
     );
   }
   const family = osRecord.family;
-  if (input.desktop !== 'none' && family !== 'debian' && family !== 'ubuntu') {
+  if (!desktopAvailable(input.desktop, family)) {
     throw new AppError(
       'BAD_REQUEST',
-      `desktop builds are only supported on Debian and Ubuntu base images; choose None for ${family}`,
+      `${input.desktop} desktop is not supported on ${family} base images; choose another desktop or None`,
     );
   }
   const compute = await resolveBuildCompute(deps.db, input.computeId);

@@ -49,6 +49,6 @@ export const setupPresets: SetupPreset[] = [
     description: 'Headless Debian with capture, throughput, firewall, VPN, and metrics tooling.',
     family: 'debian',
     desktop: 'none',
-    software: ['netdiag', 'monitoring', 'vpn-wireguard', 'firewall'],
+    software: ['netdiag', 'monitoring-node-exporter', 'vpn-wireguard', 'firewall', 'ssh-server'],
   },
 ];

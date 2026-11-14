@@ -56,19 +56,26 @@ Netlabor never fabricates an artifact. There are two ways to populate an entry:
 the base image in a throwaway QEMU VM on a compute with **QEMU user networking**, so the guest is
 online while it provisions. cloud-init runs one generated script that:
 
-1. updates apt;
+1. refreshes the family's package manager (`apt`, `dnf`, or `apk`);
 2. installs the chosen desktop and your package list;
-3. enables the display manager and `graphical.target`;
+3. enables the display manager (systemd unit or OpenRC service);
 4. prints progress markers to the serial console;
 5. ends with `NETLABOR_BUILD_OK` or `NETLABOR_BUILD_FAILED` and powers the VM off.
 
-| Desktop | Packages                                                    | Display manager |
-| ------- | ----------------------------------------------------------- | --------------- |
-| `none`  | none                                                        | —               |
-| `xfce`  | `xfce4`, `xfce4-terminal`, `lightdm`, `lightdm-gtk-greeter` | `lightdm`       |
-| `gnome` | `gnome-core`, `gnome-terminal`, `gdm3`                      | `gdm3`          |
-| `kde`   | `kde-plasma-desktop`, `sddm`                                | `sddm`          |
-| `lxqt`  | `lxqt`, `sddm`                                              | `sddm`          |
+Desktops install a browser, file manager, terminal, editor, and image viewer as well, so a GUI
+image is usable as soon as it boots. Rocky has no KDE or LXQt packages and is limited to XFCE and
+GNOME; Alpine desktops use OpenRC services instead of `graphical.target`.
+
+| Desktop | Debian/Ubuntu packages                                  | Display manager (systemd / OpenRC) |
+| ------- | ------------------------------------------------------- | ---------------------------------- |
+| `none`  | none                                                    | —                                  |
+| `xfce`  | `xfce4`, `thunar`, `mousepad`, `firefox(-esr)`          | `lightdm`                          |
+| `gnome` | `gnome-core`, `nautilus`, `gnome-text-editor`, browser  | `gdm3` / `gdm`                     |
+| `kde`   | `kde-plasma-desktop`, `dolphin`, `kate`, browser        | `sddm`                             |
+| `lxqt`  | `lxqt`, `pcmanfm-qt`, `qterminal`, browser              | `sddm`                             |
+
+GUI-only catalog entries (Thunderbird, GIMP, VLC, Remmina, desktop fonts) appear in the build
+dialog only after a desktop is selected. Headless builds preselect the SSH server.
 
 Package names are validated against a strict apt-name pattern before they reach the script.
 

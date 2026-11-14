@@ -1,4 +1,4 @@
-import { softwareCatalog } from '@netlabor/catalog';
+import { desktopAvailable, softwareCatalog } from '@netlabor/catalog';
 import {
   type ApplianceBuildCreated,
   type ApplianceBuildRow,
@@ -306,9 +306,10 @@ const SOFTWARE_ICONS: Record<string, typeof Globe> = {
 };
 
 const SOFTWARE_GROUPS: {
-  id: 'office' | 'sysadmin' | 'network' | 'server' | 'tools';
+  id: 'gui' | 'office' | 'sysadmin' | 'network' | 'server' | 'tools';
   label: string;
 }[] = [
+  { id: 'gui', label: 'GUI software' },
   { id: 'office', label: 'Office clients' },
   { id: 'sysadmin', label: 'System administration' },
   { id: 'network', label: 'Network tooling' },
@@ -329,12 +330,14 @@ const PACKAGE_MANAGER: Record<OsFamily, string> = {
  */
 function SoftwarePicker({
   family,
+  desktop,
   selected,
   extraPackages,
   onToggle,
   onExtraChange,
 }: {
   family: OsFamily;
+  desktop: Desktop;
   selected: string[];
   extraPackages: string[];
   onToggle: (id: string) => void;
@@ -345,7 +348,10 @@ function SoftwarePicker({
   const groups = SOFTWARE_GROUPS.map((group) => ({
     ...group,
     entries: softwareCatalog.filter(
-      (entry) => entry.group === group.id && (entry.packages[family]?.length ?? 0) > 0,
+      (entry) =>
+        entry.group === group.id &&
+        (group.id !== 'gui' || desktop !== 'none') &&
+        (entry.packages[family]?.length ?? 0) > 0,
     ),
   })).filter((group) => group.entries.length > 0);
   return (
@@ -542,8 +548,8 @@ export function ApplianceBuildDialog({
 
   const selectedOs = readyOsImages.find((osImage) => osImage.id === osImageId);
   const family = selectedOs?.family ?? 'debian';
-  const desktopSupported = family === 'debian' || family === 'ubuntu';
-  // Desktop recipes exist only for Debian/Ubuntu; the other families build servers.
+  const desktopSupported = desktopAvailable(desktop, family);
+  // Not every family ships every desktop environment (Rocky has no KDE/LXQt).
   const effectiveDesktop: Desktop = desktopSupported ? desktop : 'none';
   const suggested = useMemo(
     () => suggestedBuildName(selectedOs, effectiveDesktop),
@@ -554,10 +560,19 @@ export function ApplianceBuildDialog({
     const selected = new Set(extraPackages);
     for (const entry of softwareCatalog) {
       if (!software.includes(entry.id)) continue;
+      if (entry.group === 'gui' && effectiveDesktop === 'none') continue;
       for (const pkg of entry.packages[family] ?? []) selected.add(pkg);
     }
     return [...selected];
-  }, [software, extraPackages, family]);
+  }, [software, extraPackages, family, effectiveDesktop]);
+
+  // A headless image is a server: reach it over SSH unless the user opts out.
+  useEffect(() => {
+    if (effectiveDesktop !== 'none') return;
+    setSoftware((current) =>
+      current.includes('ssh-server') ? current : [...current, 'ssh-server'],
+    );
+  }, [effectiveDesktop]);
 
   useEffect(() => {
     if (!nameTouched) setName(suggested);
@@ -635,19 +650,18 @@ export function ApplianceBuildDialog({
           <Field
             label="Desktop"
             htmlFor="build-desktop"
-            hint={desktopSupported ? undefined : `${family}: server builds only`}
+            hint={`Not every desktop is packaged for ${family}.`}
           >
             <Select
               id="build-desktop"
               value={effectiveDesktop}
-              disabled={!desktopSupported}
               onChange={(event) => setDesktop(event.target.value as Desktop)}
             >
               {DESKTOP_OPTIONS.map((option) => (
                 <option
                   key={option.value}
                   value={option.value}
-                  disabled={!desktopSupported && option.value !== 'none'}
+                  disabled={!desktopAvailable(option.value, family)}
                 >
                   {option.label} — {option.hint}
                 </option>
@@ -671,6 +685,7 @@ export function ApplianceBuildDialog({
         </Field>
         <SoftwarePicker
           family={family}
+          desktop={effectiveDesktop}
           selected={software}
           extraPackages={extraPackages}
           onToggle={(id) =>

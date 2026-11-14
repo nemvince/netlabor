@@ -336,6 +336,7 @@ function PresetsStep({
                   </span>
                   <span className="flex max-w-[420px] flex-wrap gap-1">
                     {softwareCatalog.map((entry) => {
+                      if (entry.group === 'gui' && choice.desktop === 'none') return null;
                       const active = choice.software.includes(entry.id);
                       const IconName = SOFTWARE_ICONS[entry.icon] ?? Circle;
                       return (
@@ -404,10 +405,13 @@ interface TrackRow {
   failed: string | null;
 }
 
-function packagesOf(software: string[], family: OsFamily): string[] {
+function packagesOf(software: string[], family: OsFamily, desktop: Desktop): string[] {
   const pkgs = new Set<string>();
   for (const id of software) {
-    for (const pkg of softwareEntry(id)?.packages[family] ?? []) pkgs.add(pkg);
+    const entry = softwareEntry(id);
+    if (!entry) continue;
+    if (entry.group === 'gui' && desktop === 'none') continue;
+    for (const pkg of entry.packages[family] ?? []) pkgs.add(pkg);
   }
   return [...pkgs];
 }
@@ -483,6 +487,7 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
           packages: packagesOf(
             track.choice.software,
             setupPresets.find((entry) => entry.id === track.choice.id)?.family ?? 'debian',
+            track.choice.desktop,
           ),
           diskGb: 12,
           memoryMb: 2048,

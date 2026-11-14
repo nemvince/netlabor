@@ -354,6 +354,13 @@ export async function createNode(
       nodeType,
       existingNames.map((row) => row.name),
     );
+  // Each node keeps its own hostname; an inherited template hostname would
+  // give every machine the same one.
+  if (properties.cloudInitEnabled === true) {
+    const hostname =
+      typeof properties.cloudInitHostname === 'string' ? properties.cloudInitHostname.trim() : '';
+    if (hostname === '') properties.cloudInitHostname = name;
+  }
 
   const id = newId();
   // NAT nodes are host bridges, never interactive consoles.

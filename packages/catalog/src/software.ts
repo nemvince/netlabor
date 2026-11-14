@@ -8,7 +8,7 @@
 
 import type { OsFamily } from '@netlabor/contract';
 
-export type SoftwareGroup = 'office' | 'sysadmin' | 'network' | 'server' | 'tools';
+export type SoftwareGroup = 'gui' | 'office' | 'sysadmin' | 'network' | 'server' | 'tools';
 
 export interface SoftwareEntry {
   id: string;
@@ -46,18 +46,11 @@ export const softwareCatalog: SoftwareEntry[] = [
       alpine: ['libreoffice'],
     }),
   },
-  {
-    id: 'firefox',
-    name: 'Firefox',
-    group: 'office',
-    description: 'Web browser for testing intranet and captive portals.',
-    icon: 'Globe',
-    packages: withFamilies(apt('firefox-esr'), { rocky: ['firefox'], alpine: ['firefox'] }),
-  },
+  // ---- GUI applications (shown only once a desktop is selected) -----------
   {
     id: 'thunderbird',
     name: 'Thunderbird',
-    group: 'office',
+    group: 'gui',
     description: 'Mail client for IMAP/SMTP lab services.',
     icon: 'Mail',
     packages: withFamilies(apt('thunderbird'), {
@@ -68,7 +61,7 @@ export const softwareCatalog: SoftwareEntry[] = [
   {
     id: 'rdp-client',
     name: 'Remote desktop client',
-    group: 'office',
+    group: 'gui',
     description: 'Remmina — RDP/VNC client for jumping into other nodes.',
     icon: 'Monitor',
     packages: withFamilies(apt('remmina'), { rocky: ['remmina'], alpine: ['remmina'] }),
@@ -106,7 +99,7 @@ export const softwareCatalog: SoftwareEntry[] = [
   {
     id: 'fonts',
     name: 'Desktop fonts',
-    group: 'office',
+    group: 'gui',
     description: 'DejaVu/Liberation fonts so desktops render legibly.',
     icon: 'Type',
     packages: withFamilies(apt('fonts-dejavu-core', 'fonts-liberation'), {
@@ -117,7 +110,7 @@ export const softwareCatalog: SoftwareEntry[] = [
   {
     id: 'image-editor',
     name: 'Image editor',
-    group: 'office',
+    group: 'gui',
     description: 'GIMP and ImageMagick for diagram/screenshot work.',
     icon: 'Image',
     packages: withFamilies(apt('gimp', 'imagemagick'), {
@@ -128,7 +121,7 @@ export const softwareCatalog: SoftwareEntry[] = [
   {
     id: 'media-player',
     name: 'Media player',
-    group: 'office',
+    group: 'gui',
     description: 'VLC — play test media and multicast streams.',
     icon: 'Music',
     packages: withFamilies(apt('vlc'), { alpine: ['vlc'] }),
