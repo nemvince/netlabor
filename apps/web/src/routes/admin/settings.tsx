@@ -1,5 +1,13 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyRound, RotateCcw, TerminalSquare, Timer, Wrench } from 'lucide-react';
+import {
+  Download,
+  KeyRound,
+  RefreshCw,
+  RotateCcw,
+  TerminalSquare,
+  Timer,
+  Wrench,
+} from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Field } from '../../components/Field.tsx';
 import { displaySettingValue, KeyValueEditor } from '../../components/KeyValueEditor.tsx';
@@ -14,11 +22,14 @@ import { SettingsCard, SettingsIcon } from '../../features/settings/SettingsCard
 import { SettingsNav } from '../../features/settings/SettingsNav.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
+import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/queryClient.ts';
+import { versionLabel } from '../../lib/version.ts';
 
 const ROWS_KEY = 'ui.defaultConsoleRows';
 const COLS_KEY = 'ui.defaultConsoleCols';
 const IDLE_KEY = 'project.autoCloseIdleMinutes';
+const CHANNEL_KEY = 'update.channel';
 
 const DEFAULT_ROWS = 24;
 const DEFAULT_COLS = 80;
@@ -111,6 +122,25 @@ export function SettingsAdminPage() {
       toast.success('Settings saved.');
       void queryClient.invalidateQueries({ queryKey: orpc.settings.get.key() });
       void queryClient.invalidateQueries({ queryKey: orpc.audit.list.key() });
+      void queryClient.invalidateQueries({ queryKey: orpc.updates.check.key() });
+    },
+    onError: (mutationError) => {
+      setError(messageOf(mutationError));
+    },
+  });
+
+  const updateCheck = useQuery({
+    ...orpc.updates.check.queryOptions({ input: {} }),
+    enabled: canRead,
+    retry: false,
+    staleTime: 60_000,
+  });
+
+  const installUpdate = useMutation({
+    ...orpc.updates.apply.mutationOptions(),
+    onSuccess: () => {
+      setError(null);
+      toast.success('Update installed. The controller is restarting.');
     },
     onError: (mutationError) => {
       setError(messageOf(mutationError));
@@ -121,6 +151,7 @@ export function SettingsAdminPage() {
   const colsError = rangeError(colsText, COLS_RANGE, 'column');
   const idleError = idleEnabled ? rangeError(idleText, IDLE_RANGE, 'minute') : null;
   const hasFieldErrors = rowsError !== null || colsError !== null || idleError !== null;
+  const channel = map[CHANNEL_KEY] === 'nightly' ? 'nightly' : 'stable';
 
   const dirty = useMemo(() => {
     if (!settings.data) return false;
@@ -193,6 +224,10 @@ export function SettingsAdminPage() {
     }));
   }
 
+  function onChannel(next: 'stable' | 'nightly') {
+    setMap((previous) => ({ ...previous, [CHANNEL_KEY]: next }));
+  }
+
   function onMapChange(next: Record<string, unknown>) {
     setMap(next);
     if (typeof next[ROWS_KEY] === 'number') setRowsText(String(next[ROWS_KEY]));
@@ -216,7 +251,7 @@ export function SettingsAdminPage() {
     <Page wide={false}>
       <PageHeader
         title="Controller settings"
-        description="Defaults the controller hands to every new console and project, plus the encrypted secrets it stores."
+        description="Defaults the controller hands to every new console and project, its update channel, and the encrypted secrets it stores."
       />
       <SettingsNav />
 
@@ -387,6 +422,105 @@ export function SettingsAdminPage() {
                 </Field>
               </div>
             ) : null}
+          </SettingsCard>
+
+          <SettingsCard
+            icon={Download}
+            title="Controller updates"
+            description="Updates come from this project's GitHub releases. Stable follows tagged releases; nightly follows every commit on main. Save the channel before checking."
+            actions={
+              <button
+                type="button"
+                className="nb-button"
+                data-size="sm"
+                onClick={() => void updateCheck.refetch()}
+                disabled={!canRead || updateCheck.isFetching}
+              >
+                <RefreshCw size={13} aria-hidden />
+                {updateCheck.isFetching ? 'Checking…' : 'Check now'}
+              </button>
+            }
+          >
+            <fieldset className="border-0 p-0">
+              <legend className="text-[12px] font-medium" style={{ color: 'var(--color-ink-dim)' }}>
+                Release channel
+              </legend>
+              <div className="mt-1.5 flex flex-wrap gap-2">
+                {(
+                  [
+                    ['stable', 'Stable', 'Tagged releases only.'],
+                    ['nightly', 'Nightly', 'Every commit on main, published as a prerelease.'],
+                  ] as const
+                ).map(([value, label, hint]) => (
+                  <label
+                    key={value}
+                    className="flex min-h-7 cursor-pointer items-center gap-2 rounded-[2px] border px-2.5 py-1 text-[12px]"
+                    style={{
+                      borderColor:
+                        channel === value ? 'var(--color-rule-strong)' : 'var(--color-rule)',
+                      background: channel === value ? 'var(--color-panel-raised)' : 'transparent',
+                    }}
+                    title={hint}
+                  >
+                    <input
+                      type="radio"
+                      name="setting-update-channel"
+                      checked={channel === value}
+                      disabled={!canWrite}
+                      onChange={() => onChannel(value)}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="mt-3 grid gap-x-6 gap-y-1 text-[12px] sm:grid-cols-3">
+              <span>
+                <span className="nb-rule-label block">running</span>
+                <span className="tabular">{versionLabel(updateCheck.data?.currentVersion)}</span>
+              </span>
+              <span>
+                <span className="nb-rule-label block">latest</span>
+                <span className="tabular">{updateCheck.data?.latestVersion ?? '—'}</span>
+              </span>
+              <span>
+                <span className="nb-rule-label block">published</span>
+                <span className="tabular">{formatStamp(updateCheck.data?.publishedAt)}</span>
+              </span>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-[12px]">
+              {updateCheck.isPending ? (
+                <span style={{ color: 'var(--color-ink-faint)' }}>Checking…</span>
+              ) : updateCheck.isError ? (
+                <span style={{ color: 'var(--color-signal-down)' }}>
+                  {messageOf(updateCheck.error)}
+                </span>
+              ) : updateCheck.data?.installable === false ? (
+                <span style={{ color: 'var(--color-ink-faint)' }}>{updateCheck.data.reason}</span>
+              ) : updateCheck.data?.available ? (
+                <button
+                  type="button"
+                  className="nb-button"
+                  data-variant="primary"
+                  data-size="sm"
+                  onClick={() => installUpdate.mutate({})}
+                  disabled={!canWrite || installUpdate.isPending}
+                >
+                  <Download size={13} aria-hidden />
+                  {installUpdate.isPending
+                    ? 'Installing…'
+                    : `Install ${updateCheck.data.latestVersion ?? 'update'}`}
+                </button>
+              ) : updateCheck.data?.latestVersion === null ? (
+                <span style={{ color: 'var(--color-ink-faint)' }}>
+                  No releases published on this channel yet.
+                </span>
+              ) : (
+                <span style={{ color: 'var(--color-signal-up)' }}>Up to date.</span>
+              )}
+            </div>
           </SettingsCard>
 
           <SettingsCard

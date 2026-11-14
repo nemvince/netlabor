@@ -1038,6 +1038,21 @@ const settings = {
     .output(misc.SettingsPatch),
 };
 
+const updates = {
+  check: proc(
+    'Check the selected release channel for a controller update',
+    authz({ mode: 'any', privilege: 'settings.read' }),
+  )
+    .input(noInput)
+    .output(misc.UpdateStatus),
+  apply: proc(
+    'Install the available update and restart the controller',
+    authz({ mode: 'any', privilege: 'settings.write' }),
+  )
+    .input(noInput)
+    .output(misc.UpdateStatus),
+};
+
 const secrets = {
   list: proc('List encrypted secrets by name', authz({ mode: 'any', privilege: 'settings.read' }))
     .input(noInput)
@@ -1194,6 +1209,7 @@ export const router = {
   drawings,
   snapshots,
   settings,
+  updates,
   secrets,
   events,
   faults,

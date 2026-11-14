@@ -30,6 +30,7 @@ import { useWorkspaceStore } from '../features/workspace/store.ts';
 import { orpc } from './api.ts';
 import { messageOf } from './errors.ts';
 import { queryClient } from './queryClient.ts';
+import { versionLabel } from './version.ts';
 
 type AppPath =
   | '/'
@@ -447,6 +448,10 @@ function StatusBar() {
                 ? 'none registered'
                 : `${computes.data.filter((compute) => compute.status === 'online').length}/${computes.data.length} online`}
         </span>
+      </span>
+      <span className="nb-stat shrink-0">
+        <span className="nb-stat-label">version</span>
+        <span className="nb-stat-value tabular">{versionLabel(health.data?.version)}</span>
       </span>
     </footer>
   );

@@ -371,6 +371,7 @@ const DEFAULT_SETTINGS: SettingsPatch = {
   'ui.defaultConsoleRows': 24,
   'ui.defaultConsoleCols': 80,
   'project.autoCloseIdleMinutes': 10,
+  'update.channel': 'stable',
 };
 
 export async function getSettings(db: SQL): Promise<SettingsPatch> {

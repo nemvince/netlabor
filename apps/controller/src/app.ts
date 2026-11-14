@@ -20,6 +20,7 @@ import { snapshotRoutes } from './routes/snapshots.ts';
 import { symbolRoutes } from './routes/symbols.ts';
 import { templateRoutes } from './routes/templates.ts';
 import { uploadRoutes } from './routes/uploads.ts';
+import { updateRoutes } from './routes/updates.ts';
 import { userRoutes } from './routes/users.ts';
 
 export type { AppDeps };
@@ -56,6 +57,7 @@ export function createAppRouter(deps: AppDeps) {
     ...shareRoutes(os),
     ...marketplaceRoutes(os, deps),
     ...adminRoutes(os),
+    ...updateRoutes(os, deps),
     ...eventRoutes(os, jobs),
     ...secretRoutes(deps),
     ...snapshotRoutes(os, deps, jobs),

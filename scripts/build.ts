@@ -13,6 +13,7 @@ async function compile(name: string, entrypoint: string) {
   const result = await Bun.build({
     entrypoints: [entrypoint],
     compile: { outfile: path.join(outDir, name) },
+    define: { NB_BUILD_VERSION: JSON.stringify(buildVersion) },
     minify: false,
     target: 'bun',
   });
@@ -31,6 +32,23 @@ const web = Bun.spawn(['bunx', 'vite', 'build'], {
 const webExit = await web.exited;
 if (webExit !== 0) throw new Error('web build failed');
 console.log('built apps/web/dist');
+
+/** Release tag when building a tagged commit, otherwise the short commit. */
+function git(args: string[]): string | null {
+  try {
+    const proc = Bun.spawnSync(['git', ...args], { stdout: 'pipe', stderr: 'ignore' });
+    const output = proc.stdout.toString().trim();
+    return proc.exitCode === 0 && output ? output : null;
+  } catch {
+    return null;
+  }
+}
+
+const buildVersion =
+  process.env.NB_VERSION ??
+  git(['describe', '--tags', '--exact-match'])?.replace(/^v/, '') ??
+  git(['rev-parse', '--short=7', 'HEAD']) ??
+  'unknown';
 
 await compile('netlabor-controller', path.join(root, 'apps/controller/src/index.ts'));
 await compile('netlabor-agent', path.join(root, 'apps/agent/src/index.ts'));

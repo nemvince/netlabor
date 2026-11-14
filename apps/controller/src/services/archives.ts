@@ -246,7 +246,7 @@ async function tarGzip(files: { name: string; data: Uint8Array }[]): Promise<Uin
   return new Uint8Array(Bun.gzipSync(Buffer.concat(chunks)));
 }
 
-async function untarGzip(archive: Uint8Array): Promise<Map<string, Uint8Array>> {
+export async function untarGzip(archive: Uint8Array): Promise<Map<string, Uint8Array>> {
   const files = new Map<string, Uint8Array>();
   let buffer: Buffer;
   try {

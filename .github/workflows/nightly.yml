@@ -1,0 +1,72 @@
+name: Nightly
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  nightly:
+    runs-on: ubuntu-latest
+    steps:
+      # actions/checkout v5.1.0
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
+
+      # oven-sh/setup-bun v2.2.0
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build web bundle
+        working-directory: apps/web
+        run: bunx vite build
+
+      - name: Compile controller and agent
+        run: |
+          set -euo pipefail
+          version=$(git rev-parse --short=7 HEAD)
+          mkdir -p dist
+          for target in x64 arm64; do
+            bun build apps/controller/src/index.ts --compile --target="bun-linux-$target" --define "NB_BUILD_VERSION=\"$version\"" --outfile "dist/netlabor-controller-linux-$target"
+            bun build apps/agent/src/index.ts --compile --target="bun-linux-$target" --outfile "dist/netlabor-agent-linux-$target"
+          done
+
+      - name: Package web bundle
+        run: tar -czf dist/netlabor-web.tar.gz -C apps/web/dist .
+
+      - name: Write checksums
+        working-directory: dist
+        run: sha256sum netlabor-controller-linux-x64 netlabor-controller-linux-arm64 netlabor-agent-linux-x64 netlabor-agent-linux-arm64 netlabor-web.tar.gz > SHA256SUMS
+
+      - name: Publish the rolling nightly release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          sha=$(git rev-parse HEAD)
+          gh release delete nightly --yes --cleanup-tag 2>/dev/null || true
+          git push origin :refs/tags/nightly 2>/dev/null || true
+          gh release create nightly \
+            --title "Nightly ${sha:0:7}" \
+            --notes "Nightly build of ${sha}." \
+            --prerelease \
+            --target "$sha" \
+            dist/netlabor-controller-linux-x64 \
+            dist/netlabor-controller-linux-arm64 \
+            dist/netlabor-agent-linux-x64 \
+            dist/netlabor-agent-linux-arm64 \
+            dist/netlabor-web.tar.gz \
+            dist/SHA256SUMS

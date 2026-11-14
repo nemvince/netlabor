@@ -7,6 +7,7 @@ import { useMe } from '../features/auth/use-me.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp } from '../lib/format.ts';
+import { versionLabel } from '../lib/version.ts';
 
 function QuickLink({
   to,
@@ -81,7 +82,7 @@ export function OverviewPage() {
             )}
           </header>
           <RuleRow label="Version">
-            <span className="tabular">{health.data?.version ?? '—'}</span>
+            <span className="tabular">{versionLabel(health.data?.version)}</span>
           </RuleRow>
           <RuleRow label="Checked">
             <span className="tabular">

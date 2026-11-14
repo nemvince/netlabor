@@ -37,6 +37,16 @@ jobs:
         id: tag
         run: echo "name=${{ github.event.inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
 
+      - name: Resolve version
+        id: version
+        run: |
+          set -euo pipefail
+          if tag=$(git describe --tags --exact-match 2>/dev/null); then
+            echo "value=${tag#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
@@ -45,11 +55,13 @@ jobs:
         run: bunx vite build
 
       - name: Compile controller and agent
+        env:
+          NB_BUILD_VERSION: ${{ steps.version.outputs.value }}
         run: |
           set -euo pipefail
           mkdir -p dist
           for target in x64 arm64; do
-            bun build apps/controller/src/index.ts --compile --target="bun-linux-$target" --outfile "dist/netlabor-controller-linux-$target"
+            bun build apps/controller/src/index.ts --compile --target="bun-linux-$target" --define "NB_BUILD_VERSION=\"$NB_BUILD_VERSION\"" --outfile "dist/netlabor-controller-linux-$target"
             bun build apps/agent/src/index.ts --compile --target="bun-linux-$target" --outfile "dist/netlabor-agent-linux-$target"
           done
 

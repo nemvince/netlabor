@@ -52,3 +52,12 @@ bun run scripts/fetch-test-assets.ts   # Alpine qcow2 into e2e/assets
 
 Formatting and type checking are Bun's built-in `bun fmt` and `bun check`
 (`[fmt]` section in `bunfig.toml`).
+
+## Updates
+
+Controllers installed from a release build update themselves from GitHub. Set
+the release channel under **Settings → Controller → Controller updates**: stable
+follows tagged releases, nightly follows every commit on `main`. The updater
+verifies `SHA256SUMS`, replaces the binary and web bundle in `/opt/netlabor`, and
+restarts through systemd. Re-run `scripts/install-controller.sh` once on an
+existing install so the service group can write that directory.

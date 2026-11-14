@@ -184,6 +184,22 @@ export const SymbolUploadInput = z.object({
 export const SettingsPatch = z.record(z.string(), z.unknown());
 export type SettingsPatch = z.infer<typeof SettingsPatch>;
 
+export const UpdateChannel = z.enum(['stable', 'nightly']);
+export type UpdateChannel = z.infer<typeof UpdateChannel>;
+
+export const UpdateStatus = z.object({
+  channel: UpdateChannel,
+  currentVersion: z.string(),
+  latestVersion: z.string().nullable(),
+  available: z.boolean(),
+  /** Whether this build can install updates at all (release binary on a supported platform). */
+  installable: z.boolean(),
+  /** Why updates cannot be installed; null when they can. */
+  reason: z.string().nullable(),
+  publishedAt: Timestamp.nullable(),
+});
+export type UpdateStatus = z.infer<typeof UpdateStatus>;
+
 export type JobsListInput = z.infer<typeof JobsListInput>;
 
 export const JobsListInput = z.object({

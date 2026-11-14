@@ -53,7 +53,9 @@ if [[ $SKIP_DEPS -eq 0 ]] && command -v apt-get >/dev/null 2>&1; then
 fi
 
 id -u netlabor-controller >/dev/null 2>&1 || useradd --system --home /var/lib/netlabor --shell /usr/sbin/nologin netlabor-controller
-install -d -m 0755 "$PREFIX" "$ENV_DIR"
+# The controller installs its own updates, so its service group may write the prefix.
+install -d -m 0775 -o root -g netlabor-controller "$PREFIX"
+install -d -m 0755 "$ENV_DIR"
 install -d -m 0750 -o netlabor-controller -g netlabor-controller /var/lib/netlabor
 install -m 0755 "$BINARY" "$PREFIX/netlabor-controller"
 install -m 0644 deploy/systemd/netlabor-controller.service /etc/systemd/system/netlabor-controller.service
