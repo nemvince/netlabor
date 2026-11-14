@@ -16,6 +16,7 @@ export const MarketplaceApplianceRow = z.object({
   description: z.string(),
   status: z.enum(['stable', 'experimental']),
   nodeType: z.enum(['qemu', 'docker']),
+  symbol: z.string(),
   arch: z.string(),
   version: z.string().nullable(),
   imageFilename: z.string().nullable(),
