@@ -233,11 +233,16 @@ export async function applyUpdate(deps: AppDeps): Promise<UpdateStatus> {
 
   try {
     await rename(binaryNext, execPath);
-    await rename(webRoot, webOld);
+    // A pure-binary install may have no web dir on disk; the embedded UI is used instead.
+    const hadWeb = await access(webRoot).then(
+      () => true,
+      () => false,
+    );
+    if (hadWeb) await rename(webRoot, webOld);
     try {
       await rename(webNext, webRoot);
     } catch (error) {
-      await rename(webOld, webRoot);
+      if (hadWeb) await rename(webOld, webRoot);
       throw error;
     }
     await rm(webOld, { recursive: true, force: true });

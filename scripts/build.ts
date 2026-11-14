@@ -9,11 +9,14 @@ const outDir = path.join(root, 'dist');
 await rm(outDir, { recursive: true, force: true });
 await Bun.$`mkdir -p ${outDir}`.quiet();
 
-async function compile(name: string, entrypoint: string) {
+async function compile(name: string, entrypoint: string, assets: string[] = []) {
   const result = await Bun.build({
     entrypoints: [entrypoint],
-    compile: { outfile: path.join(outDir, name) },
-    define: { NB_BUILD_VERSION: JSON.stringify(buildVersion) },
+    compile: { outfile: path.join(outDir, name), assets },
+    define: {
+      NB_BUILD_VERSION: JSON.stringify(buildVersion),
+      NB_WEB_EMBED_DIR: JSON.stringify(path.relative(process.cwd(), webDist)),
+    },
     minify: false,
     target: 'bun',
   });
@@ -24,6 +27,7 @@ async function compile(name: string, entrypoint: string) {
   console.log(`built ${path.relative(root, path.join(outDir, name))}`);
 }
 
+const webDist = path.join(root, 'apps/web/dist');
 const web = Bun.spawn(['bunx', 'vite', 'build'], {
   cwd: path.join(root, 'apps/web'),
   stdout: 'inherit',
@@ -50,5 +54,7 @@ const buildVersion =
   git(['rev-parse', '--short=7', 'HEAD']) ??
   'unknown';
 
-await compile('netlabor-controller', path.join(root, 'apps/controller/src/index.ts'));
+await compile('netlabor-controller', path.join(root, 'apps/controller/src/index.ts'), [
+  path.relative(process.cwd(), webDist),
+]);
 await compile('netlabor-agent', path.join(root, 'apps/agent/src/index.ts'));
