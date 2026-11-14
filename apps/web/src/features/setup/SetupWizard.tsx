@@ -278,7 +278,7 @@ function PresetsStep({
       <StepHeader
         step="3 of 4"
         title="Prepare appliance images"
-        hint="Presets download a base cloud image and build it into an offline-ready device template. Tweak each preset before starting."
+        hint="Presets download a base cloud image and build it into an offline-ready device template. They start as-is; expand Customize to tweak desktop and software."
       />
       <div className="flex flex-col gap-2">
         {setupPresets.map((preset) => {
@@ -312,7 +312,14 @@ function PresetsStep({
                 </span>
               </label>
               {choice.selected ? (
-                <div className="mt-2 flex flex-wrap items-start gap-3">
+                <details className="mt-1.5">
+                  <summary
+                    className="cursor-pointer select-none text-[11px]"
+                    style={{ color: 'var(--color-ink-dim)' }}
+                  >
+                    Customize desktop and software
+                  </summary>
+                  <div className="mt-2 flex flex-wrap items-start gap-3">
                   <span
                     className="flex items-center gap-1.5 text-[11px]"
                     style={{ color: 'var(--color-ink-faint)' }}
@@ -369,7 +376,8 @@ function PresetsStep({
                       );
                     })}
                   </span>
-                </div>
+                  </div>
+                </details>
               ) : null}
             </div>
           );
@@ -503,7 +511,8 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
     }
   }, [osImages.data]);
 
-  // Create device templates for completed builds (once per track).
+  // Builds auto-create their device template server-side; the track is done
+  // once its build reaches 'completed'.
   useEffect(() => {
     const buildRows = builds.data ?? [];
     for (const track of tracksRef.current.values()) {
@@ -512,12 +521,6 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
       const build = buildRows.find((row) => row.id === track.buildId);
       if (build?.status !== 'completed') continue;
       track.templateDone = true;
-      void client.appliances.builds
-        .template({ buildId: build.id, name: build.name })
-        .catch((error: unknown) => {
-          track.templateDone = false;
-          track.failed = messageOf(error);
-        });
     }
   }, [builds.data]);
 
