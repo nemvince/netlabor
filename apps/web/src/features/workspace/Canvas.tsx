@@ -20,6 +20,7 @@ import { createPortal } from 'react-dom';
 import { DeviceNode } from './DeviceNode.tsx';
 import { DrawingNode } from './DrawingNode.tsx';
 import { LinkEdge } from './LinkEdge.tsx';
+import { NodeHoverCard } from './NodeHoverCard.tsx';
 import { TEMPLATE_MIME } from './Palette.tsx';
 import type { Selection } from './store.ts';
 import {
@@ -200,7 +201,7 @@ export function Canvas({
   onLinkOpen,
   onZoomChange,
 }: CanvasProps) {
-  const { screenToFlowPosition, fitView } = useReactFlow();
+  const { screenToFlowPosition, flowToScreenPosition, fitView } = useReactFlow();
   const viewport = useViewport();
   const fittedRef = useRef(false);
   const selectionRef = useRef(selection);
@@ -222,6 +223,9 @@ export function Canvas({
     x: number;
     y: number;
   } | null>(null);
+  const hoverTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
 
   // refs keep cursor updates out of topology rebuilds.
   useEffect(() => {
@@ -330,6 +334,10 @@ export function Canvas({
         onEdgesChange={onEdgesChange}
         onSelectionChange={handleSelectionChange}
         onNodeDrag={(_, node) => onNodeDragMove(node.id, node.position.x, node.position.y)}
+        onNodeDragStart={() => {
+          window.clearTimeout(hoverTimer.current);
+          setHoveredNode(null);
+        }}
         onNodeDragStop={(_, node) => {
           const row = nodes.find((candidate) => candidate.id === node.id);
           if (row) onNodeDragStop(row, node.position.x, node.position.y);
@@ -347,11 +355,21 @@ export function Canvas({
           event.preventDefault();
           onNodeContextMenu(row, event.clientX, event.clientY);
         }}
-        onNodeMouseEnter={(event, node) => {
+        onNodeMouseEnter={(_, node) => {
           if (node.type !== 'device') return;
-          setHoveredNode({ id: node.id, x: event.clientX, y: event.clientY });
+          window.clearTimeout(hoverTimer.current);
+          const anchor = flowToScreenPosition({
+            x: node.position.x + (node.measured?.width ?? NODE_WIDTH) / 2,
+            y: node.position.y + (node.measured?.height ?? NODE_HEIGHT),
+          });
+          hoverTimer.current = window.setTimeout(() => {
+            setHoveredNode({ id: node.id, x: anchor.x, y: anchor.y });
+          }, 450);
         }}
-        onNodeMouseLeave={() => setHoveredNode(null)}
+        onNodeMouseLeave={() => {
+          window.clearTimeout(hoverTimer.current);
+          setHoveredNode(null);
+        }}
         onEdgeClick={(_, edge) => onLinkOpen(edge.id)}
         onEdgeMouseEnter={(_, edge) => setHoveredEdgeId(edge.id)}
         onEdgeMouseLeave={() => setHoveredEdgeId(null)}
@@ -417,7 +435,9 @@ export function Canvas({
       {hoveredNode
         ? createPortal(
             <NodeHoverCard
+              key={hoveredNode.id}
               node={nodes.find((row) => row.id === hoveredNode.id)}
+              links={links}
               point={hoveredNode}
             />,
             document.body,
@@ -460,65 +480,3 @@ export function Canvas({
   );
 }
 
-const HOVER_WIDTH = 260;
-const HOVER_HEIGHT = 240;
-
-/** Read-only summary of a device, shown while the cursor rests on it. */
-function NodeHoverCard({
-  node,
-  point,
-}: {
-  node: NodeRow | undefined;
-  point: { x: number; y: number };
-}) {
-  if (!node) return null;
-  const left = Math.max(8, Math.min(point.x + 14, window.innerWidth - HOVER_WIDTH - 8));
-  const top = Math.max(8, Math.min(point.y + 14, window.innerHeight - HOVER_HEIGHT - 8));
-  const ram = typeof node.properties.ram === 'number' ? node.properties.ram : null;
-  const cpus = typeof node.properties.cpus === 'number' ? node.properties.cpus : null;
-  return (
-    <div
-      className="pointer-events-none fixed z-[65] flex flex-col gap-1.5 rounded-[3px] border px-2.5 py-2 text-[11px] shadow-[0_10px_28px_rgba(0,0,0,0.45)]"
-      style={{
-        left,
-        top,
-        width: HOVER_WIDTH,
-        maxHeight: HOVER_HEIGHT,
-        overflow: 'hidden',
-        background: 'var(--color-panel)',
-        borderColor: 'var(--color-rule-strong)',
-        color: 'var(--color-ink-dim)',
-      }}
-      role="tooltip"
-    >
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="truncate text-[12px] font-semibold" style={{ color: 'var(--color-ink)' }}>
-          {node.name}
-        </span>
-        <span style={{ color: 'var(--color-ink-faint)' }}>{node.nodeType}</span>
-      </div>
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-        <span>
-          status <span style={{ color: 'var(--color-ink)' }}>{node.status}</span>
-        </span>
-        <span>compute {node.computeName}</span>
-        {node.isolated ? <span style={{ color: 'var(--color-signal-warn)' }}>isolated</span> : null}
-      </div>
-      <div className="flex flex-wrap gap-x-3">
-        {cpus !== null ? <span>{cpus} vCPU</span> : null}
-        {ram !== null ? <span>{ram} MB RAM</span> : null}
-        {node.consolePort !== null ? <span>console {node.consolePort}</span> : null}
-      </div>
-      <div className="truncate">
-        <span style={{ color: 'var(--color-ink-faint)' }}>
-          {node.ports.length === 0 ? 'no interfaces' : `${node.ports.length} interfaces:`}
-        </span>{' '}
-        {[...node.ports]
-          .slice(0, 8)
-          .map((port) => `${port.name} ${port.adapter}/${port.port}`)
-          .join(' · ')}
-        {node.ports.length > 8 ? ' …' : ''}
-      </div>
-    </div>
-  );
-}
