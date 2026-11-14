@@ -18,6 +18,7 @@ import { SearchInput } from '../../components/SearchInput.tsx';
 import { toast } from '../../components/Toast.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
+import { trackJob } from '../../lib/downloadToasts.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/queryClient.ts';
@@ -40,11 +41,15 @@ export function CatalogPanel({
     setProgress((current) => ({ ...current, [applianceId]: 0 }));
     try {
       const job = await client.marketplace.install({ applianceId });
+      // The install downloads images: keep one toast alive across route changes.
+      trackJob(job, {
+        success: `${name} installed into the template library.`,
+        failure: `${name} could not be installed`,
+      });
       await waitForJob(job.id, {
         onUpdate: (update) =>
           setProgress((current) => ({ ...current, [applianceId]: update.progress })),
       });
-      toast.success(`${name} installed into the template library.`);
       await queryClient.invalidateQueries({ queryKey: orpc.templates.list.key() });
       await queryClient.invalidateQueries({ queryKey: orpc.marketplace.list.key() });
       await queryClient.invalidateQueries({ queryKey: orpc.images.list.key() });

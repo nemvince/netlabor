@@ -1,7 +1,7 @@
 /** QEMU adapter: argument builder, qcow2 overlays, QMP lifecycle, consoles. */
 
 import { existsSync } from 'node:fs';
-import { copyFile, mkdir, rm, stat } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { anchorHash } from '@netlabor/catalog/anchors';
 import { AppError } from '@netlabor/contract';
@@ -225,6 +225,10 @@ export async function buildQemuArgs(
 
   // UNIX socket paths are capped at 108 bytes; keep QMP out of the node path.
   const qmpSocket = qmpPath(ctx.config, ctx.spec.nodeId);
+  // The run dir can be recreated under a running agent (tmpfiles, manual
+  // cleanup); QEMU cannot create its socket without this directory and owner.
+  await mkdir(path.dirname(qmpSocket), { recursive: true, mode: 0o750 });
+  await chownForEmulator(path.dirname(qmpSocket), ctx.config.emulatorUid, ctx.config.emulatorGid);
   await rm(qmpSocket, { force: true });
   args.push('-qmp', `unix:${qmpSocket},server,nowait`);
   args.push('-display', 'none');
@@ -302,8 +306,21 @@ const qemuAdapter: NodeAdapter = {
     });
 
     const qmpSocket = qmpPath(ctx.config, ctx.spec.nodeId);
-    const qmp = await QmpClient.connect(qmpSocket, 10_000);
-    qmp.close();
+    const logFile = path.join(ctx.projectDir, 'logs', `${ctx.spec.nodeId}.log`);
+    try {
+      const qmp = await QmpClient.connect(qmpSocket, 10_000);
+      qmp.close();
+    } catch (error) {
+      // A dead QEMU only shows as a missing socket; the log says why it died.
+      await stopProcess(pid, 5_000).catch(() => undefined);
+      const log = await tailFile(logFile, 2_000);
+      throw new AppError('AGENT_ERROR', 'QEMU did not start; see the node log for the reason', {
+        details: log
+          ? `${error instanceof Error ? error.message : String(error)}
+${log}`
+          : String(error),
+      });
+    }
 
     const serial = args.indexOf('-serial');
     let internalConsolePort: number | null = null;
@@ -450,6 +467,15 @@ export async function resizeDiskImage(
 }
 
 /** Short QMP socket path (< 108 bytes) inside the run directory. */
+async function tailFile(file: string, bytes: number): Promise<string> {
+  try {
+    const text = await readFile(file, 'utf8');
+    return text.length > bytes ? text.slice(-bytes).trim() : text.trim();
+  } catch {
+    return '';
+  }
+}
+
 export function qmpPath(config: AgentConfig, nodeId: string): string {
   return path.join(config.runDir, 'emulators', `${nodeId.replaceAll('-', '').slice(0, 12)}.qmp`);
 }

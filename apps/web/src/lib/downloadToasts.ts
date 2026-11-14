@@ -1,85 +1,98 @@
 /**
- * App-wide tracker for OS-image download jobs. Downloads run as controller
- * jobs that keep going regardless of the page they were started from; this
- * keeps a progress toast alive app-wide and settles it when the job ends.
+ * App-wide tracker for long-running jobs that move bytes (OS image downloads,
+ * marketplace appliance installs). Jobs run server-side and survive route
+ * changes; this keeps one progress toast alive app-wide and settles it when
+ * the job ends.
  */
 
 import type { JobRow } from '@netlabor/contract';
 import { create } from 'zustand';
 import { toast } from '../components/Toast.tsx';
 import { client } from './api.ts';
-import { messageOf } from './errors.ts';
 
 /** osImageId → download percent; panels read this instead of tracking jobs. */
 export const useOsDownloadProgress = create<Record<string, number>>(() => ({}));
 
-interface TrackedDownload {
+interface TrackedJob {
   toastId: number;
-  name: string;
-  /** last reported percent, to skip identical updates */
   progress: number | null;
+  success: string;
+  failure: string;
 }
 
-const tracked = new Map<string, TrackedDownload>();
+const tracked = new Map<string, TrackedJob>();
 
 let started = false;
 
 function jobName(job: JobRow): string {
   const name = job.payload['name'];
-  return typeof name === 'string' && name !== '' ? name : 'OS image';
+  return typeof name === 'string' && name !== '' ? name : 'job';
+}
+
+/**
+ * Attach a progress toast to a running job. `success`/`failure` are the final
+ * messages; they default to download wording.
+ */
+export function trackJob(job: JobRow, copy: { success?: string; failure?: string } = {}): void {
+  if (tracked.has(job.id)) return;
+  const name = jobName(job);
+  tracked.set(job.id, {
+    toastId: toast.progress(`Working on ${name}…`, job.progress),
+    progress: job.progress,
+    success: copy.success ?? `Downloaded ${name}.`,
+    failure: copy.failure ?? `Download failed: ${name}`,
+  });
 }
 
 /** Attach a progress toast to a running os.download job. */
 export function trackOsDownload(job: JobRow): void {
-  if (tracked.has(job.id)) return;
-  const name = jobName(job);
-  tracked.set(job.id, {
-    toastId: toast.progress(`Downloading ${name}…`, job.progress),
-    name,
-    progress: job.progress,
-  });
+  trackJob(job);
 }
 
-/** Attach toasts to every running download job; call once on app mount. */
+/** Track and poll every job this app started; call once on app mount. */
 export function startDownloadTracking(): void {
   if (started) return;
   started = true;
   const poll = async (): Promise<void> => {
-    if (tracked.size === 0) return;
-    let running: JobRow[];
-    try {
-      running = await client.jobs.list({ kind: 'os.download', state: 'running', limit: 50 });
-    } catch {
-      return;
+    // Pick up downloads started elsewhere (another tab, before a reload).
+    const running = await Promise.all([
+      client.jobs.list({ kind: 'os.download', state: 'running', limit: 20 }).catch(() => []),
+      client.jobs.list({ kind: 'appliance.install', state: 'running', limit: 20 }).catch(() => []),
+    ]);
+    for (const job of running.flat()) {
+      trackJob(
+        job,
+        job.kind === 'appliance.install'
+          ? {
+              success: `${jobName(job)} installed into the template library.`,
+              failure: `${jobName(job)} could not be installed`,
+            }
+          : {},
+      );
     }
-    const runningIds = new Set(running.map((job) => job.id));
+    if (tracked.size === 0) return;
     const percentByOsId: Record<string, number> = {};
-    for (const job of running) {
-      trackOsDownload(job);
-      const osImageId = job.payload['osImageId'];
-      if (typeof osImageId === 'string') percentByOsId[osImageId] = job.progress;
-      const entry = tracked.get(job.id);
-      if (entry && job.progress !== entry.progress) {
-        entry.progress = job.progress;
-        toast.update(entry.toastId, { progress: job.progress });
+    for (const [jobId, entry] of [...tracked]) {
+      let job: JobRow;
+      try {
+        job = await client.jobs.get({ id: jobId });
+      } catch {
+        continue;
       }
+      if (job.state === 'running') {
+        const osImageId = job.payload['osImageId'];
+        if (typeof osImageId === 'string') percentByOsId[osImageId] = job.progress;
+        if (job.progress !== entry.progress) {
+          entry.progress = job.progress;
+          toast.update(entry.toastId, { progress: job.progress });
+        }
+        continue;
+      }
+      tracked.delete(jobId);
+      if (job.state === 'completed') toast.settle(entry.toastId, 'success', entry.success);
+      else toast.settle(entry.toastId, 'error', job.error ?? entry.failure);
     }
     useOsDownloadProgress.setState(percentByOsId);
-    // Jobs that left the running list have settled; fetch their outcome.
-    for (const [jobId, entry] of tracked) {
-      if (runningIds.has(jobId)) continue;
-      tracked.delete(jobId);
-      try {
-        const job = await client.jobs.get({ id: jobId });
-        if (job.state === 'completed') {
-          toast.settle(entry.toastId, 'success', `Downloaded ${entry.name}.`);
-        } else {
-          toast.settle(entry.toastId, 'error', `Download failed: ${job.error ?? 'cancelled'}`);
-        }
-      } catch (error) {
-        toast.settle(entry.toastId, 'error', `Download failed: ${messageOf(error)}`);
-      }
-    }
   };
   void poll();
   window.setInterval(() => void poll(), 2000);

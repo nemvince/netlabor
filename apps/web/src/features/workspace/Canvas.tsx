@@ -16,6 +16,7 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { type DragEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { DeviceNode } from './DeviceNode.tsx';
 import { DrawingNode } from './DrawingNode.tsx';
 import { LinkEdge } from './LinkEdge.tsx';
@@ -413,9 +414,15 @@ export function Canvas({
           />
         ) : null}
       </ReactFlow>
-      {hoveredNode ? (
-        <NodeHoverCard node={nodes.find((row) => row.id === hoveredNode.id)} point={hoveredNode} />
-      ) : null}
+      {hoveredNode
+        ? createPortal(
+            <NodeHoverCard
+              node={nodes.find((row) => row.id === hoveredNode.id)}
+              point={hoveredNode}
+            />,
+            document.body,
+          )
+        : null}
       <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
         {collaborators
           .filter((participant) => participant.id !== selfCollabId && participant.cursor)

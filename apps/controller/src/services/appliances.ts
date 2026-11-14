@@ -1545,7 +1545,8 @@ export async function createTemplateFromBuild(
     nodeType: 'qemu',
     category: input.category,
     symbol: input.symbol,
-    defaultNameFormat: '{name}-{index}',
+    // Builds of the same family share a prefix so nodes read like their OS.
+    defaultNameFormat: `${osFamily}-{index}`,
     properties: {
       cloudInitEnabled: true,
       osFamily,
