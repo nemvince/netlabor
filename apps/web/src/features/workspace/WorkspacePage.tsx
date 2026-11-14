@@ -582,9 +582,13 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
     }
   }
 
-  function consoleFor(node: NodeRow) {
+  function consoleFor(node: NodeRow, starting = false) {
     if (node.consoleType === 'none' || !can('node.console')) {
       fail('A console is not available for this node.');
+      return;
+    }
+    if (!starting && node.status !== 'started' && node.status !== 'suspended') {
+      fail(`Start ${node.name} before opening its console.`);
       return;
     }
     if (node.consoleType === 'vnc') {
@@ -601,6 +605,10 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
   function vncFor(node: NodeRow) {
     if (node.consoleType !== 'vnc' || !can('node.console')) {
       fail('This node does not expose a VNC console.');
+      return;
+    }
+    if (node.status !== 'started' && node.status !== 'suspended') {
+      fail(`Start ${node.name} before opening its console.`);
       return;
     }
     openVncTab(projectId, node.id, node.name);
@@ -621,7 +629,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
       else await client.nodes.reload({ id: node.id });
       invalidateNodes();
       invalidateLinks();
-      if (action === 'start' && node.consoleAutoStart) consoleFor(node);
+      if (action === 'start' && node.consoleAutoStart) consoleFor(node, true);
       succeed(`${node.name} ${action} requested.`);
     } catch (error) {
       fail(error);
@@ -973,7 +981,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
           if (action === 'start') await client.nodes.start({ id: node.id });
           else await client.nodes.stop({ id: node.id });
           done += 1;
-          if (action === 'start' && node.consoleAutoStart) consoleFor(node);
+          if (action === 'start' && node.consoleAutoStart) consoleFor(node, true);
         } catch (error) {
           failures.push(`${node.name}: ${messageOf(error)}`);
         }

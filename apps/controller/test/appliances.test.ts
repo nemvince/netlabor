@@ -1,9 +1,13 @@
 import { describe, expect, test } from 'bun:test';
+import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 import { AppError } from '@netlabor/contract';
 import {
   applianceHostname,
   applianceProvisioningScript,
   applianceUserData,
+  downloadToFile,
 } from '../src/services/appliances.ts';
 
 const BASE = {
@@ -148,5 +152,21 @@ describe('appliance user-data', () => {
   test('derives a safe DNS hostname from the build name', () => {
     expect(applianceHostname('Debian 13 / XFCE Lab')).toBe('debian-13-xfce-lab');
     expect(applianceHostname('---')).toBe('netlabor-appliance');
+  });
+});
+
+describe('downloadToFile', () => {
+  test('replaces a read-only part file left by an earlier controller', async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'netlabor-download-'));
+    const target = path.join(directory, 'image.part');
+    try {
+      await writeFile(target, 'stale');
+      await chmod(target, 0o444);
+      const result = await downloadToFile('data:text/plain,fresh', target);
+      expect(await readFile(target, 'utf8')).toBe('fresh');
+      expect(result.sizeBytes).toBe(5);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });

@@ -211,7 +211,7 @@ const server = Bun.serve<WiresharkWsData, never>({
       if (!projectId || !linkId)
         return Response.json({ code: 'BAD_REQUEST', message: 'link required' }, { status: 400 });
       const upgraded = bunServer.upgrade(request, {
-        data: { projectId, linkId, session: null, tail: null, lastSize: 0 },
+        data: { projectId, linkId, session: null, watcher: null, reloadTimer: null, lastSize: 0 },
       });
       return upgraded
         ? undefined

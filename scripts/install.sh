@@ -288,6 +288,9 @@ install_controller() {
   install -d -m 0775 -o root -g netlabor-controller "$PREFIX"
   install -d -m 0750 -o netlabor-controller -g netlabor-controller /var/lib/netlabor
   install -d -m 0755 -o netlabor-controller -g netlabor-controller /var/lib/netlabor/staging
+  # Upgrades can leave staging files and subdirectories owned by root or by a
+  # previous service user, which fail the next download with EACCES.
+  chown -R netlabor-controller:netlabor-controller /var/lib/netlabor/staging
   install -m 0755 "$binary" "$PREFIX/netlabor-controller"
 
   if [[ $fresh -eq 0 ]]; then

@@ -328,7 +328,21 @@ export async function downloadToFile(
   }
   const total = Number(response.headers.get('content-length') ?? '0');
   const hasher = new Bun.CryptoHasher('sha256');
-  const writer = Bun.file(target).writer();
+  // A part file left behind by an older controller (often running as root)
+  // cannot be truncated by the service user, so start from a clean file.
+  await rm(target, { force: true }).catch(() => undefined);
+  let writer: ReturnType<ReturnType<typeof Bun.file>['writer']>;
+  try {
+    writer = Bun.file(target).writer();
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code ?? 'unknown';
+    throw new AppError(
+      'INTERNAL',
+      `cannot write the download to ${target} (${code}); ` +
+        'make the controller staging directory writable by the controller user',
+      { details: { target, err: errorMessage(error) } },
+    );
+  }
   let sizeBytes = 0;
   let lastReport = 0;
   try {

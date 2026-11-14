@@ -90,6 +90,9 @@ export function nodeRoutes(os: Implementer) {
         if (node.consolePort === null || node.consoleType === 'none') {
           throw new AppError('BAD_REQUEST', 'node has no console');
         }
+        if (node.status !== 'started' && node.status !== 'suspended') {
+          throw new AppError('CONFLICT', 'node is not running; start it before opening a console');
+        }
         const user = context.auth.user;
         if (!user) throw new AppError('UNAUTHORIZED', 'authentication required');
         const ticket = issueTicket(

@@ -1,5 +1,8 @@
 /** WebSocket bridge for Web Wireshark: one sharkd session per browser tab. */
 
+import { type FSWatcher, watch } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
 import { AppError } from '@netlabor/contract';
 import type { Logger } from '@netlabor/shared';
 import type { ServerWebSocket } from 'bun';
@@ -11,7 +14,9 @@ export interface WiresharkWsData {
   projectId: string;
   linkId: string;
   session: SharkdSession | null;
-  tail: ReturnType<typeof setInterval> | null;
+  watcher: FSWatcher | null;
+  /** Coalesces the burst of writes a capture file gets per packet. */
+  reloadTimer: ReturnType<typeof setTimeout> | null;
   lastSize: number;
 }
 
@@ -55,27 +60,34 @@ export function wiresharkWebsocketHandlers(runtime: WiresharkWsRuntime) {
         .then((stat) => stat.size)
         .catch(() => 0);
 
-      // Live tail: reload when the capture file grows.
-      ws.data.tail = setInterval(() => {
-        void (async () => {
-          const size = await Bun.file(pcapPath)
-            .stat()
-            .then((stat) => stat.size)
-            .catch(() => 0);
-          if (size <= (ws.data.lastSize ?? 0)) return;
-          ws.data.lastSize = size;
-          try {
-            await session.request('load', { file: pcapPath });
-            const status = await session.request('status', {});
-            ws.send(JSON.stringify({ op: 'reload', result: status }));
-          } catch (error) {
-            runtime.logger.debug('sharkd reload failed mid-write', {
-              err: error instanceof Error ? error.message : String(error),
-            });
-          }
-        })();
-      }, 1000);
-      ws.data.tail.unref?.();
+      // Live tail: the capture is appended to, so a watcher reloads on writes.
+      const reload = async () => {
+        ws.data.reloadTimer = null;
+        const size = await Bun.file(pcapPath)
+          .stat()
+          .then((stat) => stat.size)
+          .catch(() => 0);
+        if (size <= (ws.data.lastSize ?? 0)) return;
+        ws.data.lastSize = size;
+        try {
+          await session.request('load', { file: pcapPath });
+          const status = await session.request('status', {});
+          ws.send(JSON.stringify({ op: 'reload', result: status }));
+        } catch (error) {
+          runtime.logger.debug('sharkd reload failed mid-write', {
+            err: error instanceof Error ? error.message : String(error),
+          });
+        }
+      };
+      const filename = path.basename(pcapPath);
+      await mkdir(path.dirname(pcapPath), { recursive: true });
+      const watcher = watch(path.dirname(pcapPath), (_event, changed) => {
+        if (changed && changed.toString() !== filename) return;
+        if (ws.data.reloadTimer) clearTimeout(ws.data.reloadTimer);
+        ws.data.reloadTimer = setTimeout(() => void reload(), 150);
+      });
+      watcher.unref?.();
+      ws.data.watcher = watcher;
     } catch (error) {
       const message = error instanceof AppError ? error.message : 'wireshark session failed';
       ws.send(JSON.stringify({ op: 'error', requestId: 0, error: { message } }));
@@ -130,7 +142,9 @@ export function wiresharkWebsocketHandlers(runtime: WiresharkWsRuntime) {
   };
 
   const close = (ws: ServerWebSocket<WiresharkWsData>) => {
-    if (ws.data.tail) clearInterval(ws.data.tail);
+    if (ws.data.reloadTimer) clearTimeout(ws.data.reloadTimer);
+    ws.data.watcher?.close();
+    ws.data.watcher = null;
     if (ws.data.session)
       runtime.pool.closeSession(ws.data.projectId, ws.data.linkId, ws.data.session);
     ws.data.session = null;

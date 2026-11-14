@@ -20,6 +20,75 @@ function socketUrl(wsUrl: string): string {
 type ConnectionState = 'connecting' | 'open' | 'closed' | 'error';
 type ConsoleTicket = z.infer<typeof ConsoleTicketOutput>;
 
+interface RfbCursor {
+  change(rgba: Uint8Array, hotx: number, hoty: number, w: number, h: number): void;
+}
+
+interface RfbDisplay {
+  scale: number;
+  _rescale(factor: number): void;
+}
+
+/**
+ * noVNC draws the server cursor at framebuffer size even when the framebuffer
+ * is scaled to fit, so its hotspot drifts from the pointer (novnc/noVNC#1128).
+ * Redraw the cursor, hotspot included, at the current display scale.
+ */
+function scaleCursorWithViewport(rfb: RFB): void {
+  const internals = rfb as unknown as { _display?: RfbDisplay; _cursor?: RfbCursor };
+  const display = internals._display;
+  const cursor = internals._cursor;
+  if (!display || !cursor) return;
+
+  const originalChange = cursor.change.bind(cursor);
+  let last: { rgba: Uint8Array; hotx: number; hoty: number; w: number; h: number } | null = null;
+
+  const draw = () => {
+    if (!last) return;
+    const { rgba, hotx, hoty, w, h } = last;
+    const scale = display.scale;
+    if (!Number.isFinite(scale) || scale <= 0 || scale === 1 || w === 0 || h === 0) {
+      originalChange(rgba, hotx, hoty, w, h);
+      return;
+    }
+    const width = Math.max(1, Math.round(w * scale));
+    const height = Math.max(1, Math.round(h * scale));
+    const source = document.createElement('canvas');
+    source.width = w;
+    source.height = h;
+    source.getContext('2d')?.putImageData(new ImageData(new Uint8ClampedArray(rgba), w, h), 0, 0);
+    const scaled = document.createElement('canvas');
+    scaled.width = width;
+    scaled.height = height;
+    const context = scaled.getContext('2d');
+    if (!context) {
+      originalChange(rgba, hotx, hoty, w, h);
+      return;
+    }
+    context.drawImage(source, 0, 0, width, height);
+    const image = context.getImageData(0, 0, width, height);
+    originalChange(
+      new Uint8Array(image.data.buffer),
+      Math.round(hotx * scale),
+      Math.round(hoty * scale),
+      width,
+      height,
+    );
+  };
+
+  cursor.change = (rgba, hotx, hoty, w, h) => {
+    last = { rgba, hotx, hoty, w, h };
+    draw();
+  };
+  if (typeof display._rescale === 'function') {
+    const rescale = display._rescale.bind(display);
+    display._rescale = (factor) => {
+      rescale(factor);
+      draw();
+    };
+  }
+}
+
 interface RfbDetail {
   clean?: boolean;
   name?: string;
@@ -97,6 +166,7 @@ export function VncTab({ nodeId, label }: { nodeId: string; label: string }) {
       surface.resizeSession = true;
       surface.focusOnClick = true;
       surface.showDotCursor = true;
+      scaleCursorWithViewport(surface);
 
       surface.addEventListener('connect', () => {
         if (disposed) return;
