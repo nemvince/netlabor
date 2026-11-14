@@ -15,7 +15,7 @@ export interface MarketplaceImage {
   sizeBytes: number;
   url: string;
   /** Set when the URL serves a compressed artifact the installer must unpack. */
-  compression?: 'bzip2';
+  compression?: 'bzip2' | 'gzip' | 'xz';
 }
 
 export interface MarketplaceQemu {
@@ -203,6 +203,68 @@ export const marketplaceAppliances: MarketplaceAppliance[] = [
       adapterType: 'virtio-net-pci',
       hdaInterface: 'virtio',
       consoleType: 'telnet',
+      options: [],
+    },
+  },
+  {
+    id: 'openwrt',
+    name: 'OpenWrt',
+    vendor: 'OpenWrt Project',
+    category: 'Firewalls',
+    description:
+      'Linux router OS for consumer-grade hardware, with the standard package feeds preinstalled.',
+    status: 'stable',
+    nodeType: 'qemu',
+    symbol: 'firewall',
+    arch: 'x86_64',
+    registryFile: 'openwrt.gns3a',
+    brandIcon: 'openwrt',
+    image: {
+      filename: 'openwrt-25.12.6-x86-64-generic-ext4-combined.img',
+      version: '25.12.6',
+      sizeBytes: 126_353_408,
+      url: 'https://downloads.openwrt.org/releases/25.12.6/targets/x86/64/openwrt-25.12.6-x86-64-generic-ext4-combined.img.gz',
+      compression: 'gzip',
+    },
+    qemu: {
+      ram: 128,
+      cpus: 1,
+      adapters: 4,
+      adapterType: 'virtio-net-pci',
+      hdaInterface: 'virtio',
+      format: 'raw',
+      consoleType: 'telnet',
+      options: [],
+    },
+  },
+  {
+    id: 'ipfire',
+    name: 'IPFire',
+    vendor: 'IPFire Team',
+    category: 'Firewalls',
+    description:
+      'Modular firewall, proxy, and VPN gateway built around a hardened Linux distribution.',
+    status: 'stable',
+    nodeType: 'qemu',
+    symbol: 'firewall',
+    arch: 'x86_64',
+    registryFile: 'ipfire.gns3a',
+    brandIcon: null,
+    image: {
+      filename: 'ipfire-2.29-core205-x86_64.img',
+      version: '2.29.305',
+      sizeBytes: 541_050_072,
+      url: 'https://downloads.ipfire.org/releases/ipfire-2.x/2.29-core205/ipfire-2.29-core205-x86_64.img.xz',
+      compression: 'xz',
+    },
+    qemu: {
+      ram: 1024,
+      cpus: 1,
+      adapters: 4,
+      adapterType: 'virtio-net-pci',
+      hdaInterface: 'virtio',
+      format: 'raw',
+      consoleType: 'vnc',
       options: [],
     },
   },

@@ -156,20 +156,21 @@ async function runInstall(
         throw new AppError('BAD_REQUEST', 'the downloaded appliance image is empty');
       }
       let sha256 = downloaded.sha256;
-      if (app.image.compression === 'bzip2') {
-        // Mirrors only ship the image compressed; unpack it in place and hash
-        // the unpacked bytes, since dedupe and stageBlob work on the real image.
-        const bzip2 = Bun.which('bzip2');
-        if (!bzip2) {
+      if (app.image.compression) {
+        // Mirrors ship some images compressed; unpack in place and hash the
+        // unpacked bytes, since dedupe and stageBlob work on the real image.
+        // Each tool refuses foreign suffixes, so rename first.
+        const suffix = { bzip2: '.bz2', gzip: '.gz', xz: '.xz' }[app.image.compression];
+        const tool = Bun.which(app.image.compression === 'gzip' ? 'gzip' : app.image.compression);
+        if (!tool) {
           throw new AppError(
             'BINARY_MISSING',
-            'bzip2 is required on the controller to unpack this appliance image',
+            `${app.image.compression} is required on the controller to unpack this appliance image`,
           );
         }
-        // bzip2 refuses files without its own suffix; rename, unpack in place.
-        const compressed = `${temp}.bz2`;
+        const compressed = `${temp}${suffix}`;
         await rename(temp, compressed);
-        const unpacked = Bun.spawn([bzip2, '-f', '-d', compressed], {
+        const unpacked = Bun.spawn([tool, '-f', '-d', compressed], {
           stdout: 'pipe',
           stderr: 'pipe',
         });

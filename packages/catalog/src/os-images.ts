@@ -60,6 +60,49 @@ export const catalogOsImages: CatalogOsImage[] = [
       'https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.2-x86_64-cloudinit-r2.qcow2',
     filename: 'alpine-3.24.2-x86_64-cloudinit-r2.qcow2',
   },
+  {
+    id: '0b000000-0000-4000-8000-000000000005',
+    name: 'debian-13-genericcloud-arm64',
+    family: 'debian',
+    release: '13 (trixie)',
+    arch: 'arm64',
+    description: 'Debian 13 cloud image with cloud-init, 64-bit ARM. For arm64 computes.',
+    sourceUrl:
+      'https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-arm64.qcow2',
+    filename: 'debian-13-genericcloud-arm64.qcow2',
+  },
+  {
+    id: '0b000000-0000-4000-8000-000000000006',
+    name: 'ubuntu-24.04-server-cloudimg-arm64',
+    family: 'ubuntu',
+    release: '24.04 LTS (noble)',
+    arch: 'arm64',
+    description: 'Ubuntu 24.04 LTS cloud image with cloud-init, 64-bit ARM. For arm64 computes.',
+    sourceUrl: 'https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img',
+    filename: 'noble-server-cloudimg-arm64.img',
+  },
+  {
+    id: '0b000000-0000-4000-8000-000000000007',
+    name: 'rocky-9-genericcloud-arm64',
+    family: 'rocky',
+    release: '9 (latest)',
+    arch: 'arm64',
+    description: 'Rocky Linux 9 Generic Cloud image with cloud-init, 64-bit ARM.',
+    sourceUrl:
+      'https://download.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base.latest.aarch64.qcow2',
+    filename: 'Rocky-9-GenericCloud-Base.latest.aarch64.qcow2',
+  },
+  {
+    id: '0b000000-0000-4000-8000-000000000008',
+    name: 'alpine-3.24-cloudinit-arm64',
+    family: 'alpine',
+    release: '3.24.2',
+    arch: 'arm64',
+    description: 'Alpine Linux cloud image with cloud-init, 64-bit ARM.',
+    sourceUrl:
+      'https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/cloud/alpine-3.24.2-aarch64-cloudinit-r2.qcow2',
+    filename: 'alpine-3.24.2-aarch64-cloudinit-r2.qcow2',
+  },
 ];
 
 export interface DesktopRecipe {

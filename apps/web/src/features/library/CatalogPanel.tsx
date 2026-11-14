@@ -7,6 +7,7 @@ import {
   siDebian,
   siDocker,
   siLinux,
+  siOpenwrt,
   siOpnsense,
   type SimpleIcon,
 } from 'simple-icons/icons';
@@ -71,6 +72,7 @@ const BRAND_ICONS: Record<string, SimpleIcon> = {
   alpinelinux: siAlpinelinux,
   debian: siDebian,
   linux: siLinux,
+  openwrt: siOpenwrt,
   opnsense: siOpnsense,
   docker: siDocker,
 };
