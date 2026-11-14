@@ -61,7 +61,8 @@ For a packaged install:
    On Debian 13 it installs the host dependencies: the controller gets PostgreSQL plus a database
    and role, the agent gets QEMU, vpcs, tshark, nftables, xorriso, and a source-built ubridge.
    `bun run build` builds the same binaries locally in `dist/` for
-   `scripts/install.sh --binary-dir dist`.
+   `scripts/install.sh --binary-dir dist`. Re-running the script updates the install: it keeps the
+   environment files, skips dependencies, and restarts the services.
 2. `systemctl enable --now netlabor-controller`. Migrations run at startup; with
    `NB_ADMIN_PASSWORD` set, the first administrator account is created on the same start.
 3. In the UI, open **Computes → Add compute**. The dialog prints the agent token and its

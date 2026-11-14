@@ -75,4 +75,6 @@ It asks which roles to install and prompts for the settings it needs (public URL
 admin password, compute token, underlay). For scripted installs, pass flags:
 `--controller`, `--agent`, `--all`, `--yes`, `--skip-deps`, `--public-url`,
 `--admin-password`, `--database-url`, `--token`, `--with-docker`, `--with-nat`,
-`--version <tag|nightly>`; `scripts/install.sh --help` lists them all.
+`--version <tag|nightly>`; `scripts/install.sh --help` lists them all. Run the
+same command again to update: it detects the installed roles, keeps
+`/etc/netlabor/*.env`, skips dependency installation, and restarts the services.
