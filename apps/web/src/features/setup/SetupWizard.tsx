@@ -5,7 +5,7 @@
  */
 
 import { setupPresets, softwareCatalog } from '@netlabor/catalog';
-import type { Desktop, OsFamily } from '@netlabor/contract';
+import type { Desktop, JobRow, OsFamily } from '@netlabor/contract';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Field, Input, Select } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { client, orpc } from '../../lib/api.ts';
+import { trackOsDownload } from '../../lib/downloadToasts.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { DESKTOP_OPTIONS } from '../appliances/appliance-meta.ts';
 
@@ -473,9 +474,15 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
       const osImage = osRows.find((row) => row.id === track.osImageId);
       if (!osImage || osImage.imageId !== null || track.buildId !== null) continue;
       track.buildId = 'waiting-download';
-      void client.appliances.os.download({ id: osImage.id }).catch((error: unknown) => {
-        track.failed = messageOf(error);
-      });
+      void (async () => {
+        const job = await client.appliances.os
+          .download({ id: osImage.id })
+          .catch((error: unknown): JobRow | null => {
+            track.failed = messageOf(error);
+            return null;
+          });
+        if (job) trackOsDownload(job);
+      })();
     }
   }, [osImages.data]);
 
