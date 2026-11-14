@@ -1,7 +1,15 @@
 /** Appliance marketplace: browse the curated catalog and install entries. */
 
 import { useQuery } from '@tanstack/react-query';
-import { Check, Container, Download, Monitor, Network, Shield } from 'lucide-react';
+import { Check, Download, Monitor, Network, Shield } from 'lucide-react';
+import {
+  siAlpinelinux,
+  siDebian,
+  siDocker,
+  siLinux,
+  siOpnsense,
+  type SimpleIcon,
+} from 'simple-icons/icons';
 import { useState } from 'react';
 import { Badge } from '../../components/Badge.tsx';
 import { Loading } from '../../components/Page.tsx';
@@ -56,8 +64,35 @@ const CATALOG_ICONS: Record<string, typeof Network> = {
   pc: Monitor,
   router: Network,
   firewall: Shield,
-  docker: Container,
 };
+
+/** simple-icons brand marks keyed by the catalog's brandIcon slug. */
+const BRAND_ICONS: Record<string, SimpleIcon> = {
+  alpinelinux: siAlpinelinux,
+  debian: siDebian,
+  linux: siLinux,
+  opnsense: siOpnsense,
+  docker: siDocker,
+};
+
+function BrandIcon({ slug, fallback }: { slug: string | null; fallback: string }) {
+  const icon = slug !== null ? BRAND_ICONS[slug] : undefined;
+  if (icon) {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        className="size-3.5"
+        style={{ fill: `#${icon.hex}` }}
+        role="img"
+        aria-label={icon.title}
+      >
+        <path d={icon.path} />
+      </svg>
+    );
+  }
+  const Fallback = CATALOG_ICONS[fallback] ?? Monitor;
+  return <Fallback size={12} style={{ color: 'var(--color-copper)' }} aria-hidden />;
+}
 
   return (
     <div className="mt-4 flex flex-col gap-3">
@@ -108,10 +143,7 @@ const CATALOG_ICONS: Record<string, typeof Network> = {
                         style={{ background: 'var(--color-panel-sunken)' }}
                         aria-hidden
                       >
-                        {(() => {
-                          const Icon = CATALOG_ICONS[appliance.symbol] ?? Monitor;
-                          return <Icon size={12} style={{ color: 'var(--color-copper)' }} />;
-                        })()}
+                        <BrandIcon slug={appliance.brandIcon} fallback={appliance.symbol} />
                       </span>
                       <span className="text-[13px] font-medium">{appliance.name}</span>
                       <Badge tone={appliance.status === 'stable' ? 'up' : 'warn'}>

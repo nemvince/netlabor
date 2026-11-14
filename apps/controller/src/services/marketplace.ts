@@ -38,6 +38,7 @@ function toRow(app: MarketplaceAppliance, templateId: string | null): Marketplac
     imageFilename: app.image?.filename ?? null,
     sizeBytes: app.image?.sizeBytes ?? 0,
     registryFile: app.registryFile,
+    brandIcon: app.brandIcon,
     installed: templateId !== null,
     templateId,
   };
