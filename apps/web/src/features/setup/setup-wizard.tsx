@@ -16,6 +16,7 @@ import { client, orpc } from '../../lib/api.ts';
 import { trackOsDownload } from '../../lib/download-toasts.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { DESKTOP_OPTIONS } from '../appliances/appliance-meta.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 type Step = 'account' | 'environment' | 'presets' | 'progress';
 
@@ -148,15 +149,9 @@ export function SetupWizard() {
                   onChange={(event) => setConfirm(event.target.value)}
                 />
               </Field>
-              <button
-                type="button"
-                className="nb-button self-start"
-                data-variant="primary"
-                disabled={createAdmin.isPending}
-                onClick={submitAccount}
-              >
+              <Button type="button" disabled={createAdmin.isPending} onClick={submitAccount} className="self-start" variant="default" size="sm">
                 {createAdmin.isPending ? 'Creating…' : 'Create admin account'}
-              </button>
+              </Button>
             </div>
           </div>
         ) : null}
@@ -231,14 +226,9 @@ function EnvironmentStep({ onContinue }: { onContinue: () => void }) {
           </p>
         ) : null}
       </div>
-      <button
-        type="button"
-        className="nb-button mt-4 self-start"
-        data-variant="primary"
-        onClick={onContinue}
-      >
+      <Button type="button" onClick={onContinue} className="mt-4 self-start" variant="default" size="sm">
         Choose appliance presets <ArrowRight size={13} aria-hidden />
-      </button>
+      </Button>
     </div>
   );
 }
@@ -375,20 +365,11 @@ function PresetsStep({
         })}
       </div>
       <div className="mt-4 flex items-center gap-2">
-        <button
-          type="button"
-          className="nb-button"
-          data-variant="primary"
-          disabled={osImages.isPending}
-          onClick={() => {
-            if (selected.length === 0 && !confirm('Prepare nothing and finish setup?')) return;
-            onStarted();
-          }}
-        >
+        <Button type="button" disabled={osImages.isPending} onClick={() => { if (selected.length === 0 && !confirm('Prepare nothing and finish setup?')) return; onStarted(); }} variant="default" size="sm">
           {selected.length > 0
             ? `Prepare ${selected.length} image${selected.length === 1 ? '' : 's'}`
             : 'Skip — nothing to prepare'}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -552,14 +533,9 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
           title="Setup complete"
           hint="You skipped image preparation. Appliances can be built any time on the Library page."
         />
-        <button
-          type="button"
-          className="nb-button"
-          data-variant="primary"
-          onClick={() => void navigate({ to: '/', replace: true })}
-        >
+        <Button type="button" onClick={() => void navigate({ to: '/', replace: true })} variant="default" size="sm">
           Open netlabor <ArrowRight size={13} aria-hidden />
-        </button>
+        </Button>
       </div>
     );
   }
@@ -665,17 +641,7 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
           );
         })}
       </ul>
-      <button
-        type="button"
-        className="nb-button mt-4"
-        data-variant={allDone ? 'primary' : 'default'}
-        disabled={!allDone}
-        title={allDone ? undefined : 'Templates are still being created'}
-        onClick={() => {
-          void queryClient.invalidateQueries({ queryKey: orpc.templates.list.key() });
-          void navigate({ to: '/', replace: true });
-        }}
-      >
+      <Button type="button" disabled={!allDone} title={allDone ? undefined : 'Templates are still being created'} onClick={() => { void queryClient.invalidateQueries({ queryKey: orpc.templates.list.key() }); void navigate({ to: '/', replace: true }); }} className="mt-4" variant="outline" size="sm">
         {allDone ? (
           <>
             <Check size={13} aria-hidden /> Setup complete — open netlabor
@@ -683,7 +649,7 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
         ) : (
           'Preparing…'
         )}
-      </button>
+      </Button>
     </div>
   );
 }

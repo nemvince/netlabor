@@ -23,6 +23,7 @@ import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { DESKTOP_OPTIONS, familyLabel, suggestedBuildName } from './appliance-meta.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 /** Add or edit a cloud image entry in the global OS repository. */
 export function OsImageCreateDialog({
@@ -173,18 +174,12 @@ export function OsImageCreateDialog({
           />
         </Field>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy}
-            onClick={() => void save()}
-          >
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => void save()} variant="default" size="sm">
             {busy ? (editing ? 'Saving…' : 'Adding…') : editing ? 'Save changes' : 'Add entry'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -249,18 +244,12 @@ export function AdoptOsImageDialog({
           </p>
         ) : null}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy || !imageId}
-            onClick={() => void adopt()}
-          >
+          </Button>
+          <Button type="button" disabled={busy || !imageId} onClick={() => void adopt()} variant="default" size="sm">
             {busy ? 'Adopting…' : 'Adopt image'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -745,18 +734,12 @@ export function ApplianceBuildDialog({
           lab links with <strong>no uplink</strong>, so lab traffic stays isolated.
         </p>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy || readyOsImages.length === 0}
-            onClick={() => void create()}
-          >
+          </Button>
+          <Button type="button" disabled={busy || readyOsImages.length === 0} onClick={() => void create()} variant="default" size="sm">
             {busy ? 'Queuing…' : 'Start build'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -950,18 +933,12 @@ export function BuildTemplateDialog({
           controller refuses the create if the grant is missing.
         </p>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy}
-            onClick={() => void create()}
-          >
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => void create()} variant="default" size="sm">
             {busy ? 'Creating…' : 'Create template'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>

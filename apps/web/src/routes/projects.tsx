@@ -26,6 +26,7 @@ import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp } from '../lib/format.ts';
 import { queryClient } from '../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function refetchProjects() {
   void queryClient.invalidateQueries({ queryKey: orpc.projects.list.key() });
@@ -114,27 +115,15 @@ export function ProjectsPage() {
           <span className="flex items-center gap-2">
             {canWrite ? (
               <>
-                <button
-                  type="button"
-                  className="nb-button"
-                  onClick={() => {
-                    setApplyTarget(null);
-                    setApplyOpen(true);
-                  }}
-                >
+                <Button type="button" onClick={() => { setApplyTarget(null); setApplyOpen(true); }} variant="outline" size="sm">
                   <FileJson2 size={14} aria-hidden /> Apply manifest
-                </button>
-                <button type="button" className="nb-button" onClick={() => setImportOpen(true)}>
+                </Button>
+                <Button type="button" onClick={() => setImportOpen(true)} variant="outline" size="sm">
                   <Upload size={14} aria-hidden /> Import
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-variant="primary"
-                  onClick={() => setCreateOpen(true)}
-                >
+                </Button>
+                <Button type="button" onClick={() => setCreateOpen(true)} variant="default" size="sm">
                   <Plus size={14} aria-hidden /> New project
-                </button>
+                </Button>
               </>
             ) : null}
           </span>
@@ -204,14 +193,9 @@ export function ProjectsPage() {
             description="Create a project, or clear the search and status filters."
             action={
               canWrite ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-variant="primary"
-                  onClick={() => setCreateOpen(true)}
-                >
+                <Button type="button" onClick={() => setCreateOpen(true)} variant="default" size="sm">
                   <Plus size={14} aria-hidden /> New project
-                </button>
+                </Button>
               ) : null
             }
           />
@@ -283,124 +267,47 @@ export function ProjectsPage() {
                     <Td align="right">
                       <span className="inline-flex items-center gap-1">
                         {can('project.open') ? (
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
-                            title={isOpened ? `Close ${project.name}` : `Open ${project.name}`}
-                            aria-label={isOpened ? `Close ${project.name}` : `Open ${project.name}`}
-                            disabled={pending}
-                            onClick={() => {
-                              if (isOpened) closeProject.mutate({ id: project.id });
-                              else openProject.mutate({ id: project.id });
-                            }}
-                          >
+                          <Button type="button" title={isOpened ? `Close ${project.name}` : `Open ${project.name}`} aria-label={isOpened ? `Close ${project.name}` : `Open ${project.name}`} disabled={pending} onClick={() => { if (isOpened) closeProject.mutate({ id: project.id }); else openProject.mutate({ id: project.id }); }} variant="ghost" size="xs">
                             {isOpened ? (
                               <Square size={13} aria-hidden />
                             ) : (
                               <Play size={13} aria-hidden />
                             )}
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite ? (
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
-                            title={
-                              project.locked ? `Unlock ${project.name}` : `Lock ${project.name}`
-                            }
-                            aria-label={
-                              project.locked ? `Unlock ${project.name}` : `Lock ${project.name}`
-                            }
-                            disabled={pending}
-                            onClick={() => {
-                              if (project.locked) unlockProject.mutate({ id: project.id });
-                              else lockProject.mutate({ id: project.id });
-                            }}
-                          >
+                          <Button type="button" title={ project.locked ? `Unlock ${project.name}` : `Lock ${project.name}` } aria-label={ project.locked ? `Unlock ${project.name}` : `Lock ${project.name}` } disabled={pending} onClick={() => { if (project.locked) unlockProject.mutate({ id: project.id }); else lockProject.mutate({ id: project.id }); }} variant="ghost" size="xs">
                             {project.locked ? (
                               <Unlock size={13} aria-hidden />
                             ) : (
                               <Lock size={13} aria-hidden />
                             )}
-                          </button>
+                          </Button>
                         ) : null}
                         {can('project.export') ? (
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
-                            title={`Export ${project.name}`}
-                            aria-label={`Export ${project.name}`}
-                            disabled={
-                              exportState?.busy === true && exportState.projectId === project.id
-                            }
-                            onClick={() => void runExport(project.id)}
-                          >
+                          <Button type="button" title={`Export ${project.name}`} aria-label={`Export ${project.name}`} disabled={ exportState?.busy === true && exportState.projectId === project.id } onClick={() => void runExport(project.id)} variant="ghost" size="xs">
                             <Download size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite ? (
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
-                            title={`Duplicate ${project.name}`}
-                            aria-label={`Duplicate ${project.name}`}
-                            onClick={() => setDuplicate(project)}
-                          >
+                          <Button type="button" title={`Duplicate ${project.name}`} aria-label={`Duplicate ${project.name}`} onClick={() => setDuplicate(project)} variant="ghost" size="xs">
                             <Copy size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite ? (
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
-                            title={`Apply a manifest to ${project.name}`}
-                            aria-label={`Apply a manifest to ${project.name}`}
-                            onClick={() => {
-                              setApplyTarget(project);
-                              setApplyOpen(true);
-                            }}
-                          >
+                          <Button type="button" title={`Apply a manifest to ${project.name}`} aria-label={`Apply a manifest to ${project.name}`} onClick={() => { setApplyTarget(project); setApplyOpen(true); }} variant="ghost" size="xs">
                             <FileJson2 size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite || canMembers ? (
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
-                            title={`Settings for ${project.name}`}
-                            aria-label={`Settings for ${project.name}`}
-                            onClick={() => setSettingsTarget(project)}
-                          >
+                          <Button type="button" title={`Settings for ${project.name}`} aria-label={`Settings for ${project.name}`} onClick={() => setSettingsTarget(project)} variant="ghost" size="xs">
                             <Settings2 size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {can('project.delete') ? (
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
-                            title={`Delete ${project.name}`}
-                            aria-label={`Delete ${project.name}`}
-                            onClick={() => {
-                              remove.reset();
-                              setDeleteTarget(project);
-                            }}
-                          >
+                          <Button type="button" title={`Delete ${project.name}`} aria-label={`Delete ${project.name}`} onClick={() => { remove.reset(); setDeleteTarget(project); }} variant="ghost" size="xs">
                             <Trash2 size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                       </span>
                     </Td>

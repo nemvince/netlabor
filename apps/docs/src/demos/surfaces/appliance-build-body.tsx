@@ -2,6 +2,7 @@ import type { ComputeRow, OsImageRow } from '@netlabor/contract';
 import { ApplianceBuildDialog } from '@web/features/appliances/appliance-dialogs.tsx';
 import { useState } from 'react';
 import { computes as fixtureComputes, osImages as fixtureOsImages } from '../fixtures/workspace.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 export interface ApplianceBuildSurfaceProps {
   osImages?: OsImageRow[];
@@ -21,14 +22,9 @@ export default function ApplianceBuildSurface({
 
   return (
     <>
-      <button
-        type="button"
-        className="nb-button"
-        data-variant="primary"
-        onClick={() => setOpen(true)}
-      >
+      <Button type="button" onClick={() => setOpen(true)} variant="default" size="sm">
         New appliance build
-      </button>
+      </Button>
       {open ? (
         <ApplianceBuildDialog
           osImages={osImages}

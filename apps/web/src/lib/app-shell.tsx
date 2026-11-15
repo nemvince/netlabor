@@ -19,6 +19,7 @@ import { startDownloadTracking } from './download-toasts.ts';
 import { messageOf } from './errors.ts';
 import { queryClient } from './query-client.ts';
 import { versionLabel } from './version.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 type AppPath =
   | '/'
@@ -205,21 +206,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="nb-rule-label mt-0.5">control plane</div>
               </Link>
             )}
-            <button
-              type="button"
-              className="nb-button shrink-0"
-              data-size="sm"
-              data-variant="ghost"
-              aria-label={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              title={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              onClick={toggleRail}
-            >
+            <Button type="button" aria-label={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={toggleRail} className="shrink-0" variant="ghost" size="xs">
               {railCollapsed ? (
                 <PanelLeftOpen size={14} aria-hidden />
               ) : (
                 <PanelLeftClose size={14} aria-hidden />
               )}
-            </button>
+            </Button>
           </div>
           <nav className="flex flex-col py-1" aria-label="Main">
             {primaryItems.map((item) => (

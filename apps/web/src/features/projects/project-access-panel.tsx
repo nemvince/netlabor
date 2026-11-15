@@ -13,6 +13,7 @@ import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { useMe } from '../auth/use-me.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const grantSchema = z.object({
   subjectType: z.enum(['user', 'group']),
@@ -193,16 +194,9 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
               <option value={168}>7 days</option>
             </Select>
           </Field>
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="primary"
-            disabled={createLink.isPending}
-            onClick={() => createLink.mutate()}
-          >
+          <Button type="button" disabled={createLink.isPending} onClick={() => createLink.mutate()} variant="default" size="xs">
             {createLink.isPending ? 'Creating…' : 'Create link'}
-          </button>
+          </Button>
         </div>
         {createdLink ? (
           <div className="flex items-center gap-2">
@@ -212,9 +206,9 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
               value={`${window.location.origin}${createdLink.path}`}
               onFocus={(event) => event.currentTarget.select()}
             />
-            <button type="button" className="nb-button" data-size="sm" onClick={copyShareLink}>
+            <Button type="button" onClick={copyShareLink} variant="outline" size="xs">
               <Copy size={12} aria-hidden /> Copy
-            </button>
+            </Button>
           </div>
         ) : null}
         {shareLinks.isError ? (
@@ -229,16 +223,9 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
                 <span style={{ color: 'var(--color-ink-faint)' }}>
                   · {link.createdByName ?? 'unknown'}
                 </span>
-                <button
-                  type="button"
-                  className="nb-button ml-auto"
-                  data-size="sm"
-                  data-variant="ghost"
-                  disabled={revokeLink.isPending}
-                  onClick={() => revokeLink.mutate(link.id)}
-                >
+                <Button type="button" disabled={revokeLink.isPending} onClick={() => revokeLink.mutate(link.id)} className="ml-auto" variant="ghost" size="xs">
                   <Trash2 size={12} aria-hidden /> Revoke
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
@@ -295,18 +282,9 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
                   )}
                 </Td>
                 <Td align="right">
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    data-variant="ghost"
-                    disabled={pending}
-                    aria-label={`Remove grant for ${grant.subjectName}`}
-                    title={`Remove ${grant.subjectName}`}
-                    onClick={() => remove.mutate({ id: grant.id, projectId })}
-                  >
+                  <Button type="button" disabled={pending} aria-label={`Remove grant for ${grant.subjectName}`} title={`Remove ${grant.subjectName}`} onClick={() => remove.mutate({ id: grant.id, projectId })} variant="ghost" size="xs">
                     <Trash2 size={13} aria-hidden /> Remove
-                  </button>
+                  </Button>
                 </Td>
               </Tr>
             ))}
@@ -370,15 +348,9 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
           </Field>
         </div>
         <div className="flex items-center justify-end gap-2">
-          <button
-            type="submit"
-            className="nb-button"
-            data-size="sm"
-            data-variant="primary"
-            disabled={!canReadPeople || pending}
-          >
+          <Button type="submit" disabled={!canReadPeople || pending} variant="default" size="xs">
             {create.isPending ? 'Granting…' : 'Add grant'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

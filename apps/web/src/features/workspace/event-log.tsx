@@ -1,6 +1,7 @@
 import type { EventEnvelope } from '@netlabor/contract';
 import { EraserIcon as Eraser  } from '@phosphor-icons/react';
 import type { SseStatus } from './use-project-events.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const clock = new Intl.DateTimeFormat(undefined, {
   hour: '2-digit',
@@ -72,16 +73,9 @@ export function EventLog({
           {status === 'live' ? 'live' : status === 'connecting' ? 'connecting' : 'reconnecting'}
           <span style={{ color: 'var(--color-ink-faint)' }}>· {events.length} events</span>
         </span>
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          data-variant="ghost"
-          onClick={onClear}
-          disabled={events.length === 0}
-        >
+        <Button type="button" onClick={onClear} disabled={events.length === 0} variant="ghost" size="xs">
           <Eraser size={12} aria-hidden /> Clear
-        </button>
+        </Button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {events.length === 0 ? (

@@ -1,6 +1,7 @@
 import type { Privilege } from '@netlabor/contract';
 import { PrivilegeGrid } from '@web/components/privilege-grid.tsx';
 import { useState } from 'react';
+import { Button } from '@netlabor/ui/components/button';
 
 export interface RolePrivileges {
   name: string;
@@ -29,17 +30,9 @@ export default function PrivilegeRoles({ roles }: PrivilegeRolesProps) {
       <fieldset className="docs-stack" style={{ border: 0, padding: 0, margin: 0 }}>
         <legend className="sr-only">Built-in role</legend>
         {roles.map((entry) => (
-          <button
-            key={entry.name}
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant={entry.name === role.name ? 'primary' : undefined}
-            aria-pressed={entry.name === role.name}
-            onClick={() => setActive(entry.name)}
-          >
+          <Button key={entry.name} type="button" aria-pressed={entry.name === role.name} onClick={() => setActive(entry.name)} variant="outline" size="xs">
             {entry.name}
-          </button>
+          </Button>
         ))}
       </fieldset>
       <p className="docs-ui-status" style={{ maxWidth: 'none' }}>

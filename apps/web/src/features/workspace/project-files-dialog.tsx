@@ -12,6 +12,7 @@ import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { useMe } from '../auth/use-me.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function joinPath(directory: string, name: string): string {
   const clean = name.trim().replace(/^\/+/, '');
@@ -175,40 +176,19 @@ export function ProjectFilesDialog({
               {index > 0 ? (
                 <ChevronRight size={11} aria-hidden style={{ color: 'var(--color-ink-faint)' }} />
               ) : null}
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant={segment.path === directory ? 'primary' : 'ghost'}
-                onClick={() => openDirectory(segment.path)}
-                disabled={segment.path === directory}
-              >
+              <Button type="button" onClick={() => openDirectory(segment.path)} disabled={segment.path === directory} variant="outline" size="xs">
                 {segment.label}
-              </button>
+              </Button>
             </span>
           ))}
           {directory !== '' ? (
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              data-variant="ghost"
-              title="Go to the parent directory"
-              onClick={() => openDirectory(parentPath(directory))}
-            >
+            <Button type="button" title="Go to the parent directory" onClick={() => openDirectory(parentPath(directory))} variant="ghost" size="xs">
               <FolderUp size={12} aria-hidden /> Up
-            </button>
+            </Button>
           ) : null}
-          <button
-            type="button"
-            className="nb-button ml-auto"
-            data-size="sm"
-            aria-label="Reload files"
-            title="Reload files"
-            onClick={() => void files.refetch()}
-          >
+          <Button type="button" aria-label="Reload files" title="Reload files" onClick={() => void files.refetch()} className="ml-auto" variant="outline" size="xs">
             <RefreshCw size={12} aria-hidden />
-          </button>
+          </Button>
         </nav>
 
         <div className="grid min-h-0 grid-cols-[260px_1fr] gap-3">
@@ -289,16 +269,9 @@ export function ProjectFilesDialog({
                 }}
                 className="py-1 text-[11px]"
               />
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                disabled={!canRead || newName.trim() === '' || writeFile.isPending}
-                title="Create an empty file in this directory"
-                onClick={createFile}
-              >
+              <Button type="button" disabled={!canRead || newName.trim() === '' || writeFile.isPending} title="Create an empty file in this directory" onClick={createFile} variant="outline" size="xs">
                 <FilePlus2 size={12} aria-hidden />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -312,30 +285,13 @@ export function ProjectFilesDialog({
                 {selected === '' ? 'Choose a file to edit.' : selected}
               </span>
               {selected !== '' && canDelete ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  data-variant="ghost"
-                  disabled={deleteFile.isPending}
-                  aria-label={`Delete ${selected}`}
-                  title={`Delete ${selected}`}
-                  onClick={() => setDeleteTarget(selected)}
-                >
+                <Button type="button" disabled={deleteFile.isPending} aria-label={`Delete ${selected}`} title={`Delete ${selected}`} onClick={() => setDeleteTarget(selected)} variant="ghost" size="xs">
                   <Trash2 size={12} aria-hidden /> Delete
-                </button>
+                </Button>
               ) : null}
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="primary"
-                disabled={!canRead || selected === '' || !dirty || writeFile.isPending}
-                title={dirty ? 'Write the editor contents to this file' : 'No unsaved changes'}
-                onClick={() => writeFile.mutate({ projectId, path: selected, content: draft })}
-              >
+              <Button type="button" disabled={!canRead || selected === '' || !dirty || writeFile.isPending} title={dirty ? 'Write the editor contents to this file' : 'No unsaved changes'} onClick={() => writeFile.mutate({ projectId, path: selected, content: draft })} variant="default" size="xs">
                 <Save size={12} aria-hidden /> {writeFile.isPending ? 'Saving…' : 'Save'}
-              </button>
+              </Button>
             </div>
             {!canRead ? (
               <Notice tone="info">

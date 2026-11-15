@@ -22,6 +22,7 @@ import {
 } from './ipv4.ts';
 import { NetworksTool, RememberNetworkButton } from './network-book.tsx';
 import { TOOL_TABS, type ToolTab } from './tool-tabs.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -314,34 +315,14 @@ function VlsmPlanner() {
                 spellCheck={false}
                 onChange={(event) => update(requirement.id, { request: event.target.value })}
               />
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="ghost"
-                aria-label={`Remove ${requirement.name || 'requirement'}`}
-                title="Remove requirement"
-                onClick={() =>
-                  setRequirements((current) => current.filter((row) => row.id !== requirement.id))
-                }
-              >
+              <Button type="button" aria-label={`Remove ${requirement.name || 'requirement'}`} title="Remove requirement" onClick={() => setRequirements((current) => current.filter((row) => row.id !== requirement.id)) } variant="ghost" size="xs">
                 <Trash2 size={12} aria-hidden />
-              </button>
+              </Button>
             </div>
           ))}
-          <button
-            type="button"
-            className="nb-button mt-1 self-start"
-            data-size="sm"
-            onClick={() =>
-              setRequirements((current) => [
-                ...current,
-                { id: crypto.randomUUID(), name: '', request: '' },
-              ])
-            }
-          >
+          <Button type="button" onClick={() => setRequirements((current) => [ ...current, { id: crypto.randomUUID(), name: '', request: '' }, ]) } className="mt-1 self-start" variant="outline" size="xs">
             <Plus size={12} aria-hidden /> Add requirement
-          </button>
+          </Button>
         </div>
       </Controls>
       {plan?.errors.length ? (
@@ -530,17 +511,9 @@ function OverlapCheck() {
       description="Test whether two CIDR blocks overlap or contain each other."
       narrow
       actions={
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          onClick={() => {
-            setLeftInput(rightInput);
-            setRightInput(leftInput);
-          }}
-        >
+        <Button type="button" onClick={() => { setLeftInput(rightInput); setRightInput(leftInput); }} variant="outline" size="xs">
           <ArrowLeftRight size={12} aria-hidden /> Swap A/B
-        </button>
+        </Button>
       }
     >
       <Controls>

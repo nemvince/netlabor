@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { Page } from '../components/page.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 export function NotFoundPage() {
   return (
@@ -10,9 +11,9 @@ export function NotFoundPage() {
         <p className="mt-2 max-w-prose text-[13px]" style={{ color: 'var(--color-ink-dim)' }}>
           The route you asked for is not part of this controller.
         </p>
-        <Link to="/" className="nb-button mt-5" style={{ textDecoration: 'none' }}>
+        <Button variant="outline" size="sm" className="mt-5" render={<Link to="/" />}>
           Back to control plane
-        </Link>
+        </Button>
       </div>
     </Page>
   );

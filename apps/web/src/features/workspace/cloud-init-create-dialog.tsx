@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { Field, Input, Select } from '../../components/field.tsx';
 import { Notice } from '../../components/notice.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 export interface CloudInitCredentials {
   cloudInitUser: string;
@@ -167,12 +168,12 @@ export function CloudInitCreateDialog({
         {error ? <Notice tone="error">{error}</Notice> : null}
       </div>
       <DialogFooter>
-        <button type="button" className="nb-button" onClick={onClose}>
+        <Button type="button" onClick={onClose} variant="outline" size="sm">
           Cancel
-        </button>
-        <button type="button" className="nb-button" data-variant="primary" onClick={submit}>
+        </Button>
+        <Button type="button" onClick={submit} variant="default" size="sm">
           Create node
-        </button>
+        </Button>
       </DialogFooter>
     </Dialog>
   );

@@ -25,6 +25,7 @@ import { NodeConsolePanel } from './node-console-panel.tsx';
 import { NodeFilesPanel } from './node-files-panel.tsx';
 import { QemuDisksPanel } from './qemu-disks-panel.tsx';
 import type { NodeUpdateInput } from './schema-types.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 type NodeTab = 'properties' | 'ports' | 'files' | 'console';
 type NodeAction = 'start' | 'stop' | 'suspend' | 'reload';
@@ -457,9 +458,9 @@ export function Inspector({
                   >
                     Advanced properties (JSON)
                   </summary>
-                  <textarea
+                  <Textarea
                     aria-label="Node properties JSON"
-                    className="nb-field tabular mt-1 min-h-40 resize-y font-mono text-[11px] leading-[1.5]"
+                    className="tabular mt-1 min-h-40 resize-y font-mono text-[11px] leading-[1.5]"
                     value={advanced}
                     spellCheck={false}
                     disabled={!canUpdate}
@@ -477,34 +478,9 @@ export function Inspector({
                       {advancedError}
                     </p>
                   ) : null}
-                  <button
-                    type="button"
-                    className="nb-button mt-1"
-                    data-size="sm"
-                    disabled={!canUpdate}
-                    onClick={() => {
-                      let parsed: unknown;
-                      try {
-                        parsed = JSON.parse(advanced);
-                      } catch {
-                        setAdvancedError('The properties are not valid JSON.');
-                        return;
-                      }
-                      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-                        setAdvancedError('The properties must be a JSON object.');
-                        return;
-                      }
-                      setAdvancedError(null);
-                      setProps(parsed as Record<string, unknown>);
-                      onUpdateNode(
-                        node.id,
-                        { properties: parsed as Record<string, unknown> },
-                        'properties',
-                      );
-                    }}
-                  >
+                  <Button type="button" disabled={!canUpdate} onClick={() => { let parsed: unknown; try { parsed = JSON.parse(advanced); } catch { setAdvancedError('The properties are not valid JSON.'); return; } if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) { setAdvancedError('The properties must be a JSON object.'); return; } setAdvancedError(null); setProps(parsed as Record<string, unknown>); onUpdateNode( node.id, { properties: parsed as Record<string, unknown> }, 'properties', ); }} className="mt-1" variant="outline" size="xs">
                     Save advanced JSON
-                  </button>
+                  </Button>
                 </details>
                 <div
                   className="sticky bottom-0 -mx-3 mt-1 border-t px-3 py-2"
@@ -513,15 +489,9 @@ export function Inspector({
                     background: 'var(--color-panel)',
                   }}
                 >
-                  <button
-                    type="submit"
-                    className="nb-button w-full"
-                    data-size="sm"
-                    data-variant="primary"
-                    disabled={!canUpdate || form.formState.isSubmitting}
-                  >
+                  <Button type="submit" disabled={!canUpdate || form.formState.isSubmitting} className="w-full" variant="default" size="xs">
                     <Save size={12} aria-hidden /> Save changes
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : tab === 'ports' ? (
@@ -532,15 +502,9 @@ export function Inspector({
                 >
                   <div className="mb-1.5 flex items-center justify-between gap-2">
                     <span className="nb-rule-label">Port settings</span>
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-size="sm"
-                      disabled={!canUpdate}
-                      onClick={savePorts}
-                    >
+                    <Button type="button" disabled={!canUpdate} onClick={savePorts} variant="outline" size="xs">
                       <Save size={12} aria-hidden /> Save ports
-                    </button>
+                    </Button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <Field label="First port name" htmlFor="port-first-name">
@@ -679,25 +643,13 @@ export function Inspector({
               )}
             </div>
             <div className="flex flex-wrap gap-1">
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="primary"
-                onClick={() => onOpenLink(link.id)}
-              >
+              <Button type="button" onClick={() => onOpenLink(link.id)} variant="default" size="xs">
                 Filters &amp; capture
-              </button>
+              </Button>
               {canLinkWrite ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  data-variant="danger"
-                  onClick={() => onDeleteLink(link)}
-                >
+                <Button type="button" onClick={() => onDeleteLink(link)} variant="destructive" size="xs">
                   Delete link
-                </button>
+                </Button>
               ) : null}
             </div>
             <p className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
@@ -731,15 +683,9 @@ export function Inspector({
             />
           ) : null}
           {can('drawing.write') && !projectLocked ? (
-            <button
-              type="button"
-              className="nb-button mt-2"
-              data-size="sm"
-              data-variant="danger"
-              onClick={() => onDeleteDrawing(drawing)}
-            >
+            <Button type="button" onClick={() => onDeleteDrawing(drawing)} className="mt-2" variant="destructive" size="xs">
               Delete drawing
-            </button>
+            </Button>
           ) : null}
         </div>
       ) : (
@@ -805,16 +751,9 @@ function DrawingTextEditor({
         value={text}
         onChange={(event) => setText(event.target.value)}
       />
-      <button
-        type="button"
-        className="nb-button self-end"
-        data-size="sm"
-        data-variant="primary"
-        disabled={!dirty}
-        onClick={() => onSave(text)}
-      >
+      <Button type="button" disabled={!dirty} onClick={() => onSave(text)} className="self-end" variant="default" size="xs">
         <Save size={12} aria-hidden /> Save text
-      </button>
+      </Button>
     </div>
   );
 }

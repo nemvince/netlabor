@@ -15,6 +15,7 @@ import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { triggerDownload, waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const snapshotSchema = z.object({
   name: z.string().min(1, 'enter a snapshot name').max(128, 'use at most 128 characters'),
@@ -173,9 +174,9 @@ export function SnapshotsDialog({
               />
             </Field>
           </div>
-          <button type="submit" className="nb-button" data-variant="primary" disabled={busy}>
+          <Button type="submit" disabled={busy} variant="default" size="sm">
             <Camera size={13} aria-hidden /> {busy ? 'Working…' : 'Create snapshot'}
-          </button>
+          </Button>
         </form>
 
         {snapshots.isPending ? (
@@ -221,52 +222,20 @@ export function SnapshotsDialog({
                   </Td>
                   <Td align="right">
                     <span className="inline-flex items-center gap-1">
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        data-variant="ghost"
-                        title={`Restore ${snapshot.name}`}
-                        aria-label={`Restore ${snapshot.name}`}
-                        disabled={busy}
-                        onClick={() => void restoreSnapshot(snapshot.id, snapshot.name)}
-                      >
+                      <Button type="button" title={`Restore ${snapshot.name}`} aria-label={`Restore ${snapshot.name}`} disabled={busy} onClick={() => void restoreSnapshot(snapshot.id, snapshot.name)} variant="ghost" size="xs">
                         <RotateCcw size={12} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        data-variant="ghost"
-                        title={`Download ${snapshot.name}`}
-                        aria-label={`Download ${snapshot.name}`}
-                        onClick={() => void downloadSnapshot(snapshot.id)}
-                      >
+                      </Button>
+                      <Button type="button" title={`Download ${snapshot.name}`} aria-label={`Download ${snapshot.name}`} onClick={() => void downloadSnapshot(snapshot.id)} variant="ghost" size="xs">
                         <Download size={12} aria-hidden />
-                      </button>
+                      </Button>
                       {deleteConfirmId === snapshot.id ? (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="danger"
-                          disabled={remove.isPending}
-                          onClick={() => remove.mutate({ id: snapshot.id })}
-                        >
+                        <Button type="button" disabled={remove.isPending} onClick={() => remove.mutate({ id: snapshot.id })} variant="destructive" size="xs">
                           Confirm
-                        </button>
+                        </Button>
                       ) : (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="ghost"
-                          title={`Delete ${snapshot.name}`}
-                          aria-label={`Delete ${snapshot.name}`}
-                          onClick={() => setDeleteConfirmId(snapshot.id)}
-                        >
+                        <Button type="button" title={`Delete ${snapshot.name}`} aria-label={`Delete ${snapshot.name}`} onClick={() => setDeleteConfirmId(snapshot.id)} variant="ghost" size="xs">
                           <Trash2 size={12} aria-hidden />
-                        </button>
+                        </Button>
                       )}
                     </span>
                   </Td>
@@ -276,9 +245,9 @@ export function SnapshotsDialog({
           </Table>
         )}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>

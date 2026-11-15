@@ -19,6 +19,7 @@ import { Field, Input, Select, Textarea } from '../../components/field.tsx';
 import { ImagePicker } from '../../components/image-picker.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 export interface PropertyField {
   /** Supports dotted paths for nested properties, e.g. `disks.hda.imageId`. */
@@ -268,15 +269,9 @@ function PortsMappingEditor({
     >
       <div className="flex items-center justify-between gap-2">
         <span className="nb-rule-label">{field.label}</span>
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          disabled={disabled}
-          onClick={() => onChange([...rows, blankPort(kind, rows.length)])}
-        >
+        <Button type="button" disabled={disabled} onClick={() => onChange([...rows, blankPort(kind, rows.length)])} variant="outline" size="xs">
           <Plus size={12} aria-hidden /> Add port
-        </button>
+        </Button>
       </div>
       {field.hint ? (
         <p className="text-[10px] leading-[1.5]" style={PORT_LABEL_STYLE}>
@@ -417,17 +412,9 @@ function PortsMappingEditor({
               </>
             ) : null}
             <div className="col-span-2 flex justify-end">
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="ghost"
-                aria-label={`Remove port ${index + 1}`}
-                disabled={disabled}
-                onClick={() => onChange(rows.filter((_, position) => position !== index))}
-              >
+              <Button type="button" aria-label={`Remove port ${index + 1}`} disabled={disabled} onClick={() => onChange(rows.filter((_, position) => position !== index))} variant="ghost" size="xs">
                 <Trash2 size={12} aria-hidden /> Remove
-              </button>
+              </Button>
             </div>
           </div>
         );

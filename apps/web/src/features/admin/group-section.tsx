@@ -17,6 +17,7 @@ import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const groupSchema = z.object({
   name: z
@@ -118,12 +119,12 @@ function GroupDialog({
           <Textarea id="group-description" rows={3} {...form.register('description')} />
         </Field>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button type="submit" className="nb-button" data-variant="primary" disabled={pending}>
+          </Button>
+          <Button type="submit" disabled={pending} variant="default" size="sm">
             {pending ? 'Saving…' : editing ? 'Save group' : 'Create group'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -155,15 +156,10 @@ export function GroupsSection({ canWrite }: { canWrite: boolean }) {
       description="Membership is edited in each person's user dialog. Group names appear in project grants."
       actions={
         canWrite ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => setDialog({})}
-          >
+          <Button type="button" onClick={() => setDialog({})} variant="default" size="sm">
             <Plus size={14} aria-hidden />
             Create group
-          </button>
+          </Button>
         ) : null
       }
     >
@@ -178,14 +174,9 @@ export function GroupsSection({ canWrite }: { canWrite: boolean }) {
           description="Create a group to grant several people the same project role, then add people to it from their user dialog."
           action={
             canWrite ? (
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                onClick={() => setDialog({})}
-              >
+              <Button type="button" onClick={() => setDialog({})} variant="default" size="sm">
                 Create group
-              </button>
+              </Button>
             ) : undefined
           }
         />
@@ -217,31 +208,12 @@ export function GroupsSection({ canWrite }: { canWrite: boolean }) {
                 <Td align="right">
                   {canWrite ? (
                     <span className="inline-flex items-center gap-0.5">
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-variant="ghost"
-                        data-size="sm"
-                        aria-label={`Edit ${group.name}`}
-                        title="Edit group"
-                        onClick={() => setDialog({ group })}
-                      >
+                      <Button type="button" aria-label={`Edit ${group.name}`} title="Edit group" onClick={() => setDialog({ group })} variant="ghost" size="xs">
                         <Pencil size={13} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-variant="ghost"
-                        data-size="sm"
-                        aria-label={`Delete ${group.name}`}
-                        title="Delete group"
-                        onClick={() => {
-                          remove.reset();
-                          setDeleteTarget(group);
-                        }}
-                      >
+                      </Button>
+                      <Button type="button" aria-label={`Delete ${group.name}`} title="Delete group" onClick={() => { remove.reset(); setDeleteTarget(group); }} variant="ghost" size="xs">
                         <Trash size={13} aria-hidden />
-                      </button>
+                      </Button>
                     </span>
                   ) : (
                     <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>

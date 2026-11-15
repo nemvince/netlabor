@@ -21,6 +21,7 @@ import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 interface AssignmentOption {
   id: string;
@@ -230,17 +231,12 @@ function CreateUserDialog({
           emptyText="No groups exist yet."
         />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={createUser.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={createUser.isPending} variant="default" size="sm">
             {createUser.isPending ? 'Creating…' : 'Create user'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -360,17 +356,12 @@ function EditUserDialog({
         />
         <LinkedIdentities userId={user.id} />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={updateUser.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={updateUser.isPending} variant="default" size="sm">
             {updateUser.isPending ? 'Saving…' : 'Save changes'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -455,17 +446,12 @@ function SetPasswordDialog({
           />
         </Field>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={setPassword.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={setPassword.isPending} variant="default" size="sm">
             {setPassword.isPending ? 'Setting…' : 'Set password'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -533,15 +519,10 @@ export function UsersAdminPage() {
               wrapperStyle={{ width: 220 }}
             />
             {canWrite ? (
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                onClick={() => setDialog({ mode: 'create' })}
-              >
+              <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
                 <Plus size={14} aria-hidden />
                 Create user
-              </button>
+              </Button>
             ) : null}
           </>
         }
@@ -563,14 +544,9 @@ export function UsersAdminPage() {
             }
             action={
               canWrite ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-variant="primary"
-                  onClick={() => setDialog({ mode: 'create' })}
-                >
+                <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
                   Create user
-                </button>
+                </Button>
               ) : undefined
             }
           />
@@ -626,39 +602,15 @@ export function UsersAdminPage() {
                   <Td align="right">
                     {canWrite ? (
                       <span className="inline-flex items-center gap-0.5">
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-variant="ghost"
-                          data-size="sm"
-                          aria-label={`Edit ${user.username}`}
-                          title="Edit user"
-                          onClick={() => setDialog({ mode: 'edit', user })}
-                        >
+                        <Button type="button" aria-label={`Edit ${user.username}`} title="Edit user" onClick={() => setDialog({ mode: 'edit', user })} variant="ghost" size="xs">
                           <Pencil size={13} aria-hidden />
-                        </button>
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-variant="ghost"
-                          data-size="sm"
-                          aria-label={`Set password for ${user.username}`}
-                          title="Set password"
-                          onClick={() => setDialog({ mode: 'password', user })}
-                        >
+                        </Button>
+                        <Button type="button" aria-label={`Set password for ${user.username}`} title="Set password" onClick={() => setDialog({ mode: 'password', user })} variant="ghost" size="xs">
                           <KeyRound size={13} aria-hidden />
-                        </button>
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-variant="ghost"
-                          data-size="sm"
-                          aria-label={`Delete ${user.username}`}
-                          title="Delete user"
-                          onClick={() => setDeleteTarget(user)}
-                        >
+                        </Button>
+                        <Button type="button" aria-label={`Delete ${user.username}`} title="Delete user" onClick={() => setDeleteTarget(user)} variant="ghost" size="xs">
                           <Trash size={13} aria-hidden />
-                        </button>
+                        </Button>
                       </span>
                     ) : (
                       <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>

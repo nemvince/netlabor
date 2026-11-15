@@ -9,6 +9,7 @@ import { toast } from '../../components/toast.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const SAMPLE = {
   nodes: [{ name: 'sw1', template: 'Ethernet switch' }],
@@ -129,19 +130,13 @@ export function ApplyManifestDialog({
           </Field>
         )}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={apply.isPending || result !== null}
-            onClick={submit}
-          >
+          </Button>
+          <Button type="button" disabled={apply.isPending || result !== null} onClick={submit} variant="default" size="sm">
             <FileJson2 size={13} aria-hidden />
             {apply.isPending ? 'Applying…' : 'Apply manifest'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>

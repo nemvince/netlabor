@@ -16,6 +16,7 @@ import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { useMe } from '../auth/use-me.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const templateSchema = z.object({
   name: z.string().min(1, 'enter a template name').max(128, 'use at most 128 characters'),
@@ -161,46 +162,17 @@ export function ProjectTemplatesDialog({
                   <Td mono>{formatStamp(template.createdAt)}</Td>
                   <Td align="right">
                     <span className="flex items-center justify-end gap-1">
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        data-variant="ghost"
-                        disabled={!canWrite || pending}
-                        title="Create a project from this template"
-                        onClick={() => {
-                          setApplyTemplateId(template.id);
-                          setApplyName(template.name);
-                          setError(null);
-                          setNotice(null);
-                        }}
-                      >
+                      <Button type="button" disabled={!canWrite || pending} title="Create a project from this template" onClick={() => { setApplyTemplateId(template.id); setApplyName(template.name); setError(null); setNotice(null); }} variant="ghost" size="xs">
                         Use
-                      </button>
+                      </Button>
                       {deleteConfirmId === template.id ? (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="danger"
-                          disabled={pending}
-                          onClick={() => remove.mutate({ id: template.id })}
-                        >
+                        <Button type="button" disabled={pending} onClick={() => remove.mutate({ id: template.id })} variant="destructive" size="xs">
                           Confirm delete
-                        </button>
+                        </Button>
                       ) : (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="ghost"
-                          disabled={!canWrite || pending}
-                          title={`Delete ${template.name}`}
-                          aria-label={`Delete ${template.name}`}
-                          onClick={() => setDeleteConfirmId(template.id)}
-                        >
+                        <Button type="button" disabled={!canWrite || pending} title={`Delete ${template.name}`} aria-label={`Delete ${template.name}`} onClick={() => setDeleteConfirmId(template.id)} variant="ghost" size="xs">
                           <Trash2 size={12} aria-hidden />
-                        </button>
+                        </Button>
                       )}
                     </span>
                   </Td>
@@ -238,15 +210,9 @@ export function ProjectTemplatesDialog({
             />
           </Field>
           <div className="flex justify-end">
-            <button
-              type="submit"
-              className="nb-button"
-              data-size="sm"
-              data-variant="primary"
-              disabled={!canWrite || pending}
-            >
+            <Button type="submit" disabled={!canWrite || pending} variant="default" size="xs">
               {create.isPending ? 'Capturing…' : 'Create template'}
-            </button>
+            </Button>
           </div>
         </form>
 
@@ -286,15 +252,9 @@ export function ProjectTemplatesDialog({
                 onChange={(event) => setApplyName(event.target.value)}
               />
             </Field>
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              disabled={!canWrite || pending || applyTemplateId === ''}
-              onClick={submitApply}
-            >
+            <Button type="button" disabled={!canWrite || pending || applyTemplateId === ''} onClick={submitApply} variant="outline" size="xs">
               {apply.isPending ? 'Creating…' : 'Create project'}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { useMe } from '../auth/use-me.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const markerSchema = z.object({
   name: z
@@ -231,36 +232,16 @@ export function LinkMarkersPanel({
                 </span>
                 {canWrite ? (
                   <span className="flex items-center gap-0.5">
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-size="sm"
-                      data-variant="ghost"
-                      disabled={busy !== null}
-                      title={marker.paused ? 'Resume marker' : 'Pause marker'}
-                      aria-label={marker.paused ? `Resume ${marker.name}` : `Pause ${marker.name}`}
-                      onClick={() => void togglePaused(marker)}
-                    >
+                    <Button type="button" disabled={busy !== null} title={marker.paused ? 'Resume marker' : 'Pause marker'} aria-label={marker.paused ? `Resume ${marker.name}` : `Pause ${marker.name}`} onClick={() => void togglePaused(marker)} variant="ghost" size="xs">
                       {marker.paused ? (
                         <Play size={11} aria-hidden />
                       ) : (
                         <Pause size={11} aria-hidden />
                       )}
-                    </button>
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-size="sm"
-                      data-variant="ghost"
-                      title="Delete marker"
-                      aria-label={`Delete ${marker.name}`}
-                      onClick={() => {
-                        setDeleteError(null);
-                        setDeleteTarget(marker);
-                      }}
-                    >
+                    </Button>
+                    <Button type="button" title="Delete marker" aria-label={`Delete ${marker.name}`} onClick={() => { setDeleteError(null); setDeleteTarget(marker); }} variant="ghost" size="xs">
                       <Trash2 size={11} aria-hidden />
-                    </button>
+                    </Button>
                   </span>
                 ) : null}
               </li>
@@ -301,7 +282,7 @@ export function LinkMarkersPanel({
             <input
               id="marker-color"
               type="color"
-              className="nb-field h-8 w-16 p-0.5"
+              className="h-8 w-16 p-0.5"
               value={draft.color}
               onChange={(event) =>
                 setDraft((current) => ({ ...current, color: event.target.value }))
@@ -337,16 +318,9 @@ export function LinkMarkersPanel({
             </Select>
           </Field>
           <div className="flex items-end">
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              data-variant="primary"
-              disabled={busy !== null}
-              onClick={() => void createMarker()}
-            >
+            <Button type="button" disabled={busy !== null} onClick={() => void createMarker()} variant="default" size="xs">
               <Plus size={12} aria-hidden /> {busy === 'create' ? 'Creating…' : 'Add marker'}
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

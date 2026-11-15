@@ -2,6 +2,7 @@ import type { NodeRow } from '@netlabor/contract';
 import { ConnectPortMenu } from '@web/features/workspace/connect-port-menu.tsx';
 import { useEffect, useRef, useState } from 'react';
 import { links as fixtureLinks, nodeByName } from '../fixtures/workspace.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 export interface PortPickerSurfaceProps {
   /** Fixture node whose port list opens in the menu. */
@@ -66,17 +67,9 @@ export default function PortPickerSurface({
             : `${claimed.map((port) => port.name).join(', ')} linked`}
         </span>
       </div>
-      <button
-        ref={trigger}
-        type="button"
-        className="nb-button"
-        data-variant="primary"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={openMenu}
-      >
+      <Button ref={trigger} type="button" aria-haspopup="dialog" aria-expanded={open} onClick={openMenu} variant="default" size="sm">
         Choose a port
-      </button>
+      </Button>
       <p className="docs-ui-status" role="status" aria-live="polite">
         {selected ? (
           <>

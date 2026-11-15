@@ -118,29 +118,29 @@ const headings = [
 
     <h2 id="primitives">Primitive specimens</h2>
     <p>
-      Buttons carry variants through <code>data-variant</code> and size through
-      <code>data-size</code>. Fields are <code>.nb-field</code> on input, select, and textarea;
-      selects get an explicit chevron and readable popup options.
+      Buttons and fields are the shadcn/ui primitives from <code>@netlabor/ui</code>
+      (Base UI underneath), restyled through the semantic tokens below. No parallel
+      CSS component classes exist.
     </p>
   </div>
 
   <div class="docs-specimen" style="flex-direction: column; align-items: stretch; gap: 14px;">
     <div class="docs-stack">
-      <button class="nb-button" data-variant="primary" type="button">Primary action</button>
-      <button class="nb-button" type="button">Secondary</button>
-      <button class="nb-button" data-variant="danger" type="button">Danger</button>
-      <button class="nb-button" data-variant="ghost" type="button">Ghost</button>
-      <button class="nb-button" data-size="sm" type="button">Small</button>
-      <button class="nb-button" type="button" disabled>Disabled</button>
+      <button class="inline-flex h-7 items-center justify-center gap-1.5 rounded-sm px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary bg-primary text-primary-foreground hover:bg-primary/80" type="button">Primary action</button>
+      <button class="inline-flex h-7 items-center justify-center gap-1.5 rounded-sm px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary border border-border bg-background hover:bg-muted" type="button">Secondary</button>
+      <button class="inline-flex h-7 items-center justify-center gap-1.5 rounded-sm px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary bg-destructive text-primary-foreground hover:bg-destructive/80" type="button">Danger</button>
+      <button class="inline-flex h-7 items-center justify-center gap-1.5 rounded-sm px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary text-muted-foreground hover:bg-muted hover:text-foreground" type="button">Ghost</button>
+      <button class="inline-flex h-7 items-center justify-center gap-1.5 rounded-sm px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary border border-border bg-background hover:bg-muted h-6 px-2 text-xs" type="button">Small</button>
+      <button class="inline-flex h-7 items-center justify-center gap-1.5 rounded-sm px-2.5 text-[0.8rem] font-medium whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary border border-border bg-background hover:bg-muted opacity-50" type="button" disabled>Disabled</button>
     </div>
     <div class="docs-grid-2">
       <label class="flex flex-col gap-1">
         <span class="nb-rule-label">Text field</span>
-        <input class="nb-field" placeholder="Ethernet0/1" />
+        <input class="h-7 w-full rounded-sm border border-input bg-background px-2.5 text-[0.8rem] text-foreground outline-none focus-visible:border-primary" placeholder="Ethernet0/1" />
       </label>
       <label class="flex flex-col gap-1">
         <span class="nb-rule-label">Select</span>
-        <select class="nb-field">
+        <select class="h-7 w-full rounded-sm border border-input bg-background px-2.5 text-[0.8rem] text-foreground outline-none focus-visible:border-primary">
           <option>ethernet</option>
           <option>serial</option>
           <option>atm</option>

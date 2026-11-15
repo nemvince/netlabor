@@ -10,6 +10,7 @@ import { Loading } from '../../components/page.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 /** Base configuration editor: file list, plain text editor, and save feedback. */
 export function BaseConfigDialog({
@@ -142,16 +143,9 @@ export function BaseConfigDialog({
         <div className="flex min-h-0 flex-col gap-1">
           <div className="flex items-center justify-between">
             <span className="nb-rule-label">Files</span>
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              data-variant="ghost"
-              onClick={startNew}
-              title="New base configuration"
-            >
+            <Button type="button" onClick={startNew} title="New base configuration" variant="ghost" size="xs">
               <FilePlus2 size={12} aria-hidden /> New
-            </button>
+            </Button>
           </div>
           <div
             className="min-h-0 flex-1 overflow-y-auto rounded-[3px] border"
@@ -251,27 +245,15 @@ export function BaseConfigDialog({
           </div>
           {jsonError ? <Notice tone="warn">{jsonError}</Notice> : null}
           <DialogFooter>
-            <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+            <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
               Close
-            </button>
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="danger"
-              disabled={!existing || busy}
-              onClick={() => setDeleteOpen(true)}
-            >
+            </Button>
+            <Button type="button" disabled={!existing || busy} onClick={() => setDeleteOpen(true)} variant="destructive" size="sm">
               <Trash2 size={12} aria-hidden /> Delete
-            </button>
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              disabled={busy || jsonError !== null}
-              onClick={() => void save()}
-            >
+            </Button>
+            <Button type="button" disabled={busy || jsonError !== null} onClick={() => void save()} variant="default" size="sm">
               <Save size={12} aria-hidden /> {busy ? 'Saving…' : 'Save file'}
-            </button>
+            </Button>
           </DialogFooter>
         </div>
       </div>

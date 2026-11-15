@@ -12,6 +12,7 @@ import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 interface LinkFaultDefinition {
   id: string;
@@ -363,24 +364,12 @@ export function FaultsDialog({
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                disabled={busy || selectedCandidates.length === 0}
-                onClick={() => void inject()}
-              >
+              <Button type="button" disabled={busy || selectedCandidates.length === 0} onClick={() => void inject()} variant="default" size="sm">
                 <Zap size={13} aria-hidden /> {busy ? 'Applying…' : 'Inject faults'}
-              </button>
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="danger"
-                disabled={busy || activeFaults.length === 0}
-                onClick={() => void clearFaults()}
-              >
+              </Button>
+              <Button type="button" disabled={busy || activeFaults.length === 0} onClick={() => void clearFaults()} variant="destructive" size="sm">
                 <Trash2 size={13} aria-hidden /> Clear active faults
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -444,9 +433,9 @@ export function FaultsDialog({
               Link faults are reversible filters. Device faults run console commands and expose the
               recovery transcript.
             </span>
-            <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+            <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
               Close
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -527,15 +516,9 @@ function FaultTable({
                     cleared {formatStamp(fault.clearedAt)}
                   </span>
                 ) : (
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    disabled={busy}
-                    onClick={() => onClear(fault.id)}
-                  >
+                  <Button type="button" disabled={busy} onClick={() => onClear(fault.id)} variant="outline" size="xs">
                     <Play size={11} aria-hidden /> Recover
-                  </button>
+                  </Button>
                 )}
               </Td>
             </Tr>

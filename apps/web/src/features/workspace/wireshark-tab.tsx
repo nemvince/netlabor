@@ -10,6 +10,7 @@ import { Notice } from '../../components/notice.tsx';
 import { client } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { PacketAnalysisPanel } from './packet-analysis-panel.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 interface WireFrameRow {
   num: number;
@@ -565,18 +566,12 @@ function FollowDialog({
           </div>
         ) : null}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={pending || filter.trim() === ''}
-            onClick={() => onRun(protocol, filter.trim())}
-          >
+          </Button>
+          <Button type="button" disabled={pending || filter.trim() === ''} onClick={() => onRun(protocol, filter.trim())} variant="default" size="sm">
             {pending ? 'Following…' : 'Follow'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -924,46 +919,21 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
           ))}
         </span>
         <span className="ml-auto flex items-center gap-1">
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="ghost"
-            title="Reload frames"
-            aria-label="Reload frames"
-            disabled={session !== 'live'}
-            onClick={() => void refresh()}
-          >
+          <Button type="button" title="Reload frames" aria-label="Reload frames" disabled={session !== 'live'} onClick={() => void refresh()} variant="ghost" size="xs">
             <RefreshCw size={12} aria-hidden />
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="ghost"
-            title="Follow stream"
-            aria-label="Follow stream"
-            disabled={session !== 'live'}
-            onClick={() => {
-              setFollowResult(null);
-              setFollowError(null);
-              setFollowOpen(true);
-            }}
-          >
+          </Button>
+          <Button type="button" title="Follow stream" aria-label="Follow stream" disabled={session !== 'live'} onClick={() => { setFollowResult(null); setFollowError(null); setFollowOpen(true); }} variant="ghost" size="xs">
             <Search size={12} aria-hidden /> Follow
-          </button>
-          <a
-            className="nb-button"
-            data-size="sm"
-            data-variant="ghost"
-            href={pcapUrl ?? `/api/links/${linkId}/capture.pcap`}
-            download
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            render={<a href={pcapUrl ?? `/api/links/${linkId}/capture.pcap`} download />}
             title="Download capture"
             aria-label="Download capture"
-            style={{ textDecoration: 'none' }}
           >
             <Download size={12} aria-hidden />
-          </a>
+          </Button>
         </span>
       </div>
 
@@ -976,7 +946,7 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
         </label>
         <input
           id={`wire-filter-${linkId}`}
-          className="nb-field tabular h-6 flex-1 py-0 text-[11px]"
+          className="tabular h-6 flex-1 py-0 text-[11px]"
           placeholder="icmp or tcp.port == 80"
           spellCheck={false}
           value={filter}
@@ -991,17 +961,9 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
           />
         ) : null}
         {filter !== '' ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="ghost"
-            aria-label="Clear display filter"
-            title="Clear display filter"
-            onClick={() => setFilter('')}
-          >
+          <Button type="button" aria-label="Clear display filter" title="Clear display filter" onClick={() => setFilter('')} variant="ghost" size="xs">
             <X size={11} aria-hidden />
-          </button>
+          </Button>
         ) : null}
         {filterError ? (
           <span

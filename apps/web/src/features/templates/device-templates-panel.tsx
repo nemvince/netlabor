@@ -25,6 +25,7 @@ import {
 } from '../../lib/template-images.ts';
 import { BaseConfigDialog } from './base-config-dialog.tsx';
 import { TemplateDialog } from './template-dialog.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 const GLOBAL_SCOPE = 'global';
 
@@ -81,18 +82,12 @@ function DuplicateTemplateDialog({
           />
         </Field>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy}
-            onClick={() => void duplicate()}
-          >
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => void duplicate()} variant="default" size="sm">
             {busy ? 'Duplicating…' : 'Duplicate'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -197,18 +192,12 @@ function CreateInProjectDialog({
           the controller refuses with a permission error.
         </p>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy || projects.length === 0}
-            onClick={() => void create()}
-          >
+          </Button>
+          <Button type="button" disabled={busy || projects.length === 0} onClick={() => void create()} variant="default" size="sm">
             {busy ? 'Creating…' : 'Create in project'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -522,14 +511,9 @@ export function DeviceTemplatesPanel({
         </span>
         <span className="flex-1" />
         {canWrite ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => setEditor({ template: null })}
-          >
+          <Button type="button" onClick={() => setEditor({ template: null })} variant="default" size="sm">
             <Plus size={14} aria-hidden /> New template
-          </button>
+          </Button>
         ) : (
           <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
             read-only
@@ -550,9 +534,9 @@ export function DeviceTemplatesPanel({
             title="Templates could not be read"
             description={messageOf(templates.error)}
             action={
-              <button type="button" className="nb-button" onClick={() => void templates.refetch()}>
+              <Button type="button" onClick={() => void templates.refetch()} variant="outline" size="sm">
                 Retry
-              </button>
+              </Button>
             }
           />
         </div>
@@ -566,16 +550,9 @@ export function DeviceTemplatesPanel({
                   title="No template matches"
                   description="Clear the search and node-type filters, or create a template in the selected scope."
                   action={
-                    <button
-                      type="button"
-                      className="nb-button"
-                      onClick={() => {
-                        setSearch('');
-                        setNodeTypeFilter('all');
-                      }}
-                    >
+                    <Button type="button" onClick={() => { setSearch(''); setNodeTypeFilter('all'); }} variant="outline" size="sm">
                       Clear filters
-                    </button>
+                    </Button>
                   }
                 />
               ) : (
@@ -586,18 +563,13 @@ export function DeviceTemplatesPanel({
                   action={
                     <span className="flex flex-wrap items-center justify-center gap-2">
                       {canWrite ? (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-variant="primary"
-                          onClick={() => setEditor({ template: null })}
-                        >
+                        <Button type="button" onClick={() => setEditor({ template: null })} variant="default" size="sm">
                           <Plus size={14} aria-hidden /> New template
-                        </button>
+                        </Button>
                       ) : null}
-                      <button type="button" className="nb-button" onClick={onOpenAppliances}>
+                      <Button type="button" onClick={onOpenAppliances} variant="outline" size="sm">
                         Open appliance builds
-                      </button>
+                      </Button>
                     </span>
                   }
                 />
@@ -782,14 +754,9 @@ export function DeviceTemplatesPanel({
                         Missing {selectedMissing.join(', ')}. Nodes from this template cannot start
                         until the library has them.
                       </p>
-                      <button
-                        type="button"
-                        className="nb-button mt-1.5"
-                        data-size="sm"
-                        onClick={onOpenAppliances}
-                      >
+                      <Button type="button" onClick={onOpenAppliances} className="mt-1.5" variant="outline" size="xs">
                         Open OS repository
-                      </button>
+                      </Button>
                     </div>
                   ) : null}
                 </div>
@@ -841,60 +808,24 @@ export function DeviceTemplatesPanel({
                   className="flex flex-wrap items-center gap-1 border-t px-3 py-2"
                   style={{ borderColor: 'var(--color-rule)' }}
                 >
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    onClick={() => setBaseConfigTarget(selected)}
-                  >
+                  <Button type="button" onClick={() => setBaseConfigTarget(selected)} variant="outline" size="xs">
                     <FileCode2 size={12} aria-hidden /> Base configs
-                  </button>
+                  </Button>
                   {canWrite ? (
                     <>
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        onClick={() => setEditor({ template: selected })}
-                      >
+                      <Button type="button" onClick={() => setEditor({ template: selected })} variant="outline" size="xs">
                         <Pencil size={12} aria-hidden /> Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        onClick={() => setDuplicateTarget(selected)}
-                      >
+                      </Button>
+                      <Button type="button" onClick={() => setDuplicateTarget(selected)} variant="outline" size="xs">
                         <Copy size={12} aria-hidden /> Duplicate
-                      </button>
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        data-variant="danger"
-                        onClick={() => {
-                          setDeleteError(null);
-                          setDeleteTarget(selected);
-                        }}
-                      >
+                      </Button>
+                      <Button type="button" onClick={() => { setDeleteError(null); setDeleteTarget(selected); }} variant="destructive" size="xs">
                         <Trash2 size={12} aria-hidden /> Delete
-                      </button>
+                      </Button>
                       {selected.projectId == null ? (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="primary"
-                          disabled={projectRows.length === 0}
-                          title={
-                            projectRows.length === 0
-                              ? 'No readable projects to copy into.'
-                              : 'Copy this global template into a project'
-                          }
-                          onClick={() => setCopyTarget(selected)}
-                        >
+                        <Button type="button" disabled={projectRows.length === 0} title={ projectRows.length === 0 ? 'No readable projects to copy into.' : 'Copy this global template into a project' } onClick={() => setCopyTarget(selected)} variant="default" size="xs">
                           <ArrowRightLeft size={12} aria-hidden /> Create in project
-                        </button>
+                        </Button>
                       ) : null}
                     </>
                   ) : null}

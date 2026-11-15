@@ -11,6 +11,7 @@ import { useMe } from '../../features/auth/use-me.ts';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp, shortId } from '../../lib/format.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const PAGE_SIZE = 50;
 
@@ -71,15 +72,9 @@ export function AuditAdminPage() {
         title="Audit"
         description="Every mutation lands here with the actor, the resource, the client IP, and the redacted request payload."
         actions={
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            onClick={() => void audit.refetch()}
-            disabled={audit.isFetching}
-          >
+          <Button type="button" onClick={() => void audit.refetch()} disabled={audit.isFetching} variant="outline" size="xs">
             {audit.isFetching ? 'Refreshing…' : 'Refresh'}
-          </button>
+          </Button>
         }
       />
 
@@ -171,21 +166,13 @@ export function AuditAdminPage() {
                     <Fragment key={row.id}>
                       <Tr>
                         <Td>
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-variant="ghost"
-                            data-size="sm"
-                            aria-label={open ? 'Hide payload' : 'Show payload'}
-                            aria-expanded={open}
-                            onClick={() => toggleRow(row.id)}
-                          >
+                          <Button type="button" aria-label={open ? 'Hide payload' : 'Show payload'} aria-expanded={open} onClick={() => toggleRow(row.id)} variant="ghost" size="xs">
                             {open ? (
                               <ChevronDown size={13} aria-hidden />
                             ) : (
                               <ChevronRight size={13} aria-hidden />
                             )}
-                          </button>
+                          </Button>
                         </Td>
                         <Td mono title={row.createdAt}>
                           {formatStamp(row.createdAt)}
@@ -240,24 +227,12 @@ export function AuditAdminPage() {
                 rows {page * PAGE_SIZE + 1}–{page * PAGE_SIZE + rows.length}
               </span>
               <span className="flex items-center gap-1">
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={page === 0}
-                  onClick={() => setPage((value) => Math.max(0, value - 1))}
-                >
+                <Button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))} variant="outline" size="xs">
                   Previous
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={rows.length < PAGE_SIZE}
-                  onClick={() => setPage((value) => value + 1)}
-                >
+                </Button>
+                <Button type="button" disabled={rows.length < PAGE_SIZE} onClick={() => setPage((value) => value + 1)} variant="outline" size="xs">
                   Next
-                </button>
+                </Button>
               </span>
             </div>
           </>

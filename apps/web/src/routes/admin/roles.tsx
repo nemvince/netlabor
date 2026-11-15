@@ -21,6 +21,7 @@ import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { ALL_PRIVILEGES, READ_PRIVILEGES } from '../../lib/privileges.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const roleSchema = z.object({
   name: z.string().min(1, 'enter a role name').max(64, 'use at most 64 characters'),
@@ -127,44 +128,29 @@ function RoleDialog({
             {ALL_PRIVILEGES.length}
           </span>
           <span className="flex items-center gap-1">
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              onClick={() => select(ALL_PRIVILEGES)}
-            >
+            <Button type="button" onClick={() => select(ALL_PRIVILEGES)} variant="outline" size="xs">
               Select all
-            </button>
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              onClick={() => select(READ_PRIVILEGES)}
-            >
+            </Button>
+            <Button type="button" onClick={() => select(READ_PRIVILEGES)} variant="outline" size="xs">
               Read-only
-            </button>
-            <button type="button" className="nb-button" data-size="sm" onClick={() => select([])}>
+            </Button>
+            <Button type="button" onClick={() => select([])} variant="outline" size="xs">
               Clear
-            </button>
+            </Button>
           </span>
         </div>
         <PrivilegeGrid selected={selected} onToggle={toggle} />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={createRole.isPending || updateRole.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={createRole.isPending || updateRole.isPending} variant="default" size="sm">
             {createRole.isPending || updateRole.isPending
               ? 'Saving…'
               : role
                 ? 'Save role'
                 : 'Create role'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -204,9 +190,9 @@ function ViewRoleDialog({
         </div>
         <PrivilegeGrid selected={role.privileges} disabled />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -242,15 +228,10 @@ export function RolesAdminPage() {
         description="The six built-in roles are fixed; custom roles hold any subset of the privilege list."
         actions={
           canWrite ? (
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              onClick={() => setDialog({ mode: 'create' })}
-            >
+            <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
               <Plus size={14} aria-hidden />
               Create role
-            </button>
+            </Button>
           ) : null
         }
       />
@@ -267,14 +248,9 @@ export function RolesAdminPage() {
             description="Create a role to give a group of users a shared privilege set."
             action={
               canWrite ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-variant="primary"
-                  onClick={() => setDialog({ mode: 'create' })}
-                >
+                <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
                   Create role
-                </button>
+                </Button>
               ) : undefined
             }
           />
@@ -315,41 +291,17 @@ export function RolesAdminPage() {
                   <Td mono>{formatStamp(role.createdAt)}</Td>
                   <Td align="right">
                     <span className="inline-flex items-center gap-0.5">
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-variant="ghost"
-                        data-size="sm"
-                        aria-label={`View privileges of ${role.name}`}
-                        title="View privileges"
-                        onClick={() => setDialog({ mode: 'view', role })}
-                      >
+                      <Button type="button" aria-label={`View privileges of ${role.name}`} title="View privileges" onClick={() => setDialog({ mode: 'view', role })} variant="ghost" size="xs">
                         <Eye size={13} aria-hidden />
-                      </button>
+                      </Button>
                       {!role.builtin && canWrite ? (
                         <>
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-variant="ghost"
-                            data-size="sm"
-                            aria-label={`Edit ${role.name}`}
-                            title="Edit role"
-                            onClick={() => setDialog({ mode: 'edit', role })}
-                          >
+                          <Button type="button" aria-label={`Edit ${role.name}`} title="Edit role" onClick={() => setDialog({ mode: 'edit', role })} variant="ghost" size="xs">
                             <Pencil size={13} aria-hidden />
-                          </button>
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-variant="ghost"
-                            data-size="sm"
-                            aria-label={`Delete ${role.name}`}
-                            title="Delete role"
-                            onClick={() => setDeleteTarget(role)}
-                          >
+                          </Button>
+                          <Button type="button" aria-label={`Delete ${role.name}`} title="Delete role" onClick={() => setDeleteTarget(role)} variant="ghost" size="xs">
                             <Trash size={13} aria-hidden />
-                          </button>
+                          </Button>
                         </>
                       ) : role.builtin ? (
                         <span

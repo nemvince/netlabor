@@ -45,6 +45,7 @@ import { useWorkspaceStore } from './store.ts';
 import { type MarkerFlash, NODE_HEIGHT, NODE_WIDTH } from './types.ts';
 import { useProjectCollab } from './use-project-collab.ts';
 import { useProjectEvents } from './use-project-events.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function nodeInputFromRow(row: NodeRow): NodeCreateInput {
   return {
@@ -138,9 +139,9 @@ export function WorkspacePage({ projectId }: { projectId: string }) {
         <Notice tone="error">
           {project.isError ? messageOf(project.error) : 'The project was not returned.'}
         </Notice>
-        <Link to="/projects" className="nb-button mt-3">
+        <Button variant="outline" size="sm" className="mt-3" render={<Link to="/projects" />}>
           Back to projects
-        </Link>
+        </Button>
       </div>
     );
   }
@@ -1339,19 +1340,9 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                       ? `${nodeRows.find((node) => node.id === connectSource.nodeId)?.name ?? 'node'}:${connectSource.adapter}/${connectSource.port} · click the second node`
                       : 'Connect · click the first node'}
                   </span>
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    data-variant="ghost"
-                    onClick={() => {
-                      setConnectMode(false);
-                      setConnectSource(null);
-                      setPortMenu(null);
-                    }}
-                  >
+                  <Button type="button" onClick={() => { setConnectMode(false); setConnectSource(null); setPortMenu(null); }} variant="ghost" size="xs">
                     Cancel
-                  </button>
+                  </Button>
                 </div>
               ) : null}
               <CanvasToolbar

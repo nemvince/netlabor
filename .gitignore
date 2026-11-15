@@ -33,3 +33,4 @@ test-results
 *.tgz
 .tsbuild
 *.tsbuildinfo
+.openchamber/

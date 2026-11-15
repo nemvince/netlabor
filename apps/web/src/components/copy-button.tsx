@@ -1,7 +1,7 @@
 import { CheckIcon as Check, CopyIcon as Copy } from '@phosphor-icons/react';
 
-import { Button } from '@netlabor/ui/components/button';
 import { useEffect, useState } from 'react';
+import { Button } from '@netlabor/ui/components/button';
 
 /** Copies a machine value to the clipboard; confirms in place for 1.6 s. */
 export function CopyButton({ value, label = 'Copy' }: { value: string; label?: string }) {

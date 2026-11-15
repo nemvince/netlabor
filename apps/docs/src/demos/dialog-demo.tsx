@@ -3,6 +3,7 @@ import { Dialog, DialogFooter } from '@web/components/dialog.tsx';
 import { Field, Input } from '@web/components/field.tsx';
 import { Notice } from '@web/components/notice.tsx';
 import { useState } from 'react';
+import { Button } from '@netlabor/ui/components/button';
 
 export default function DialogDemo() {
   const [open, setOpen] = useState(false);
@@ -12,22 +13,12 @@ export default function DialogDemo() {
   return (
     <>
       <div className="docs-stack">
-        <button
-          type="button"
-          className="nb-button"
-          data-variant="primary"
-          onClick={() => setOpen(true)}
-        >
+        <Button type="button" onClick={() => setOpen(true)} variant="default" size="sm">
           New link
-        </button>
-        <button
-          type="button"
-          className="nb-button"
-          data-variant="danger"
-          onClick={() => setConfirmOpen(true)}
-        >
+        </Button>
+        <Button type="button" onClick={() => setConfirmOpen(true)} variant="destructive" size="sm">
           Delete node
-        </button>
+        </Button>
       </div>
 
       <Dialog
@@ -51,17 +42,12 @@ export default function DialogDemo() {
             Both endpoints must be started before the link becomes active.
           </Notice>
           <DialogFooter>
-            <button type="button" className="nb-button" onClick={() => setOpen(false)}>
+            <Button type="button" onClick={() => setOpen(false)} variant="outline" size="sm">
               Cancel
-            </button>
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              onClick={() => setOpen(false)}
-            >
+            </Button>
+            <Button type="button" onClick={() => setOpen(false)} variant="default" size="sm">
               Create link
-            </button>
+            </Button>
           </DialogFooter>
         </div>
       </Dialog>

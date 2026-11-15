@@ -22,6 +22,7 @@ import { ImageDetailDialog } from './image-detail-dialog.tsx';
 import { ImagePruneDialog } from './image-prune-dialog.tsx';
 import { ImageSyncDialog } from './image-sync-dialog.tsx';
 import { ImageUploadDialog } from './image-upload-dialog.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 function replicaSummary(
   image: ImageRow,
@@ -155,22 +156,12 @@ export function LibraryImagesPanel() {
         </span>
         {canWrite ? (
           <span className="ml-auto flex items-center gap-2">
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              onClick={() => setPruneOpen(true)}
-            >
+            <Button type="button" onClick={() => setPruneOpen(true)} variant="outline" size="xs">
               <RefreshCw size={13} aria-hidden /> Prune
-            </button>
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              onClick={() => setUploadOpen(true)}
-            >
+            </Button>
+            <Button type="button" onClick={() => setUploadOpen(true)} variant="default" size="sm">
               <UploadCloud size={14} aria-hidden /> Upload image
-            </button>
+            </Button>
           </span>
         ) : null}
       </div>
@@ -191,14 +182,9 @@ export function LibraryImagesPanel() {
             description="Upload a qcow2, IOU, or Dynamips image. The controller hashes it and replicates it on demand."
             action={
               canWrite ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-variant="primary"
-                  onClick={() => setUploadOpen(true)}
-                >
+                <Button type="button" onClick={() => setUploadOpen(true)} variant="default" size="sm">
                   <UploadCloud size={14} aria-hidden /> Upload image
-                </button>
+                </Button>
               ) : null
             }
           />
@@ -236,17 +222,9 @@ export function LibraryImagesPanel() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <Badge tone={summary.tone}>{summary.label}</Badge>
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        data-variant="ghost"
-                        aria-label={`Details for ${image.name}`}
-                        title="Image details, replicas, and actions"
-                        onClick={() => setDetailTarget(image)}
-                      >
+                      <Button type="button" aria-label={`Details for ${image.name}`} title="Image details, replicas, and actions" onClick={() => setDetailTarget(image)} variant="ghost" size="xs">
                         <FileText size={12} aria-hidden /> Details
-                      </button>
+                      </Button>
                     </div>
                   </li>
                 );
@@ -340,18 +318,12 @@ export function LibraryImagesPanel() {
           {renameError ? <Notice tone="error">{messageOf(renameError)}</Notice> : null}
         </div>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => setRenameTarget(null)}>
+          <Button type="button" onClick={() => setRenameTarget(null)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={renaming}
-            onClick={() => void performRename()}
-          >
+          </Button>
+          <Button type="button" disabled={renaming} onClick={() => void performRename()} variant="default" size="sm">
             {renaming ? 'Saving…' : 'Rename'}
-          </button>
+          </Button>
         </DialogFooter>
       </Dialog>
 

@@ -10,6 +10,7 @@ import { Notice } from '../../components/notice.tsx';
 import { Table, TBody, Td, THead, Th, Tr } from '../../components/table.tsx';
 import { toast } from '../../components/toast.tsx';
 import { hostRange, networkLabel, parseCidr } from './ipv4.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 export interface SavedNetwork {
   id: string;
@@ -54,25 +55,9 @@ export const useNetworkBook = create<NetworkBookState>()(
 export function RememberNetworkButton({ cidr, name }: { cidr: string; name?: string }) {
   const add = useNetworkBook((state) => state.add);
   return (
-    <button
-      type="button"
-      className="nb-button"
-      data-size="sm"
-      data-variant="ghost"
-      aria-label={`Save ${cidr} to Networks`}
-      title="Save to Networks"
-      onClick={() => {
-        try {
-          const saved = add({ cidr, name });
-          if (saved) toast.success(`${saved.cidr} saved to Networks.`);
-          else toast.info(`${cidr} is already in Networks.`);
-        } catch (error) {
-          toast.error(error instanceof Error ? error.message : String(error));
-        }
-      }}
-    >
+    <Button type="button" aria-label={`Save ${cidr} to Networks`} title="Save to Networks" onClick={() => { try { const saved = add({ cidr, name }); if (saved) toast.success(`${saved.cidr} saved to Networks.`); else toast.info(`${cidr} is already in Networks.`); } catch (error) { toast.error(error instanceof Error ? error.message : String(error)); } }} variant="ghost" size="xs">
       <BookmarkPlus size={12} aria-hidden />
-    </button>
+    </Button>
   );
 }
 
@@ -127,14 +112,9 @@ export function NetworksTool() {
               onChange={(event) => setCidr(event.target.value)}
             />
           </label>
-          <button
-            type="button"
-            className="nb-button self-end"
-            data-variant="primary"
-            onClick={submit}
-          >
+          <Button type="button" onClick={submit} className="self-end" variant="default" size="sm">
             <BookmarkPlus size={13} aria-hidden /> Remember
-          </button>
+          </Button>
         </div>
         {error ? <Notice tone="error">{error}</Notice> : null}
       </div>
@@ -165,17 +145,9 @@ export function NetworksTool() {
                   <Td align="right">
                     <span className="flex items-center justify-end gap-1">
                       <CopyButton value={network.cidr} label="Copy network" />
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-size="sm"
-                        data-variant="ghost"
-                        aria-label={`Remove ${network.name}`}
-                        title="Remove from Networks"
-                        onClick={() => remove(network.id)}
-                      >
+                      <Button type="button" aria-label={`Remove ${network.name}`} title="Remove from Networks" onClick={() => remove(network.id)} variant="ghost" size="xs">
                         <Trash2 size={12} aria-hidden />
-                      </button>
+                      </Button>
                     </span>
                   </Td>
                 </Tr>

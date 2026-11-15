@@ -15,6 +15,7 @@
     "@netlabor/catalog": "workspace:*",
     "@netlabor/contract": "workspace:*",
     "@netlabor/shared": "workspace:*",
+    "@netlabor/ui": "workspace:*",
     "@orpc/client": "^1.16.2",
     "@orpc/tanstack-query": "^1.16.2",
     "@phosphor-icons/react": "^2.1.10",

@@ -12,6 +12,8 @@ import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { triggerDownload } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
+import { Textarea } from '@netlabor/ui/components/textarea';
 
 /** Node working-directory browser with an in-place text editor. */
 export function NodeFilesPanel({ node }: { node: NodeRow }) {
@@ -102,16 +104,9 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
           onChange={(event) => setDirectory(event.target.value)}
           className="py-1 text-[11px]"
         />
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          aria-label="Reload files"
-          title="Reload files"
-          onClick={() => void files.refetch()}
-        >
+        <Button type="button" aria-label="Reload files" title="Reload files" onClick={() => void files.refetch()} variant="outline" size="xs">
           <RefreshCw size={12} aria-hidden />
-        </button>
+        </Button>
       </div>
       {files.isPending ? (
         <Loading label="Reading files…" />
@@ -170,38 +165,15 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
               {selected}
             </span>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                disabled={downloading}
-                onClick={() => void downloadFile()}
-              >
+              <Button type="button" disabled={downloading} onClick={() => void downloadFile()} variant="outline" size="xs">
                 <Download size={12} aria-hidden /> {downloading ? 'Downloading…' : 'Download'}
-              </button>
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="danger"
-                disabled={deleteFile.isPending}
-                onClick={() => setDeleteOpen(true)}
-              >
+              </Button>
+              <Button type="button" disabled={deleteFile.isPending} onClick={() => setDeleteOpen(true)} variant="destructive" size="xs">
                 <Trash2 size={12} aria-hidden /> Delete
-              </button>
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="primary"
-                disabled={writeFile.isPending || content.isPending}
-                onClick={() => {
-                  setNotice(null);
-                  writeFile.mutate({ nodeId: node.id, path: selected, content: draft });
-                }}
-              >
+              </Button>
+              <Button type="button" disabled={writeFile.isPending || content.isPending} onClick={() => { setNotice(null); writeFile.mutate({ nodeId: node.id, path: selected, content: draft }); }} variant="default" size="xs">
                 <Save size={12} aria-hidden /> {writeFile.isPending ? 'Saving…' : 'Save'}
-              </button>
+              </Button>
             </div>
           </div>
           {content.isPending ? (
@@ -209,9 +181,9 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
           ) : content.isError ? (
             <Notice tone="error">{messageOf(content.error)}</Notice>
           ) : (
-            <textarea
+            <Textarea
               aria-label={`Contents of ${selected}`}
-              className="nb-field tabular min-h-40 resize-y font-mono text-[11px] leading-[1.55]"
+              className="tabular min-h-40 resize-y font-mono text-[11px] leading-[1.55]"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
               spellCheck={false}

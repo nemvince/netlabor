@@ -37,6 +37,7 @@ import {
   type OsArtifactState,
   osArtifactState,
 } from './appliance-meta.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function barWidth(value: number): string {
   return `${Math.max(2, Math.min(100, value))}%`;
@@ -129,37 +130,18 @@ function OsImageEntry({
       <div className="flex shrink-0 items-center gap-2">
         <OsStateBadge state={state} progress={progress} />
         {canWrite && state !== 'ready' ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            disabled={busy || state === 'downloading' || row.sourceUrl === null}
-            title={
-              row.sourceUrl === null
-                ? 'This entry has no source URL; adopt an existing library image instead.'
-                : 'Download the cloud image into the library'
-            }
-            onClick={onDownload}
-          >
+          <Button type="button" disabled={busy || state === 'downloading' || row.sourceUrl === null} title={ row.sourceUrl === null ? 'This entry has no source URL; adopt an existing library image instead.' : 'Download the cloud image into the library' } onClick={onDownload} variant="outline" size="xs">
             {busy || state === 'downloading' ? (
               <RefreshCw size={11} className="animate-spin" aria-hidden />
             ) : (
               <Download size={11} aria-hidden />
             )}
             Download
-          </button>
+          </Button>
         ) : null}
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          data-variant="ghost"
-          aria-label={`Details for ${row.name}`}
-          title="Details, edit, adopt, delete"
-          onClick={onOpen}
-        >
+        <Button type="button" aria-label={`Details for ${row.name}`} title="Details, edit, adopt, delete" onClick={onOpen} variant="ghost" size="xs">
           <FileText size={12} aria-hidden /> Details
-        </button>
+        </Button>
       </div>
       {state === 'downloading' && progress !== null ? (
         <div className="absolute inset-x-0 bottom-0 h-px">
@@ -282,47 +264,27 @@ function OsImageDetailDialog({
 
       <DialogFooter>
         {canWrite ? (
-          <button
-            type="button"
-            className="nb-button mr-auto"
-            data-variant="danger"
-            onClick={onDelete}
-          >
+          <Button type="button" onClick={onDelete} className="mr-auto" variant="destructive" size="sm">
             <Trash2 size={12} aria-hidden /> Delete
-          </button>
+          </Button>
         ) : null}
-        <button type="button" className="nb-button" onClick={close}>
+        <Button type="button" onClick={close} variant="outline" size="sm">
           Close
-        </button>
+        </Button>
         {canWrite && state !== 'ready' && row.sourceUrl !== null ? (
-          <button
-            type="button"
-            className="nb-button"
-            disabled={state === 'downloading'}
-            onClick={onDownload}
-          >
+          <Button type="button" disabled={state === 'downloading'} onClick={onDownload} variant="outline" size="sm">
             <Download size={12} aria-hidden /> Download
-          </button>
+          </Button>
         ) : null}
         {canWrite ? (
-          <button
-            type="button"
-            className="nb-button"
-            disabled={state === 'downloading'}
-            onClick={onAdopt}
-          >
+          <Button type="button" disabled={state === 'downloading'} onClick={onAdopt} variant="outline" size="sm">
             Adopt
-          </button>
+          </Button>
         ) : null}
         {canWrite ? (
-          <button
-            type="button"
-            className="nb-button"
-            disabled={state === 'downloading'}
-            onClick={onEdit}
-          >
+          <Button type="button" disabled={state === 'downloading'} onClick={onEdit} variant="outline" size="sm">
             <Pencil size={12} aria-hidden /> Edit
-          </button>
+          </Button>
         ) : null}
       </DialogFooter>
     </Dialog>
@@ -407,45 +369,19 @@ function BuildEntry({
       <div className="flex shrink-0 items-center gap-2">
         <Badge tone={BUILD_STATUS_TONE[build.status]}>{build.status}</Badge>
         {active ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            disabled={cancelling}
-            onClick={onCancel}
-          >
+          <Button type="button" disabled={cancelling} onClick={onCancel} variant="outline" size="xs">
             {cancelling ? <RefreshCw size={11} className="animate-spin" aria-hidden /> : null}
             Cancel
-          </button>
+          </Button>
         ) : null}
         {build.status === 'completed' ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="primary"
-            disabled={!canCreateTemplates}
-            title={
-              canCreateTemplates
-                ? 'Create a device template from this image'
-                : 'Creating a template needs template.write'
-            }
-            onClick={onCreateTemplate}
-          >
+          <Button type="button" disabled={!canCreateTemplates} title={ canCreateTemplates ? 'Create a device template from this image' : 'Creating a template needs template.write' } onClick={onCreateTemplate} variant="default" size="xs">
             <Wrench size={11} aria-hidden /> Create template
-          </button>
+          </Button>
         ) : null}
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          data-variant="ghost"
-          aria-label={`Details for ${build.name}`}
-          title="Build details and log"
-          onClick={onOpen}
-        >
+        <Button type="button" aria-label={`Details for ${build.name}`} title="Build details and log" onClick={onOpen} variant="ghost" size="xs">
           <FileText size={12} aria-hidden /> Details
-        </button>
+        </Button>
       </div>
     </li>
   );
@@ -539,17 +475,9 @@ function BuildDetailDialog({
             >
               {build.log ? `${logLines} lines` : 'empty'}
               {!active && build.log ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  data-variant="ghost"
-                  aria-label="Clear the build log"
-                  title="Discard the stored log"
-                  onClick={onClearLog}
-                >
+                <Button type="button" aria-label="Clear the build log" title="Discard the stored log" onClick={onClearLog} variant="ghost" size="xs">
                   Clear log
-                </button>
+                </Button>
               ) : null}
             </span>
           </div>
@@ -592,34 +520,18 @@ function BuildDetailDialog({
 
       <DialogFooter>
         {active ? (
-          <button
-            type="button"
-            className="nb-button mr-auto"
-            disabled={cancelling}
-            onClick={onCancel}
-          >
+          <Button type="button" disabled={cancelling} onClick={onCancel} className="mr-auto" variant="outline" size="sm">
             {cancelling ? <RefreshCw size={11} className="animate-spin" aria-hidden /> : null}
             Cancel build
-          </button>
+          </Button>
         ) : null}
-        <button type="button" className="nb-button" onClick={close}>
+        <Button type="button" onClick={close} variant="outline" size="sm">
           Close
-        </button>
+        </Button>
         {build.status === 'completed' ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={!canCreateTemplates}
-            title={
-              canCreateTemplates
-                ? 'Create a device template from this image'
-                : 'Creating a template needs template.write'
-            }
-            onClick={onCreateTemplate}
-          >
+          <Button type="button" disabled={!canCreateTemplates} title={ canCreateTemplates ? 'Create a device template from this image' : 'Creating a template needs template.write' } onClick={onCreateTemplate} variant="default" size="sm">
             <Wrench size={12} aria-hidden /> Create template
-          </button>
+          </Button>
         ) : null}
       </DialogFooter>
     </Dialog>
@@ -797,14 +709,9 @@ export function ApplianceImagesPanel({
               ))}
             </Select>
             {canWrite ? (
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                onClick={() => setCreateOsOpen(true)}
-              >
+              <Button type="button" onClick={() => setCreateOsOpen(true)} variant="default" size="sm">
                 <Plus size={14} aria-hidden /> New OS entry
-              </button>
+              </Button>
             ) : (
               <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
                 read-only
@@ -822,9 +729,9 @@ export function ApplianceImagesPanel({
               title="OS images could not be read"
               description={messageOf(osImages.error)}
               action={
-                <button type="button" className="nb-button" onClick={() => void osImages.refetch()}>
+                <Button type="button" onClick={() => void osImages.refetch()} variant="outline" size="sm">
                   Retry
-                </button>
+                </Button>
               }
             />
           ) : osRows.length === 0 ? (
@@ -834,16 +741,9 @@ export function ApplianceImagesPanel({
                 title="No OS image matches"
                 description="Clear the search and family filters to see the whole repository."
                 action={
-                  <button
-                    type="button"
-                    className="nb-button"
-                    onClick={() => {
-                      setSearch('');
-                      setFamily('all');
-                    }}
-                  >
+                  <Button type="button" onClick={() => { setSearch(''); setFamily('all'); }} variant="outline" size="sm">
                     Clear filters
-                  </button>
+                  </Button>
                 }
               />
             ) : (
@@ -853,14 +753,9 @@ export function ApplianceImagesPanel({
                 description="Add a cloud image by URL, or adopt an image that is already in the library. Appliance builds need one of these as their base."
                 action={
                   canWrite ? (
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-variant="primary"
-                      onClick={() => setCreateOsOpen(true)}
-                    >
+                    <Button type="button" onClick={() => setCreateOsOpen(true)} variant="default" size="sm">
                       <Plus size={14} aria-hidden /> New OS entry
-                    </button>
+                    </Button>
                   ) : null
                 }
               />
@@ -905,20 +800,9 @@ export function ApplianceImagesPanel({
                 live
               </span>
             ) : null}
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              disabled={!canWrite || readyOsImages.length === 0}
-              title={
-                readyOsImages.length === 0
-                  ? 'Download or adopt an OS image first.'
-                  : 'Build a desktop image from a downloaded base OS'
-              }
-              onClick={() => setBuildOpen(true)}
-            >
+            <Button type="button" disabled={!canWrite || readyOsImages.length === 0} title={ readyOsImages.length === 0 ? 'Download or adopt an OS image first.' : 'Build a desktop image from a downloaded base OS' } onClick={() => setBuildOpen(true)} variant="default" size="sm">
               <Plus size={14} aria-hidden /> New appliance build
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -931,9 +815,9 @@ export function ApplianceImagesPanel({
               title="Appliance builds could not be read"
               description={messageOf(builds.error)}
               action={
-                <button type="button" className="nb-button" onClick={() => void builds.refetch()}>
+                <Button type="button" onClick={() => void builds.refetch()} variant="outline" size="sm">
                   Retry
-                </button>
+                </Button>
               }
             />
           ) : buildRows.length === 0 ? (
@@ -947,15 +831,9 @@ export function ApplianceImagesPanel({
               }
               action={
                 canWrite ? (
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-variant="primary"
-                    disabled={readyOsImages.length === 0}
-                    onClick={() => setBuildOpen(true)}
-                  >
+                  <Button type="button" disabled={readyOsImages.length === 0} onClick={() => setBuildOpen(true)} variant="default" size="sm">
                     <Plus size={14} aria-hidden /> New appliance build
-                  </button>
+                  </Button>
                 ) : null
               }
             />

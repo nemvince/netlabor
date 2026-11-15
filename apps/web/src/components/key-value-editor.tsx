@@ -1,7 +1,7 @@
 import { PlusIcon, TrashIcon  } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
-import { Button } from '@netlabor/ui/components/button';
 import { Input } from './field.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 interface Row {
   id: string;

@@ -6,6 +6,7 @@ import { DetailList } from '../../components/detail-list.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { formatBytes } from '../../lib/bytes.ts';
 import { formatStamp } from '../../lib/format.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function replicaTone(state: ImageRow['replicas'][number]['state'] | 'absent') {
   if (state === 'present') return 'up';
@@ -140,41 +141,29 @@ export function ImageDetailDialog({
 
       <DialogFooter>
         {canWrite ? (
-          <button
-            type="button"
-            className="nb-button mr-auto"
-            data-variant="danger"
-            onClick={onDelete}
-          >
+          <Button type="button" onClick={onDelete} className="mr-auto" variant="destructive" size="sm">
             <Trash2 size={12} aria-hidden /> Delete
-          </button>
+          </Button>
         ) : null}
-        <button type="button" className="nb-button" onClick={close}>
+        <Button type="button" onClick={close} variant="outline" size="sm">
           Close
-        </button>
-        <a
-          className="nb-button"
-          href={`/api/blobs/${image.sha256}/${encodeURIComponent(image.filename)}`}
-          download
-          style={{ textDecoration: 'none' }}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          render={<a href={`/api/blobs/${image.sha256}/${encodeURIComponent(image.filename)}`} download />}
         >
           <Download size={12} aria-hidden /> Download
-        </a>
+        </Button>
         {canSync ? (
-          <button
-            type="button"
-            className="nb-button"
-            disabled={computes.length === 0}
-            title={computes.length === 0 ? 'No compute is registered yet' : 'Sync to computes'}
-            onClick={onSync}
-          >
+          <Button type="button" disabled={computes.length === 0} title={computes.length === 0 ? 'No compute is registered yet' : 'Sync to computes'} onClick={onSync} variant="outline" size="sm">
             <RefreshCw size={12} aria-hidden /> Sync
-          </button>
+          </Button>
         ) : null}
         {canWrite ? (
-          <button type="button" className="nb-button" onClick={onRename}>
+          <Button type="button" onClick={onRename} variant="outline" size="sm">
             <Pencil size={12} aria-hidden /> Rename
-          </button>
+          </Button>
         ) : null}
       </DialogFooter>
     </Dialog>

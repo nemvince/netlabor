@@ -1,6 +1,7 @@
 import type { LinkRow, NodeRow } from '@netlabor/contract';
 import { MagnifyingGlassIcon as Search, XIcon as X   } from '@phosphor-icons/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Input } from '@netlabor/ui/components/input';
 
 type PortRow = NodeRow['ports'][number];
 
@@ -136,12 +137,12 @@ export function ConnectPortMenu({
           className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2"
           style={{ color: 'var(--color-ink-faint)' }}
         />
-        <input
+        <Input
           ref={inputRef}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Type a port…"
-          className="nb-field py-1 text-[12px]"
+          className="py-1 text-[12px]"
           style={{ paddingLeft: 30 }}
           aria-label="Search ports"
           autoComplete="off"

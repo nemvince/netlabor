@@ -7,6 +7,7 @@ import { Notice } from '../../components/notice.tsx';
 import { toast } from '../../components/toast.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 type Proposal = z.infer<typeof IdlepcProposal>;
 
@@ -110,15 +111,9 @@ export function DynamipsIdlepcPanel({
           >
             {platform} · image {imageId.slice(0, 8)}
           </span>
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            disabled={busy || !canProbe}
-            onClick={() => void propose()}
-          >
+          <Button type="button" disabled={busy || !canProbe} onClick={() => void propose()} variant="outline" size="xs">
             {busy ? 'Probing…' : 'Get proposals'}
-          </button>
+          </Button>
         </div>
       )}
       {error ? <Notice tone="error">{error}</Notice> : null}
@@ -141,17 +136,10 @@ export function DynamipsIdlepcPanel({
                   {proposal.description ? ` · ${proposal.description}` : ''}
                 </div>
               </div>
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant={current === proposal.idlepc ? 'primary' : undefined}
-                disabled={!canUpdate || !running || applying !== null}
-                onClick={() => void apply(proposal.idlepc)}
-              >
+              <Button type="button" disabled={!canUpdate || !running || applying !== null} onClick={() => void apply(proposal.idlepc)} variant="outline" size="xs">
                 {current === proposal.idlepc ? <Check size={12} aria-hidden /> : null}
                 {applying === proposal.idlepc ? 'Applying…' : 'Apply'}
-              </button>
+              </Button>
             </div>
           ))}
         </div>

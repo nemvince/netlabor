@@ -13,6 +13,7 @@ import { SymbolGlyph } from '../../components/symbol-glyph.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function UploadSymbolDialog({ onOpenChange }: { onOpenChange: (open: boolean) => void }) {
   const [name, setName] = useState('');
@@ -79,14 +80,9 @@ function UploadSymbolDialog({ onOpenChange }: { onOpenChange: (open: boolean) =>
               className="sr-only"
               onChange={(event) => void chooseFile(event.target.files?.[0])}
             />
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              onClick={() => fileRef.current?.click()}
-            >
+            <Button type="button" onClick={() => fileRef.current?.click()} variant="outline" size="xs">
               <FileUp size={12} aria-hidden /> Choose SVG
-            </button>
+            </Button>
           </div>
         </div>
         <Field label="SVG markup" htmlFor="symbol-svg" hint="Maximum 512 KiB.">
@@ -110,18 +106,12 @@ function UploadSymbolDialog({ onOpenChange }: { onOpenChange: (open: boolean) =>
           </div>
         ) : null}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy}
-            onClick={() => void upload()}
-          >
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => void upload()} variant="default" size="sm">
             {busy ? 'Uploading…' : 'Upload symbol'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -177,15 +167,9 @@ export function SymbolsPanel({ canWrite }: { canWrite: boolean }) {
           {filtered.length} of {symbols.data?.length ?? 0}
         </span>
         {canWrite ? (
-          <button
-            type="button"
-            className="nb-button ml-auto"
-            data-size="sm"
-            data-variant="primary"
-            onClick={() => setUploadOpen(true)}
-          >
+          <Button type="button" onClick={() => setUploadOpen(true)} className="ml-auto" variant="default" size="xs">
             <FileUp size={12} aria-hidden /> Upload symbol
-          </button>
+          </Button>
         ) : null}
       </div>
 
@@ -226,20 +210,9 @@ export function SymbolsPanel({ canWrite }: { canWrite: boolean }) {
                   {symbol.theme ?? 'any theme'}
                 </span>
                 {canWrite && !symbol.builtin ? (
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    data-variant="ghost"
-                    title={`Delete ${symbol.name}`}
-                    aria-label={`Delete ${symbol.name}`}
-                    onClick={() => {
-                      setDeleteError(null);
-                      setDeleteTarget(symbol);
-                    }}
-                  >
+                  <Button type="button" title={`Delete ${symbol.name}`} aria-label={`Delete ${symbol.name}`} onClick={() => { setDeleteError(null); setDeleteTarget(symbol); }} variant="ghost" size="xs">
                     <Trash2 size={12} aria-hidden />
-                  </button>
+                  </Button>
                 ) : null}
               </div>
             </li>

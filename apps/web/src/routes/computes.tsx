@@ -17,6 +17,7 @@ import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp } from '../lib/format.ts';
 import { queryClient } from '../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 type DialogState = { mode: 'create' } | { mode: 'edit'; compute: ComputeRow } | null;
 
@@ -77,14 +78,9 @@ export function ComputesPage() {
         description="Every compute runs one agent that owns the local dataplane and emulators. Pools place nodes across a chosen set of computes."
         actions={
           canWrite ? (
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              onClick={() => setDialog({ mode: 'create' })}
-            >
+            <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
               <Plus size={14} aria-hidden /> Add compute
-            </button>
+            </Button>
           ) : null
         }
       />
@@ -105,14 +101,9 @@ export function ComputesPage() {
             description="Register a compute agent to place project namespaces, switches, and emulators on a host."
             action={
               canWrite ? (
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-variant="primary"
-                  onClick={() => setDialog({ mode: 'create' })}
-                >
+                <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
                   <Plus size={14} aria-hidden /> Add compute
-                </button>
+                </Button>
               ) : null
             }
           />
@@ -189,68 +180,24 @@ export function ComputesPage() {
                     </Td>
                     <Td align="right">
                       <span className="inline-flex items-center gap-1">
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="ghost"
-                          title={`Ping ${compute.name}`}
-                          aria-label={`Ping ${compute.name}`}
-                          disabled={pinging}
-                          onClick={() => ping.mutate({ id: compute.id })}
-                        >
+                        <Button type="button" title={`Ping ${compute.name}`} aria-label={`Ping ${compute.name}`} disabled={pinging} onClick={() => ping.mutate({ id: compute.id })} variant="ghost" size="xs">
                           <Activity size={13} aria-hidden />
                           {pinging ? '…' : null}
-                        </button>
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          data-variant="ghost"
-                          title={`Statistics for ${compute.name}`}
-                          aria-label={`Statistics for ${compute.name}`}
-                          onClick={() => setStats(compute)}
-                        >
+                        </Button>
+                        <Button type="button" title={`Statistics for ${compute.name}`} aria-label={`Statistics for ${compute.name}`} onClick={() => setStats(compute)} variant="ghost" size="xs">
                           <Gauge size={13} aria-hidden />
-                        </button>
+                        </Button>
                         {canWrite ? (
                           <>
-                            <button
-                              type="button"
-                              className="nb-button"
-                              data-size="sm"
-                              data-variant="ghost"
-                              title={`Edit ${compute.name}`}
-                              aria-label={`Edit ${compute.name}`}
-                              onClick={() => setDialog({ mode: 'edit', compute })}
-                            >
+                            <Button type="button" title={`Edit ${compute.name}`} aria-label={`Edit ${compute.name}`} onClick={() => setDialog({ mode: 'edit', compute })} variant="ghost" size="xs">
                               <Pencil size={13} aria-hidden />
-                            </button>
-                            <button
-                              type="button"
-                              className="nb-button"
-                              data-size="sm"
-                              data-variant="ghost"
-                              title={`Rotate token for ${compute.name}`}
-                              aria-label={`Rotate token for ${compute.name}`}
-                              onClick={() => setRotate(compute)}
-                            >
+                            </Button>
+                            <Button type="button" title={`Rotate token for ${compute.name}`} aria-label={`Rotate token for ${compute.name}`} onClick={() => setRotate(compute)} variant="ghost" size="xs">
                               <KeyRound size={13} aria-hidden />
-                            </button>
-                            <button
-                              type="button"
-                              className="nb-button"
-                              data-size="sm"
-                              data-variant="ghost"
-                              title={`Delete ${compute.name}`}
-                              aria-label={`Delete ${compute.name}`}
-                              onClick={() => {
-                                remove.reset();
-                                setDeleteTarget(compute);
-                              }}
-                            >
+                            </Button>
+                            <Button type="button" title={`Delete ${compute.name}`} aria-label={`Delete ${compute.name}`} onClick={() => { remove.reset(); setDeleteTarget(compute); }} variant="ghost" size="xs">
                               <Trash2 size={13} aria-hidden />
-                            </button>
+                            </Button>
                           </>
                         ) : null}
                       </span>

@@ -9,6 +9,7 @@ import { client } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { uploadFile } from '../../lib/uploads.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function kindForFilename(filename: string): ImageKind {
   const lower = filename.toLowerCase();
@@ -201,27 +202,13 @@ export function ImageUploadDialog({
         ) : null}
 
         <DialogFooter>
-          <button
-            type="button"
-            className="nb-button"
-            disabled={stage === 'creating'}
-            onClick={() => {
-              if (stage === 'uploading') abortRef.current?.abort();
-              else onOpenChange(false);
-            }}
-          >
+          <Button type="button" disabled={stage === 'creating'} onClick={() => { if (stage === 'uploading') abortRef.current?.abort(); else onOpenChange(false); }} variant="outline" size="sm">
             {stage === 'uploading' ? 'Stop upload' : 'Cancel'}
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy || file === null}
-            onClick={() => void upload()}
-          >
+          </Button>
+          <Button type="button" disabled={busy || file === null} onClick={() => void upload()} variant="default" size="sm">
             <FileUp size={13} aria-hidden />
             {stage === 'uploading' ? 'Uploading…' : stage === 'creating' ? 'Creating…' : 'Upload'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>

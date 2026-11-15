@@ -7,6 +7,7 @@ import { Field, Input } from '../../components/field.tsx';
 import { Notice } from '../../components/notice.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { appCodeOf, messageOf } from '../../lib/errors.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const MAX_FIELDS = 31;
 const DEFAULT_LIMIT = 200;
@@ -295,24 +296,14 @@ export function PacketAnalysisPanel({ linkId, filter }: { linkId: string; filter
         </Field>
 
         <div className="flex items-center gap-2 pb-1">
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="primary"
-            disabled={loading || limitValue === null}
-            onClick={() => {
-              setAppliedFilter(filter.trim());
-              setRunNonce((value) => value + 1);
-            }}
-          >
+          <Button type="button" disabled={loading || limitValue === null} onClick={() => { setAppliedFilter(filter.trim()); setRunNonce((value) => value + 1); }} variant="default" size="xs">
             {loading ? (
               <LoaderCircle size={12} className="animate-spin" aria-hidden />
             ) : (
               <RotateCw size={12} aria-hidden />
             )}
             Apply
-          </button>
+          </Button>
           {limitValue === null ? (
             <span className="text-[10px]" style={{ color: 'var(--color-signal-down)' }}>
               use 1–2000

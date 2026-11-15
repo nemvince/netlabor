@@ -8,6 +8,7 @@ import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 /** Replicate one image to selected computes and poll the resulting job. */
 export function ImageSyncDialog({
@@ -203,33 +204,17 @@ export function ImageSyncDialog({
         ) : null}
 
         <DialogFooter>
-          <button
-            type="button"
-            className="nb-button"
-            disabled={busy}
-            onClick={() => onOpenChange(false)}
-          >
+          <Button type="button" disabled={busy} onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
-          </button>
+          </Button>
           {busy && job ? (
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="danger"
-              onClick={() => void cancel()}
-            >
+            <Button type="button" onClick={() => void cancel()} variant="destructive" size="sm">
               Cancel job
-            </button>
+            </Button>
           ) : null}
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy || selected.size === 0}
-            onClick={() => void run()}
-          >
+          <Button type="button" disabled={busy || selected.size === 0} onClick={() => void run()} variant="default" size="sm">
             {busy ? 'Syncing…' : 'Sync image'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>

@@ -10,6 +10,7 @@ import {
 } from '@netlabor/ui/components/dropdown-menu';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
+import { Button } from '@netlabor/ui/components/button';
 
 export type AlignMode = 'left' | 'center-h' | 'right' | 'top' | 'middle' | 'bottom';
 export type DistributeAxis = 'horizontal' | 'vertical';
@@ -74,22 +75,9 @@ function ToolButton({
   children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
-      className="nb-button"
-      data-size="sm"
-      data-variant="ghost"
-      title={label}
-      aria-label={label}
-      aria-pressed={active}
-      disabled={disabled}
-      onClick={onClick}
-      style={
-        active ? { color: 'var(--color-copper)', borderColor: 'var(--color-copper)' } : undefined
-      }
-    >
+    <Button type="button" title={label} aria-label={label} aria-pressed={active} disabled={disabled} onClick={onClick} style={ active ? { color: 'var(--color-copper)', borderColor: 'var(--color-copper)' } : undefined } variant="ghost" size="xs">
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -211,16 +199,9 @@ export function CanvasToolbar({
       <Separator />
       <DropdownMenu>
         <DropdownMenuTrigger render={
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="ghost"
-            disabled={!canEdit || !multi}
-            title={multi ? 'Align or distribute selection' : 'Select at least two nodes'}
-          >
+          <Button type="button" disabled={!canEdit || !multi} title={multi ? 'Align or distribute selection' : 'Select at least two nodes'} variant="ghost" size="xs">
             <AlignStartVertical size={13} aria-hidden /> Align
-          </button>
+          </Button>
         }>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -275,16 +256,9 @@ export function CanvasToolbar({
       </DropdownMenu>
       <DropdownMenu>
         <DropdownMenuTrigger render={
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="ghost"
-            disabled={!canDraw}
-            title="Insert a drawing annotation"
-          >
+          <Button type="button" disabled={!canDraw} title="Insert a drawing annotation" variant="ghost" size="xs">
             <Type size={13} aria-hidden /> Insert
-          </button>
+          </Button>
         }>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>
@@ -329,15 +303,9 @@ export function CanvasToolbar({
       />
       <DropdownMenu>
         <DropdownMenuTrigger render={
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="ghost"
-            title="Canvas display options"
-          >
+          <Button type="button" title="Canvas display options" variant="ghost" size="xs">
             <Grid3x3 size={13} aria-hidden /> View
-          </button>
+          </Button>
         }>
         </DropdownMenuTrigger>
         <DropdownMenuPortal>

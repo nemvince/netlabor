@@ -9,6 +9,7 @@ import { orpc } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { shortId } from '../../lib/format.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function percent(used: number, total: number): number {
   return total > 0 ? Math.min(100, Math.max(0, (used / total) * 100)) : 0;
@@ -87,16 +88,9 @@ export function ComputeStatsDrawer({
             {compute.url} · underlay {compute.underlayIndex} · {compute.underlayHost}
           </p>
         </div>
-        <button
-          type="button"
-          className="nb-button"
-          data-variant="ghost"
-          data-size="sm"
-          aria-label="Close statistics"
-          onClick={onClose}
-        >
+        <Button type="button" aria-label="Close statistics" onClick={onClose} variant="ghost" size="xs">
           <X size={14} aria-hidden />
-        </button>
+        </Button>
       </header>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
         {stats.isPending ? (

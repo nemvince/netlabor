@@ -26,6 +26,7 @@ import {
   parseTemplateProperties,
   withProperty,
 } from './template-property-fields.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 const baseSchema = z.object({
   name: z.string().min(1, 'enter a template name').max(128, 'use at most 128 characters'),
@@ -434,18 +435,9 @@ export function TemplateDialog({
                           </Select>
                         </Field>
                       </div>
-                      <button
-                        type="button"
-                        className="nb-button mb-1 shrink-0"
-                        data-size="sm"
-                        data-variant="ghost"
-                        aria-label={`Remove required image ${required.name}`}
-                        onClick={() =>
-                          setRequiredImages((current) => current.filter((_, i) => i !== index))
-                        }
-                      >
+                      <Button type="button" aria-label={`Remove required image ${required.name}`} onClick={() => setRequiredImages((current) => current.filter((_, i) => i !== index)) } className="mb-1 shrink-0" variant="ghost" size="xs">
                         <Trash2 size={12} aria-hidden />
-                      </button>
+                      </Button>
                     </div>
                     {candidates.length === 0 ? (
                       <p className="mt-1 text-[11px]" style={{ color: 'var(--color-signal-warn)' }}>
@@ -457,24 +449,9 @@ export function TemplateDialog({
               })}
             </div>
           )}
-          <button
-            type="button"
-            className="nb-button mt-2"
-            data-size="sm"
-            onClick={() =>
-              setRequiredImages((current) => [
-                ...current,
-                {
-                  name: `${nodeType} image`,
-                  kind: 'qemu',
-                  filenamePattern: '*',
-                  rowKey: crypto.randomUUID(),
-                },
-              ])
-            }
-          >
+          <Button type="button" onClick={() => setRequiredImages((current) => [ ...current, { name: `${nodeType} image`, kind: 'qemu', filenamePattern: '*', rowKey: crypto.randomUUID(), }, ]) } className="mt-2" variant="outline" size="xs">
             <Plus size={12} aria-hidden /> Add image requirement
-          </button>
+          </Button>
         </section>
 
         <details
@@ -501,12 +478,12 @@ export function TemplateDialog({
         </details>
 
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button type="submit" className="nb-button" data-variant="primary" disabled={saving}>
+          </Button>
+          <Button type="submit" disabled={saving} variant="default" size="sm">
             {saving ? 'Saving…' : template ? 'Save template' : 'Create template'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>

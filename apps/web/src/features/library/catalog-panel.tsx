@@ -22,6 +22,7 @@ import { trackJob } from '../../lib/download-toasts.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 export function CatalogPanel({
   canInstall,
@@ -176,28 +177,14 @@ export function CatalogPanel({
                     </p>
                   </div>
                   {appliance.installed ? (
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-size="sm"
-                      data-variant="ghost"
-                      onClick={onOpenTemplates}
-                    >
+                    <Button type="button" onClick={onOpenTemplates} variant="ghost" size="xs">
                       <Check size={12} aria-hidden /> Installed
-                    </button>
+                    </Button>
                   ) : (
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-size="sm"
-                      data-variant="primary"
-                      disabled={!canInstall || busy}
-                      title={canInstall ? undefined : 'Requires image.write and template.write'}
-                      onClick={() => void install(appliance.id, appliance.name)}
-                    >
+                    <Button type="button" disabled={!canInstall || busy} title={canInstall ? undefined : 'Requires image.write and template.write'} onClick={() => void install(appliance.id, appliance.name)} variant="default" size="xs">
                       <Download size={12} aria-hidden />
                       {busy ? `${percent}%` : 'Install'}
-                    </button>
+                    </Button>
                   )}
                   {busy ? (
                     <div className="absolute inset-x-0 bottom-0 h-px">

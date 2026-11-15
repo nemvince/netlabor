@@ -13,6 +13,7 @@ import {
 import type { ReactNode } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { TOOL_TABS, type ToolTab } from '../tools/tool-tabs.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const MENU_CLASS = 'z-50 min-w-52 rounded-[3px] border p-1';
 const MENU_STYLE = {
@@ -114,16 +115,15 @@ export function ProjectTopBar({
       className="flex min-h-[42px] shrink-0 flex-wrap items-center gap-2 border-b px-2 py-1 sm:h-[42px] sm:flex-nowrap sm:py-0"
       style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
     >
-      <Link
-        to="/projects"
-        className="nb-button"
-        data-size="sm"
-        data-variant="ghost"
+      <Button
+        variant="ghost"
+        size="xs"
+        render={<Link to="/projects" />}
         aria-label="Back to projects"
         title="Back to projects"
       >
         <ArrowLeft size={14} aria-hidden />
-      </Link>
+      </Button>
       <span className="min-w-0">
         <span className="block max-w-[240px] truncate text-[13px] leading-[1.2] font-semibold">
           {project.name}
@@ -141,42 +141,19 @@ export function ProjectTopBar({
       <span aria-hidden className="mx-1 h-4 w-px" style={{ background: 'var(--color-rule)' }} />
 
       {canOpen ? (
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          data-variant={opened ? undefined : 'primary'}
-          disabled={busy !== null}
-          onClick={onToggleOpen}
-        >
+        <Button type="button" disabled={busy !== null} onClick={onToggleOpen} variant="outline" size="xs">
           <Power size={13} aria-hidden />{' '}
           {busy === 'toggle-open' ? 'Working…' : opened ? 'Close' : 'Open'}
-        </button>
+        </Button>
       ) : null}
-      <button
-        type="button"
-        className="nb-button"
-        data-size="sm"
-        disabled={!opened || busy !== null || nodeCount === 0}
-        onClick={onStartAll}
-        title="Start every stopped node"
-        aria-label="Start all"
-      >
+      <Button type="button" disabled={!opened || busy !== null || nodeCount === 0} onClick={onStartAll} title="Start every stopped node" aria-label="Start all" variant="outline" size="xs">
         <Play size={13} aria-hidden />{' '}
         <span className="hidden sm:inline">{busy === 'start-all' ? 'Starting…' : 'Start all'}</span>
-      </button>
-      <button
-        type="button"
-        className="nb-button"
-        data-size="sm"
-        disabled={!opened || busy !== null || nodeCount === 0}
-        onClick={onStopAll}
-        title="Stop every running node"
-        aria-label="Stop all"
-      >
+      </Button>
+      <Button type="button" disabled={!opened || busy !== null || nodeCount === 0} onClick={onStopAll} title="Stop every running node" aria-label="Stop all" variant="outline" size="xs">
         <Square size={13} aria-hidden />{' '}
         <span className="hidden sm:inline">{busy === 'stop-all' ? 'Stopping…' : 'Stop all'}</span>
-      </button>
+      </Button>
 
       <span className="ml-auto flex items-center gap-1">
         {collaborators.length > 0 ? (
@@ -242,9 +219,9 @@ export function ProjectTopBar({
         ) : null}
         <DropdownMenu>
           <DropdownMenuTrigger render={
-            <button type="button" className="nb-button" data-size="sm" title="Panel visibility">
+            <Button type="button" title="Panel visibility" variant="outline" size="xs">
               <Eye size={13} aria-hidden /> View
-            </button>
+            </Button>
           }>
           </DropdownMenuTrigger>
           <DropdownMenuPortal>
@@ -278,9 +255,9 @@ export function ProjectTopBar({
 
         <DropdownMenu>
           <DropdownMenuTrigger render={
-            <button type="button" className="nb-button" data-size="sm" title="Project tools">
+            <Button type="button" title="Project tools" variant="outline" size="xs">
               <MoreHorizontal size={14} aria-hidden /> More
-            </button>
+            </Button>
           }>
           </DropdownMenuTrigger>
           <DropdownMenuPortal>

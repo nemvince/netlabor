@@ -1,4 +1,5 @@
 import { ToastViewport, toast } from '@web/components/toast.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 export interface ToastSurfaceProps {
   infoMessage?: string;
@@ -17,22 +18,12 @@ export default function ToastSurface({
   return (
     <>
       <div className="docs-stack">
-        <button
-          type="button"
-          className="nb-button"
-          data-variant="primary"
-          onClick={() => toast.info(infoMessage)}
-        >
+        <Button type="button" onClick={() => toast.info(infoMessage)} variant="default" size="sm">
           Collaborator joined
-        </button>
-        <button
-          type="button"
-          className="nb-button"
-          data-variant="danger"
-          onClick={() => toast.error(errorMessage)}
-        >
+        </Button>
+        <Button type="button" onClick={() => toast.error(errorMessage)} variant="destructive" size="sm">
           Conflicting save
-        </button>
+        </Button>
       </div>
       <ToastViewport />
     </>

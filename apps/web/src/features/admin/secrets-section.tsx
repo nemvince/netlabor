@@ -18,6 +18,7 @@ import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const secretSchema = z.object({
   name: z
@@ -95,17 +96,12 @@ function CreateSecretDialog({ onOpenChange }: { onOpenChange: (open: boolean) =>
           />
         </Field>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={createSecret.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={createSecret.isPending} variant="default" size="sm">
             {createSecret.isPending ? 'Storing…' : 'Store secret'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -139,15 +135,10 @@ export function SecretsSection({
   });
 
   const createButton = canWrite ? (
-    <button
-      type="button"
-      className="nb-button"
-      data-variant="primary"
-      onClick={() => setCreating(true)}
-    >
+    <Button type="button" onClick={() => setCreating(true)} variant="default" size="sm">
       <Plus size={14} aria-hidden />
       Create secret
-    </button>
+    </Button>
   ) : null;
 
   const body = (
@@ -163,14 +154,9 @@ export function SecretsSection({
           description="Create a secret before starting IOU nodes when license checking is on. The value is write-only; copy the secret ID afterwards."
           action={
             canWrite ? (
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                onClick={() => setCreating(true)}
-              >
+              <Button type="button" onClick={() => setCreating(true)} variant="default" size="sm">
                 Create secret
-              </button>
+              </Button>
             ) : undefined
           }
         />
@@ -197,20 +183,9 @@ export function SecretsSection({
                 <Td mono>{formatStamp(secret.createdAt)}</Td>
                 <Td align="right">
                   {canWrite ? (
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-variant="ghost"
-                      data-size="sm"
-                      aria-label={`Delete ${secret.name}`}
-                      title="Delete secret"
-                      onClick={() => {
-                        remove.reset();
-                        setDeleteTarget(secret);
-                      }}
-                    >
+                    <Button type="button" aria-label={`Delete ${secret.name}`} title="Delete secret" onClick={() => { remove.reset(); setDeleteTarget(secret); }} variant="ghost" size="xs">
                       <Trash size={13} aria-hidden />
-                    </button>
+                    </Button>
                   ) : (
                     <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
                       read-only

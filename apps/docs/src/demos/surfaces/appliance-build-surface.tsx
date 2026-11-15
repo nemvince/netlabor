@@ -1,5 +1,6 @@
 import type { ApplianceBuildSurfaceProps } from './appliance-build-body.tsx';
 import Deferred from './deferred.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 const load = () => import('./appliance-build-body.tsx');
 
@@ -11,9 +12,9 @@ export default function ApplianceBuildSurface(props: ApplianceBuildSurfaceProps)
       load={load}
       props={props}
       placeholder={
-        <button type="button" className="nb-button" data-variant="primary" disabled>
+        <Button type="button" disabled variant="default" size="sm">
           New appliance build
-        </button>
+        </Button>
       }
     />
   );

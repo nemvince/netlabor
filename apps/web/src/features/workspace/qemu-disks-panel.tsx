@@ -9,6 +9,7 @@ import { toast } from '../../components/toast.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const DISKS = ['hda', 'hdb', 'hdc', 'hdd'] as const;
 type Disk = (typeof DISKS)[number];
@@ -195,39 +196,18 @@ export function QemuDisksPanel({
                 />
               </Field>
               <div className="flex flex-1 flex-wrap justify-end gap-1">
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={locked}
-                  onClick={() => {
-                    if (!existenceKnown || exists) setConfirm({ disk, action: 'create' });
-                    else void run(disk, 'create');
-                  }}
-                >
+                <Button type="button" disabled={locked} onClick={() => { if (!existenceKnown || exists) setConfirm({ disk, action: 'create' }); else void run(disk, 'create'); }} variant="outline" size="xs">
                   <Plus size={12} aria-hidden />
                   {busy === `${disk}:create` ? 'Creating…' : 'Create'}
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={locked}
-                  onClick={() => void run(disk, 'resize')}
-                >
+                </Button>
+                <Button type="button" disabled={locked} onClick={() => void run(disk, 'resize')} variant="outline" size="xs">
                   <Maximize2 size={12} aria-hidden />
                   {busy === `${disk}:resize` ? 'Resizing…' : 'Resize'}
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={locked}
-                  onClick={() => setConfirm({ disk, action: 'delete' })}
-                >
+                </Button>
+                <Button type="button" disabled={locked} onClick={() => setConfirm({ disk, action: 'delete' })} variant="outline" size="xs">
                   <Trash2 size={12} aria-hidden />
                   {busy === `${disk}:delete` ? 'Deleting…' : 'Delete'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

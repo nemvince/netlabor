@@ -6,6 +6,8 @@ import { Notice } from '../../components/notice.tsx';
 import { toast } from '../../components/toast.tsx';
 import { client } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
+import { Button } from '@netlabor/ui/components/button';
+import { Textarea } from '@netlabor/ui/components/textarea';
 
 type NodeAction = 'start' | 'stop' | 'suspend' | 'reload';
 
@@ -83,16 +85,9 @@ export function NodeConsolePanel({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-1.5">
-        <button
-          type="button"
-          className="nb-button w-full"
-          data-size="sm"
-          data-variant="primary"
-          disabled={!canConsole}
-          onClick={onOpenConsole}
-        >
+        <Button type="button" disabled={!canConsole} onClick={onOpenConsole} className="w-full" variant="default" size="xs">
           <SquareTerminal size={12} aria-hidden /> Open console
-        </button>
+        </Button>
         <details
           className="rounded-[2px] border px-2 py-1.5"
           style={{ borderColor: 'var(--color-rule)' }}
@@ -103,54 +98,24 @@ export function NodeConsolePanel({
           <div className="mt-1.5 flex flex-wrap gap-1">
             {canControl ? (
               <>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={started || node.status === 'suspended'}
-                  onClick={() => onAction('start')}
-                >
+                <Button type="button" disabled={started || node.status === 'suspended'} onClick={() => onAction('start')} variant="outline" size="xs">
                   <Play size={12} aria-hidden /> Start
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={!started && node.status !== 'suspended'}
-                  onClick={() => onAction('stop')}
-                >
+                </Button>
+                <Button type="button" disabled={!started && node.status !== 'suspended'} onClick={() => onAction('stop')} variant="outline" size="xs">
                   <Square size={12} aria-hidden /> Stop
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={!started}
-                  onClick={() => onAction('suspend')}
-                >
+                </Button>
+                <Button type="button" disabled={!started} onClick={() => onAction('suspend')} variant="outline" size="xs">
                   <Pause size={12} aria-hidden /> Suspend
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={!started}
-                  onClick={() => onAction('reload')}
-                >
+                </Button>
+                <Button type="button" disabled={!started} onClick={() => onAction('reload')} variant="outline" size="xs">
                   <RotateCw size={12} aria-hidden /> Reload
-                </button>
+                </Button>
               </>
             ) : null}
             {node.consoleType === 'telnet' || node.consoleType === 'vnc' ? (
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                disabled={!canConsole}
-                onClick={() => void resetConsole()}
-              >
+              <Button type="button" disabled={!canConsole} onClick={() => void resetConsole()} variant="outline" size="xs">
                 <TimerReset size={12} aria-hidden /> Reset console
-              </button>
+              </Button>
             ) : null}
           </div>
         </details>
@@ -165,9 +130,9 @@ export function NodeConsolePanel({
         style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-sunken)' }}
       >
         <div className="nb-rule-label mb-1">Run commands</div>
-        <textarea
+        <Textarea
           aria-label="Console commands"
-          className="nb-field tabular min-h-20 resize-y font-mono text-[11px]"
+          className="tabular min-h-20 resize-y font-mono text-[11px]"
           placeholder={'show version\nshow ip interface brief'}
           value={commands}
           onChange={(event) => setCommands(event.target.value)}
@@ -187,15 +152,9 @@ export function NodeConsolePanel({
               onChange={(event) => setTimeoutMs(event.target.value)}
             />
           </label>
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            disabled={busy || !canConsole}
-            onClick={() => void runCommands()}
-          >
+          <Button type="button" disabled={busy || !canConsole} onClick={() => void runCommands()} variant="outline" size="xs">
             {busy ? 'Running…' : 'Run'}
-          </button>
+          </Button>
         </div>
         {transcript ? (
           <pre

@@ -17,6 +17,7 @@ import { toast } from '../../components/toast.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const poolSchema = z.object({
   name: z
@@ -158,12 +159,12 @@ function PoolDialog({
           )}
         </Field>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button type="submit" className="nb-button" data-variant="primary" disabled={pending}>
+          </Button>
+          <Button type="submit" disabled={pending} variant="default" size="sm">
             {pending ? 'Saving…' : editing ? 'Save pool' : 'Create pool'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -208,15 +209,10 @@ export function PoolsSection({
       description="Pools group computes so projects and templates can pick one by capacity instead of naming a host."
       actions={
         canWrite ? (
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => setDialog({})}
-          >
+          <Button type="button" onClick={() => setDialog({})} variant="default" size="sm">
             <Plus size={14} aria-hidden />
             Create pool
-          </button>
+          </Button>
         ) : null
       }
     >
@@ -231,14 +227,9 @@ export function PoolsSection({
           description="Create a pool to give projects and templates a set of computes to place nodes on."
           action={
             canWrite ? (
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                onClick={() => setDialog({})}
-              >
+              <Button type="button" onClick={() => setDialog({})} variant="default" size="sm">
                 Create pool
-              </button>
+              </Button>
             ) : undefined
           }
         />
@@ -276,31 +267,12 @@ export function PoolsSection({
                 <Td align="right">
                   {canWrite ? (
                     <span className="inline-flex items-center gap-0.5">
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-variant="ghost"
-                        data-size="sm"
-                        aria-label={`Edit ${pool.name}`}
-                        title="Edit pool"
-                        onClick={() => setDialog({ pool })}
-                      >
+                      <Button type="button" aria-label={`Edit ${pool.name}`} title="Edit pool" onClick={() => setDialog({ pool })} variant="ghost" size="xs">
                         <Pencil size={13} aria-hidden />
-                      </button>
-                      <button
-                        type="button"
-                        className="nb-button"
-                        data-variant="ghost"
-                        data-size="sm"
-                        aria-label={`Delete ${pool.name}`}
-                        title="Delete pool"
-                        onClick={() => {
-                          remove.reset();
-                          setDeleteTarget(pool);
-                        }}
-                      >
+                      </Button>
+                      <Button type="button" aria-label={`Delete ${pool.name}`} title="Delete pool" onClick={() => { remove.reset(); setDeleteTarget(pool); }} variant="ghost" size="xs">
                         <Trash size={13} aria-hidden />
-                      </button>
+                      </Button>
                     </span>
                   ) : (
                     <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>

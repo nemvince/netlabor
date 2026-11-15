@@ -20,6 +20,7 @@ import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp, formatUserAgent, shortId } from '../lib/format.ts';
 import { queryClient } from '../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const passwordSchema = z
   .object({
@@ -265,14 +266,9 @@ export function ProfilePage() {
               />
             </Field>
             <div className="flex justify-end">
-              <button
-                type="submit"
-                className="nb-button"
-                data-variant="primary"
-                disabled={changePassword.isPending}
-              >
+              <Button type="submit" disabled={changePassword.isPending} variant="default" size="sm">
                 {changePassword.isPending ? 'Changing…' : 'Change password'}
-              </button>
+              </Button>
             </div>
           </form>
         </SettingsCard>
@@ -284,15 +280,9 @@ export function ProfilePage() {
           title="Sessions"
           description="Each row is one signed-in browser. Revoking a session takes effect immediately."
           actions={
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              onClick={() => void sessions.refetch()}
-              disabled={sessions.isFetching}
-            >
+            <Button type="button" onClick={() => void sessions.refetch()} disabled={sessions.isFetching} variant="outline" size="xs">
               {sessions.isFetching ? 'Refreshing…' : 'Refresh'}
-            </button>
+            </Button>
           }
         >
           {sessions.isPending ? (
@@ -337,14 +327,9 @@ export function ProfilePage() {
                           sign out to end
                         </span>
                       ) : (
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-size="sm"
-                          onClick={() => setRevokeTarget(session)}
-                        >
+                        <Button type="button" onClick={() => setRevokeTarget(session)} variant="outline" size="xs">
                           Revoke
-                        </button>
+                        </Button>
                       )}
                     </Td>
                   </Tr>
@@ -370,16 +355,9 @@ export function ProfilePage() {
           title="Preferences"
           description="Values stored with your account and read by the browser app. They override controller defaults for you only."
           actions={
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              data-size="sm"
-              onClick={onSavePreferences}
-              disabled={savePreferences.isPending || hasPreferenceErrors}
-            >
+            <Button type="button" onClick={onSavePreferences} disabled={savePreferences.isPending || hasPreferenceErrors} variant="default" size="xs">
               {savePreferences.isPending ? 'Saving…' : 'Save preferences'}
-            </button>
+            </Button>
           }
         >
           <div className="flex flex-col gap-2">

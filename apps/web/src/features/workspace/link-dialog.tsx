@@ -13,6 +13,7 @@ import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { LinkMarkersPanel } from './link-markers-panel.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 interface FilterDraft {
   delayMs: string;
@@ -295,22 +296,10 @@ export function LinkDialog({
               {linkData.adapterB}/{linkData.portB} · {linkData.dataplane?.mode ?? 'inactive'}
             </span>
             <div className="ml-auto flex items-center gap-1">
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                disabled={busy !== null || linkData.status === 'pending'}
-                onClick={() => void resetDataplane()}
-              >
+              <Button type="button" disabled={busy !== null || linkData.status === 'pending'} onClick={() => void resetDataplane()} variant="outline" size="xs">
                 <RotateCcw size={12} aria-hidden /> {busy === 'reset' ? 'Resetting…' : 'Reset'}
-              </button>
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                disabled={busy !== null || linkData.status === 'pending'}
-                onClick={() => void toggleSuspend()}
-              >
+              </Button>
+              <Button type="button" disabled={busy !== null || linkData.status === 'pending'} onClick={() => void toggleSuspend()} variant="outline" size="xs">
                 {linkData.suspend ? (
                   <>
                     <Play size={12} aria-hidden /> Resume link
@@ -320,7 +309,7 @@ export function LinkDialog({
                     <Pause size={12} aria-hidden /> Suspend link
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
           {error ? <Notice tone="error">{error}</Notice> : null}
@@ -335,27 +324,14 @@ export function LinkDialog({
             >
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <span className="nb-rule-label">Appearance</span>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={busy !== null}
-                  onClick={() => void saveAppearance()}
-                >
+                <Button type="button" disabled={busy !== null} onClick={() => void saveAppearance()} variant="outline" size="xs">
                   {busy === 'style' ? 'Saving…' : 'Save appearance'}
-                </button>
+                </Button>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  title="Default status colour"
-                  aria-label="Use default link colour"
-                  onClick={() => setStyleColor('')}
-                >
+                <Button type="button" title="Default status colour" aria-label="Use default link colour" onClick={() => setStyleColor('')} variant="outline" size="xs">
                   Auto
-                </button>
+                </Button>
                 {LINK_COLORS.map((preset) => (
                   <button
                     key={preset.value}
@@ -410,25 +386,12 @@ export function LinkDialog({
                   Traffic filters
                 </span>
                 <div className="flex gap-1">
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    disabled={busy !== null}
-                    onClick={() => void clearFilters()}
-                  >
+                  <Button type="button" disabled={busy !== null} onClick={() => void clearFilters()} variant="outline" size="xs">
                     Clear
-                  </button>
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    data-variant="primary"
-                    disabled={busy !== null}
-                    onClick={() => void saveFilters()}
-                  >
+                  </Button>
+                  <Button type="button" disabled={busy !== null} onClick={() => void saveFilters()} variant="default" size="xs">
                     {busy === 'filters' ? 'Applying…' : 'Apply'}
-                  </button>
+                  </Button>
                 </div>
               </div>
               {linkData.dataplane?.mode === 'relay' ? (
@@ -530,54 +493,28 @@ export function LinkDialog({
                 )}
               </div>
               <div className="flex flex-wrap gap-1">
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  data-variant="primary"
-                  disabled={busy !== null}
-                  onClick={() => void capture('start')}
-                >
+                <Button type="button" disabled={busy !== null} onClick={() => void capture('start')} variant="default" size="xs">
                   <Radio size={12} aria-hidden /> Start capture
-                </button>
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  disabled={busy !== null || !linkData.capture}
-                  onClick={() => void capture('stop')}
-                >
+                </Button>
+                <Button type="button" disabled={busy !== null || !linkData.capture} onClick={() => void capture('stop')} variant="outline" size="xs">
                   <Square size={12} aria-hidden /> Stop capture
-                </button>
+                </Button>
                 {linkData.capture ? (
                   <>
-                    <a
-                      className="nb-button"
-                      data-size="sm"
-                      href={`/api/links/${linkData.id}/capture.pcap`}
-                      download
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      render={<a href={`/api/links/${linkData.id}/capture.pcap`} download />}
                       aria-disabled={linkData.capture.sizeBytes === 0}
                       style={{
-                        textDecoration: 'none',
                         opacity: linkData.capture.sizeBytes === 0 ? 0.5 : 1,
                       }}
                     >
                       <Download size={12} aria-hidden /> Download pcap
-                    </a>
-                    <button
-                      type="button"
-                      className="nb-button"
-                      data-size="sm"
-                      onClick={() => {
-                        onOpenWireshark(
-                          linkData.id,
-                          `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`,
-                        );
-                        onClose();
-                      }}
-                    >
+                    </Button>
+                    <Button type="button" onClick={() => { onOpenWireshark( linkData.id, `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`, ); onClose(); }} variant="outline" size="xs">
                       <Waves size={12} aria-hidden /> Open Wireshark
-                    </button>
+                    </Button>
                   </>
                 ) : null}
               </div>
@@ -601,9 +538,9 @@ export function LinkDialog({
           ) : null}
 
           <DialogFooter>
-            <button type="button" className="nb-button" onClick={onClose}>
+            <Button type="button" onClick={onClose} variant="outline" size="sm">
               Close
-            </button>
+            </Button>
           </DialogFooter>
         </div>
       ) : null}

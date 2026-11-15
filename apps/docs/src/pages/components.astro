@@ -35,7 +35,7 @@ const snippets = {
   icon={Server}
   title="No computes registered"
   description="Add a compute to place nodes and images."
-  action={<button className="nb-button" data-variant="primary">Add compute</button>}
+  action={<Button variant="default">Add compute</Button>}
 />`,
   page: `<Page>
   <PageHeader title="Nodes" description="One topology, one namespace per compute." />
@@ -70,8 +70,8 @@ const snippets = {
 <Dialog open={open} onOpenChange={setOpen} title="New link" description="Ports are automatic.">
   <Field label="Endpoint A" htmlFor="a"><Input id="a" /></Field>
   <DialogFooter>
-    <button className="nb-button" onClick={() => setOpen(false)}>Cancel</button>
-    <button className="nb-button" data-variant="primary">Create link</button>
+    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+    <Button variant="default">Create link</Button>
   </DialogFooter>
 </Dialog>`,
   confirm: `<ConfirmDialog
@@ -163,7 +163,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <Badge tone="copper">owner</Badge>
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.badge}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.badge}>Copy</button>
       <pre><code>{snippets.badge}</code></pre>
     </div>
   </div>
@@ -180,7 +180,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <Notice tone="error">AGENT_UNAVAILABLE: compute eu-1 is offline.</Notice>
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.notice}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.notice}>Copy</button>
       <pre><code>{snippets.notice}</code></pre>
     </div>
   </div>
@@ -198,7 +198,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.empty}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.empty}>Copy</button>
       <pre><code>{snippets.empty}</code></pre>
     </div>
   </div>
@@ -226,7 +226,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       </Page>
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.page}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.page}>Copy</button>
       <pre><code>{snippets.page}</code></pre>
     </div>
   </div>
@@ -249,7 +249,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       </Table>
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.table}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.table}>Copy</button>
       <pre><code>{snippets.table}</code></pre>
     </div>
   </div>
@@ -265,7 +265,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <FormDemo client:load />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.field}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.field}>Copy</button>
       <pre><code>{snippets.field}</code></pre>
     </div>
   </div>
@@ -279,7 +279,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <KeyValueDemo client:load />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.keyvalue}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.keyvalue}>Copy</button>
       <pre><code>{snippets.keyvalue}</code></pre>
     </div>
   </div>
@@ -295,7 +295,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <DialogDemo client:load />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.dialog}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.dialog}>Copy</button>
       <pre><code>{snippets.dialog}</code></pre>
     </div>
   </div>
@@ -309,7 +309,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <ToastDemo client:load />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.toast}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.toast}>Copy</button>
       <pre><code>{snippets.toast}</code></pre>
     </div>
   </div>
@@ -323,7 +323,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <CopyDemo client:load />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.copy}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.copy}>Copy</button>
       <pre><code>{snippets.copy}</code></pre>
     </div>
   </div>
@@ -337,7 +337,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <TabsDemo client:load />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.tabs}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.tabs}>Copy</button>
       <pre><code>{snippets.tabs}</code></pre>
     </div>
   </div>
@@ -357,7 +357,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       </div>
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.spark}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.spark}>Copy</button>
       <pre><code>{snippets.spark}</code></pre>
     </div>
   </div>
@@ -374,7 +374,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.privileges}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.privileges}>Copy</button>
       <pre><code>{snippets.privileges}</code></pre>
     </div>
   </div>
@@ -396,7 +396,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       </span>
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.glyph}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.glyph}>Copy</button>
       <pre><code>{snippets.glyph}</code></pre>
     </div>
   </div>
@@ -410,7 +410,7 @@ const routerSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" f
       <ImagePickerDemo client:only="react" />
     </div>
     <div class="docs-demo__code">
-      <button class="nb-button docs-demo__copy" data-size="sm" data-variant="ghost" data-copy={snippets.image}>Copy</button>
+      <button class="docs-demo__copy inline-flex h-6 items-center gap-1 rounded-sm border border-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" data-copy={snippets.image}>Copy</button>
       <pre><code>{snippets.image}</code></pre>
     </div>
   </div>

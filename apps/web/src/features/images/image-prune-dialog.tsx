@@ -11,6 +11,7 @@ import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const PruneImageSchema = z.object({
   imageId: z.string(),
@@ -197,35 +198,15 @@ export function ImagePruneDialog({
         ) : null}
 
         <DialogFooter>
-          <button
-            type="button"
-            className="nb-button"
-            disabled={busy}
-            onClick={() => onOpenChange(false)}
-          >
+          <Button type="button" disabled={busy} onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            disabled={busy}
-            onClick={() => {
-              setPreview(null);
-              setJob(null);
-              void run(true);
-            }}
-          >
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => { setPreview(null); setJob(null); void run(true); }} variant="outline" size="sm">
             Re-run dry run
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="danger"
-            disabled={busy || removable === 0}
-            onClick={() => void run(false)}
-          >
+          </Button>
+          <Button type="button" disabled={busy || removable === 0} onClick={() => void run(false)} variant="destructive" size="sm">
             <Trash2 size={12} aria-hidden /> Prune {removable} replica(s)
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>

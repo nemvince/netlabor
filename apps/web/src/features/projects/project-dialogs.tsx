@@ -13,6 +13,7 @@ import { messageOf } from '../../lib/errors.ts';
 import { jobResultString, waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { uploadFile } from '../../lib/uploads.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const projectSchema = z.object({
   name: z.string().min(1, 'enter a project name').max(128, 'use at most 128 characters'),
@@ -155,28 +156,16 @@ export function CreateProjectDialog({
                   placeholder="value"
                   {...form.register(`variables.${index}.value`)}
                 />
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-size="sm"
-                  data-variant="ghost"
-                  aria-label={`Remove variable ${index + 1}`}
-                  onClick={() => variables.remove(index)}
-                >
+                <Button type="button" aria-label={`Remove variable ${index + 1}`} onClick={() => variables.remove(index)} variant="ghost" size="xs">
                   <X size={13} aria-hidden />
-                </button>
+                </Button>
               </div>
             ))}
           </div>
           <div className="mt-1">
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              onClick={() => variables.append({ key: '', value: '' })}
-            >
+            <Button type="button" onClick={() => variables.append({ key: '', value: '' })} variant="outline" size="xs">
               <Plus size={12} aria-hidden /> Add variable
-            </button>
+            </Button>
           </div>
           {variableError ? (
             <p className="text-[11px]" role="alert" style={{ color: 'var(--color-signal-down)' }}>
@@ -207,17 +196,12 @@ export function CreateProjectDialog({
         </fieldset>
         {pools.isError ? <Notice tone="error">{messageOf(pools.error)}</Notice> : null}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={createProject.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={createProject.isPending} variant="default" size="sm">
             {createProject.isPending ? 'Creating…' : 'Create project'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -286,14 +270,9 @@ export function DuplicateProjectDialog({
             The duplicate was created{createdId ? ` with project ${createdId.slice(0, 8)}` : ''}.
           </Notice>
           <DialogFooter>
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" onClick={() => onOpenChange(false)} variant="default" size="sm">
               Done
-            </button>
+            </Button>
           </DialogFooter>
         </div>
       ) : (
@@ -329,12 +308,12 @@ export function DuplicateProjectDialog({
             {...form.register('includeFiles')}
           />
           <DialogFooter>
-            <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+            <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
               Cancel
-            </button>
-            <button type="submit" className="nb-button" data-variant="primary" disabled={busy}>
+            </Button>
+            <Button type="submit" disabled={busy} variant="default" size="sm">
               {busy ? 'Duplicating…' : 'Duplicate project'}
-            </button>
+            </Button>
           </DialogFooter>
         </form>
       )}
@@ -426,14 +405,9 @@ export function ImportProjectDialog({
             The archive was imported{createdId ? ` as project ${createdId.slice(0, 8)}` : ''}.
           </Notice>
           <DialogFooter>
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" onClick={() => onOpenChange(false)} variant="default" size="sm">
               Done
-            </button>
+            </Button>
           </DialogFooter>
         </div>
       </Dialog>
@@ -457,11 +431,11 @@ export function ImportProjectDialog({
         {error ? <Notice tone="error">{error}</Notice> : null}
         {notice ? <Notice tone="info">{notice}</Notice> : null}
         <Field label="Archive" htmlFor="import-file" hint="A project export from this controller.">
-          <input
+          <Input
             id="import-file"
             type="file"
             accept=".tar.gz,.tgz,application/gzip"
-            className="nb-field"
+            className=""
             disabled={busy}
             onChange={(event) => {
               setFile(event.target.files?.[0] ?? null);
@@ -501,26 +475,13 @@ export function ImportProjectDialog({
           </div>
         ) : null}
         <DialogFooter>
-          <button
-            type="button"
-            className="nb-button"
-            disabled={phase === 'importing'}
-            onClick={() => {
-              if (phase === 'uploading') abortRef.current?.abort();
-              else onOpenChange(false);
-            }}
-          >
+          <Button type="button" disabled={phase === 'importing'} onClick={() => { if (phase === 'uploading') abortRef.current?.abort(); else onOpenChange(false); }} variant="outline" size="sm">
             {phase === 'uploading' ? 'Stop upload' : 'Cancel'}
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={busy || !file}
-          >
+          </Button>
+          <Button type="submit" disabled={busy || !file} variant="default" size="sm">
             <Upload size={14} aria-hidden />
             {busy ? 'Importing…' : 'Upload and import'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>

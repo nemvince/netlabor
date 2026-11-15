@@ -15,6 +15,7 @@ import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { useMe } from '../auth/use-me.ts';
 import { ProjectAccessPanel } from './project-access-panel.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 const settingsSchema = z.object({
   name: z.string().min(1, 'enter a project name').max(128, 'use at most 128 characters'),
@@ -232,28 +233,16 @@ function GeneralSettings({
                 placeholder="value"
                 {...form.register(`variables.${index}.value`)}
               />
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="ghost"
-                aria-label={`Remove variable ${index + 1}`}
-                onClick={() => variables.remove(index)}
-              >
+              <Button type="button" aria-label={`Remove variable ${index + 1}`} onClick={() => variables.remove(index)} variant="ghost" size="xs">
                 <X size={13} aria-hidden />
-              </button>
+              </Button>
             </div>
           ))}
         </div>
         <div className="mt-1">
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            onClick={() => variables.append({ key: '', value: '' })}
-          >
+          <Button type="button" onClick={() => variables.append({ key: '', value: '' })} variant="outline" size="xs">
             <Plus size={12} aria-hidden /> Add variable
-          </button>
+          </Button>
         </div>
         {variableError ? (
           <p className="text-[11px]" role="alert" style={{ color: 'var(--color-signal-down)' }}>
@@ -287,17 +276,12 @@ function GeneralSettings({
       {pools.isError ? <Notice tone="error">{messageOf(pools.error)}</Notice> : null}
       {users.isError ? <Notice tone="error">{messageOf(users.error)}</Notice> : null}
       <DialogFooter>
-        <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+        <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
           Cancel
-        </button>
-        <button
-          type="submit"
-          className="nb-button"
-          data-variant="primary"
-          disabled={save.isPending || project.locked}
-        >
+        </Button>
+        <Button type="submit" disabled={save.isPending || project.locked} variant="default" size="sm">
           {save.isPending ? 'Saving…' : 'Save settings'}
-        </button>
+        </Button>
       </DialogFooter>
     </form>
   );

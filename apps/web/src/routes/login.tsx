@@ -10,6 +10,7 @@ import { useMe } from '../features/auth/use-me.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { queryClient } from '../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'enter your username').max(128),
@@ -123,14 +124,9 @@ export function LoginPage() {
               {...form.register('password')}
             />
           </Field>
-          <button
-            type="submit"
-            className="nb-button mt-1 justify-center"
-            data-variant="primary"
-            disabled={login.isPending}
-          >
+          <Button type="submit" disabled={login.isPending} className="mt-1 justify-center" variant="default" size="sm">
             {login.isPending ? 'Signing in…' : 'Sign in'}
-          </button>
+          </Button>
         </form>
 
         {providers.data && providers.data.length > 0 ? (
@@ -142,14 +138,15 @@ export function LoginPage() {
             </div>
             <div className="mt-3 flex flex-col gap-2">
               {providers.data.map((provider) => (
-                <a
+                <Button
                   key={provider.id}
-                  href={`/auth/oidc/${provider.id}/start`}
-                  className="nb-button justify-center"
-                  style={{ textDecoration: 'none' }}
+                  variant="outline"
+                  size="sm"
+                  className="justify-center"
+                  render={<a href={`/auth/oidc/${provider.id}/start`} />}
                 >
                   Continue with {provider.name}
-                </a>
+                </Button>
               ))}
             </div>
           </div>

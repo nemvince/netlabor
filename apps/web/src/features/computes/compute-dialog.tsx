@@ -15,6 +15,7 @@ import { messageOf } from '../../lib/errors.ts';
 import { waitForJob } from '../../lib/jobs.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { TokenOncePanel } from './token-once-panel.tsx';
+import { Button } from '@netlabor/ui/components/button';
 
 const computeSchema = z.object({
   name: z.string().min(1, 'enter a compute name').max(64, 'use at most 64 characters'),
@@ -157,14 +158,9 @@ export function ComputeDialog({
       >
         <TokenOncePanel token={issued.token} environment={issued.environment} />
         <DialogFooter>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button type="button" onClick={() => onOpenChange(false)} variant="default" size="sm">
             Done
-          </button>
+          </Button>
         </DialogFooter>
       </Dialog>
     );
@@ -216,15 +212,10 @@ export function ComputeDialog({
           <DockerImagesSection computeId={compute.id} canPull={can('image.write')} />
         ) : null}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={createCompute.isPending || updateCompute.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={createCompute.isPending || updateCompute.isPending} variant="default" size="sm">
             {editing
               ? updateCompute.isPending
                 ? 'Saving…'
@@ -232,7 +223,7 @@ export function ComputeDialog({
               : createCompute.isPending
                 ? 'Registering…'
                 : 'Register compute'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -267,14 +258,9 @@ export function RotateTokenDialog({
       >
         <TokenOncePanel token={issued.token} environment={issued.environment} />
         <DialogFooter>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => onOpenChange(false)}
-          >
+          <Button type="button" onClick={() => onOpenChange(false)} variant="default" size="sm">
             Done
-          </button>
+          </Button>
         </DialogFooter>
       </Dialog>
     );
@@ -294,18 +280,12 @@ export function RotateTokenDialog({
         </Notice>
         {rotate.isError ? <Notice tone="error">{messageOf(rotate.error)}</Notice> : null}
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="danger"
-            disabled={rotate.isPending}
-            onClick={() => rotate.mutate({ id: compute.id })}
-          >
+          </Button>
+          <Button type="button" disabled={rotate.isPending} onClick={() => rotate.mutate({ id: compute.id })} variant="destructive" size="sm">
             {rotate.isPending ? 'Rotating…' : 'Rotate token'}
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -355,16 +335,9 @@ function DockerImagesSection({ computeId, canPull }: { computeId: string; canPul
         <span className="text-[11px]" style={{ color: 'var(--color-ink-dim)' }}>
           {images.data?.length ?? 0} image(s) cached on this compute
         </span>
-        <button
-          type="button"
-          className="nb-button"
-          data-size="sm"
-          aria-label="Reload Docker images"
-          disabled={images.isFetching}
-          onClick={() => void images.refetch()}
-        >
+        <Button type="button" aria-label="Reload Docker images" disabled={images.isFetching} onClick={() => void images.refetch()} variant="outline" size="xs">
           <RefreshCw size={12} aria-hidden />
-        </button>
+        </Button>
       </div>
       {images.isPending ? (
         <p className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>
@@ -406,16 +379,9 @@ function DockerImagesSection({ computeId, canPull }: { computeId: string; canPul
               }}
             />
           </Field>
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            data-variant="primary"
-            disabled={pulling !== null || image.trim() === ''}
-            onClick={() => void pull()}
-          >
+          <Button type="button" disabled={pulling !== null || image.trim() === ''} onClick={() => void pull()} variant="default" size="xs">
             <Boxes size={12} aria-hidden /> {pulling ? 'Pulling…' : 'Pull'}
-          </button>
+          </Button>
         </div>
       ) : null}
     </fieldset>

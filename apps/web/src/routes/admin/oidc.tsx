@@ -20,6 +20,7 @@ import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp, shortId } from '../../lib/format.ts';
 import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const providerSchema = z.object({
   name: z.string().min(1, 'enter a name').max(64, 'use at most 64 characters'),
@@ -260,15 +261,10 @@ function ProviderDialog({
           style={{ borderColor: 'var(--color-rule)' }}
         >
           <span className="nb-rule-label">group mappings · claim value → app group</span>
-          <button
-            type="button"
-            className="nb-button"
-            data-size="sm"
-            onClick={() => mappings.append({ key: '', value: '' })}
-          >
+          <Button type="button" onClick={() => mappings.append({ key: '', value: '' })} variant="outline" size="xs">
             <Plus size={12} aria-hidden />
             Add mapping
-          </button>
+          </Button>
         </div>
         {mappings.fields.length === 0 ? (
           <p className="text-[12px]" style={{ color: 'var(--color-ink-faint)' }}>
@@ -293,28 +289,21 @@ function ProviderDialog({
                   spellCheck={false}
                   {...form.register(`groupMappings.${index}.value`)}
                 />
-                <button
-                  type="button"
-                  className="nb-button"
-                  data-variant="ghost"
-                  data-size="sm"
-                  aria-label={`Remove mapping ${index + 1}`}
-                  onClick={() => mappings.remove(index)}
-                >
+                <Button type="button" aria-label={`Remove mapping ${index + 1}`} onClick={() => mappings.remove(index)} variant="ghost" size="xs">
                   <Trash size={13} aria-hidden />
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         )}
 
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button type="submit" className="nb-button" data-variant="primary" disabled={pending}>
+          </Button>
+          <Button type="submit" disabled={pending} variant="default" size="sm">
             {pending ? 'Saving…' : provider ? 'Save provider' : 'Add provider'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -372,15 +361,10 @@ export function OidcAdminPage() {
         title="Single sign-on"
         description="OpenID Connect providers. Configure allowed redirect URIs on the provider before enabling one."
         actions={
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => setDialog({ mode: 'create' })}
-          >
+          <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
             <Plus size={14} aria-hidden />
             Add provider
-          </button>
+          </Button>
         }
       />
 
@@ -395,14 +379,9 @@ export function OidcAdminPage() {
             title="No identity providers"
             description="Add an OpenID Connect provider so accounts can sign in through your identity platform."
             action={
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                onClick={() => setDialog({ mode: 'create' })}
-              >
+              <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
                 Add provider
-              </button>
+              </Button>
             }
           />
         ) : (
@@ -423,21 +402,13 @@ export function OidcAdminPage() {
                   <Fragment key={provider.id}>
                     <Tr>
                       <Td>
-                        <button
-                          type="button"
-                          className="nb-button"
-                          data-variant="ghost"
-                          data-size="sm"
-                          aria-label={open ? 'Hide provider details' : 'Show provider details'}
-                          aria-expanded={open}
-                          onClick={() => toggleRow(provider.id)}
-                        >
+                        <Button type="button" aria-label={open ? 'Hide provider details' : 'Show provider details'} aria-expanded={open} onClick={() => toggleRow(provider.id)} variant="ghost" size="xs">
                           {open ? (
                             <ChevronDown size={13} aria-hidden />
                           ) : (
                             <ChevronRight size={13} aria-hidden />
                           )}
-                        </button>
+                        </Button>
                       </Td>
                       <Td>
                         <div className="tabular text-[12px]">{provider.name}</div>
@@ -471,28 +442,12 @@ export function OidcAdminPage() {
                       </Td>
                       <Td align="right">
                         <span className="inline-flex items-center gap-0.5">
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-variant="ghost"
-                            data-size="sm"
-                            aria-label={`Edit provider ${provider.name}`}
-                            title="Edit provider"
-                            onClick={() => setDialog({ mode: 'edit', provider })}
-                          >
+                          <Button type="button" aria-label={`Edit provider ${provider.name}`} title="Edit provider" onClick={() => setDialog({ mode: 'edit', provider })} variant="ghost" size="xs">
                             <Pencil size={13} aria-hidden />
-                          </button>
-                          <button
-                            type="button"
-                            className="nb-button"
-                            data-variant="ghost"
-                            data-size="sm"
-                            aria-label={`Delete provider ${provider.name}`}
-                            title="Delete provider"
-                            onClick={() => setDeleteTarget(provider)}
-                          >
+                          </Button>
+                          <Button type="button" aria-label={`Delete provider ${provider.name}`} title="Delete provider" onClick={() => setDeleteTarget(provider)} variant="ghost" size="xs">
                             <Trash size={13} aria-hidden />
-                          </button>
+                          </Button>
                         </span>
                       </Td>
                     </Tr>

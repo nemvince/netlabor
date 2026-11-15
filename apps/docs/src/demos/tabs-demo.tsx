@@ -1,4 +1,5 @@
 import { type KeyboardEvent, useId, useRef, useState } from 'react';
+import { Button } from '@netlabor/ui/components/button';
 
 const TABS = [
   {
@@ -36,24 +37,9 @@ export default function TabsDemo() {
     <div>
       <div role="tablist" aria-label="Node dock" className="docs-stack" onKeyDown={onKeyDown}>
         {TABS.map((tab, index) => (
-          <button
-            key={tab.id}
-            ref={(element) => {
-              buttons.current[index] = element;
-            }}
-            type="button"
-            role="tab"
-            id={`${baseId}-tab-${tab.id}`}
-            aria-selected={active === index}
-            aria-controls={`${baseId}-panel-${tab.id}`}
-            tabIndex={active === index ? 0 : -1}
-            className="nb-button"
-            data-size="sm"
-            data-variant={active === index ? 'primary' : undefined}
-            onClick={() => setActive(index)}
-          >
+          <Button key={tab.id} ref={(element: HTMLButtonElement | null) => { buttons.current[index] = element; }} type="button" role="tab" id={`${baseId}-tab-${tab.id}`} aria-selected={active === index} aria-controls={`${baseId}-panel-${tab.id}`} tabIndex={active === index ? 0 : -1} onClick={() => setActive(index)} variant="outline" size="xs">
             {tab.label}
-          </button>
+          </Button>
         ))}
       </div>
       {TABS.map((tab, index) => (
