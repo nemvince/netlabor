@@ -1,5 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import path from 'node:path';
 import { defineConfig, type ProxyOptions } from 'vite';
 
 const CONTROLLER = 'http://127.0.0.1:8080';
@@ -27,6 +28,9 @@ function controllerProxy(): ProxyOptions {
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: { '@': path.resolve(import.meta.dirname, 'src') },
+  },
   server: {
     port: 5173,
     proxy: {

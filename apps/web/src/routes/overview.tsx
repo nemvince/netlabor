@@ -1,8 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, LayoutTemplate, type LucideIcon, Network, Server, Wrench } from 'lucide-react';
-import { Badge } from '../components/Badge.tsx';
-import { Page, PageHeader, RuleRow } from '../components/Page.tsx';
+import {
+  ArrowRightIcon as ArrowRight,
+  SquaresFourIcon as LayoutTemplate,
+  type Icon,
+  NetworkIcon as Network,
+  HardDrivesIcon as Server,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
+import { Badge } from '../components/badge.tsx';
+import { Page, PageHeader, RuleRow } from '../components/page.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
@@ -16,7 +23,7 @@ function QuickLink({
   description,
 }: {
   to: '/projects' | '/computes' | '/library' | '/tools';
-  icon: LucideIcon;
+  icon: Icon;
   label: string;
   description: string;
 }) {

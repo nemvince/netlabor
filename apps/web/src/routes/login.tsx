@@ -4,12 +4,13 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Field, Input } from '../components/Field.tsx';
-import { Notice } from '../components/Notice.tsx';
+import { Field, Input } from '../components/field.tsx';
+import { Notice } from '../components/notice.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
-import { queryClient } from '../lib/queryClient.ts';
+import { queryClient } from '../lib/query-client.ts';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'enter your username').max(128),
@@ -123,14 +124,15 @@ export function LoginPage() {
               {...form.register('password')}
             />
           </Field>
-          <button
+          <Button
             type="submit"
-            className="nb-button mt-1 justify-center"
-            data-variant="primary"
             disabled={login.isPending}
+            className="mt-1 justify-center"
+            variant="default"
+            size="sm"
           >
             {login.isPending ? 'Signing in…' : 'Sign in'}
-          </button>
+          </Button>
         </form>
 
         {providers.data && providers.data.length > 0 ? (
@@ -145,8 +147,11 @@ export function LoginPage() {
                 <a
                   key={provider.id}
                   href={`/auth/oidc/${provider.id}/start`}
-                  className="nb-button justify-center"
-                  style={{ textDecoration: 'none' }}
+                  className={buttonVariants({
+                    variant: 'outline',
+                    size: 'sm',
+                    className: 'justify-center',
+                  })}
                 >
                   Continue with {provider.name}
                 </a>

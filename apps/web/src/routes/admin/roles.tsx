@@ -1,26 +1,33 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PRIVILEGES, type Privilege, type RoleRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Eye, Pencil, Plus, ShieldCheck, Trash } from 'lucide-react';
+import {
+  EyeIcon as Eye,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  ShieldCheckIcon as ShieldCheck,
+  TrashIcon as Trash,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Badge } from '../../components/Badge.tsx';
-import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
-import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
-import { EmptyState } from '../../components/EmptyState.tsx';
-import { Field, Input } from '../../components/Field.tsx';
-import { Notice } from '../../components/Notice.tsx';
-import { Loading, Page, PageHeader } from '../../components/Page.tsx';
-import { PrivilegeGrid } from '../../components/PrivilegeGrid.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
+import { Badge } from '../../components/badge.tsx';
+import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
+import { Dialog, DialogFooter } from '../../components/dialog.tsx';
+import { EmptyState } from '../../components/empty-state.tsx';
+import { Field, Input } from '../../components/field.tsx';
+import { Notice } from '../../components/notice.tsx';
+import { Loading, Page, PageHeader } from '../../components/page.tsx';
+import { PrivilegeGrid } from '../../components/privilege-grid.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../../components/table.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { ALL_PRIVILEGES, READ_PRIVILEGES } from '../../lib/privileges.ts';
-import { queryClient } from '../../lib/queryClient.ts';
+import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const roleSchema = z.object({
   name: z.string().min(1, 'enter a role name').max(64, 'use at most 64 characters'),
@@ -127,44 +134,44 @@ function RoleDialog({
             {ALL_PRIVILEGES.length}
           </span>
           <span className="flex items-center gap-1">
-            <button
+            <Button
               type="button"
-              className="nb-button"
-              data-size="sm"
               onClick={() => select(ALL_PRIVILEGES)}
+              variant="outline"
+              size="xs"
             >
               Select all
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="nb-button"
-              data-size="sm"
               onClick={() => select(READ_PRIVILEGES)}
+              variant="outline"
+              size="xs"
             >
               Read-only
-            </button>
-            <button type="button" className="nb-button" data-size="sm" onClick={() => select([])}>
+            </Button>
+            <Button type="button" onClick={() => select([])} variant="outline" size="xs">
               Clear
-            </button>
+            </Button>
           </span>
         </div>
         <PrivilegeGrid selected={selected} onToggle={toggle} />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="nb-button"
-            data-variant="primary"
             disabled={createRole.isPending || updateRole.isPending}
+            variant="default"
+            size="sm"
           >
             {createRole.isPending || updateRole.isPending
               ? 'Saving…'
               : role
                 ? 'Save role'
                 : 'Create role'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -204,9 +211,9 @@ function ViewRoleDialog({
         </div>
         <PrivilegeGrid selected={role.privileges} disabled />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
-          </button>
+          </Button>
         </DialogFooter>
       </div>
     </Dialog>
@@ -242,15 +249,15 @@ export function RolesAdminPage() {
         description="The six built-in roles are fixed; custom roles hold any subset of the privilege list."
         actions={
           canWrite ? (
-            <button
+            <Button
               type="button"
-              className="nb-button"
-              data-variant="primary"
               onClick={() => setDialog({ mode: 'create' })}
+              variant="default"
+              size="sm"
             >
               <Plus size={14} aria-hidden />
               Create role
-            </button>
+            </Button>
           ) : null
         }
       />
@@ -267,14 +274,14 @@ export function RolesAdminPage() {
             description="Create a role to give a group of users a shared privilege set."
             action={
               canWrite ? (
-                <button
+                <Button
                   type="button"
-                  className="nb-button"
-                  data-variant="primary"
                   onClick={() => setDialog({ mode: 'create' })}
+                  variant="default"
+                  size="sm"
                 >
                   Create role
-                </button>
+                </Button>
               ) : undefined
             }
           />
@@ -315,41 +322,38 @@ export function RolesAdminPage() {
                   <Td mono>{formatStamp(role.createdAt)}</Td>
                   <Td align="right">
                     <span className="inline-flex items-center gap-0.5">
-                      <button
+                      <Button
                         type="button"
-                        className="nb-button"
-                        data-variant="ghost"
-                        data-size="sm"
                         aria-label={`View privileges of ${role.name}`}
                         title="View privileges"
                         onClick={() => setDialog({ mode: 'view', role })}
+                        variant="ghost"
+                        size="xs"
                       >
                         <Eye size={13} aria-hidden />
-                      </button>
+                      </Button>
                       {!role.builtin && canWrite ? (
                         <>
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-variant="ghost"
-                            data-size="sm"
                             aria-label={`Edit ${role.name}`}
                             title="Edit role"
                             onClick={() => setDialog({ mode: 'edit', role })}
+                            variant="ghost"
+                            size="xs"
                           >
                             <Pencil size={13} aria-hidden />
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-variant="ghost"
-                            data-size="sm"
                             aria-label={`Delete ${role.name}`}
                             title="Delete role"
                             onClick={() => setDeleteTarget(role)}
+                            variant="ghost"
+                            size="xs"
                           >
                             <Trash size={13} aria-hidden />
-                          </button>
+                          </Button>
                         </>
                       ) : role.builtin ? (
                         <span

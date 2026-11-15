@@ -11,14 +11,14 @@ import {
 } from '@tanstack/react-router';
 import { StrictMode, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Notice } from './components/Notice.tsx';
-import { Loading } from './components/Page.tsx';
+import { Notice } from './components/notice.tsx';
+import { Loading } from './components/page.tsx';
 import { requireAuth } from './features/auth/require-auth.tsx';
-import { SetupWizard } from './features/setup/SetupWizard.tsx';
-import { AppShell } from './lib/AppShell.tsx';
+import { SetupWizard } from './features/setup/setup-wizard.tsx';
+import { AppShell } from './lib/app-shell.tsx';
 import { client, orpc } from './lib/api.ts';
 import { messageOf } from './lib/errors.ts';
-import { queryClient } from './lib/queryClient.ts';
+import { queryClient } from './lib/query-client.ts';
 import { LoginPage } from './routes/login.tsx';
 import { NotFoundPage } from './routes/not-found.tsx';
 import { RouteError } from './routes/route-error.tsx';
@@ -32,12 +32,12 @@ const OverviewPage = lazyRouteComponent(() => import('./routes/overview.tsx'), '
 const ProjectsPage = lazyRouteComponent(() => import('./routes/projects.tsx'), 'ProjectsPage');
 const ComputesPage = lazyRouteComponent(() => import('./routes/computes.tsx'), 'ComputesPage');
 const LibraryPage = lazyRouteComponent(
-  () => import('./features/library/LibraryPage.tsx'),
+  () => import('./features/library/library-page.tsx'),
   'LibraryPage',
 );
-const ToolsPage = lazyRouteComponent(() => import('./features/tools/ToolsPage.tsx'), 'ToolsPage');
+const ToolsPage = lazyRouteComponent(() => import('./features/tools/tools-page.tsx'), 'ToolsPage');
 const WorkspacePage = lazyRouteComponent(
-  () => import('./features/workspace/WorkspacePage.tsx'),
+  () => import('./features/workspace/workspace-page.tsx'),
   'WorkspacePage',
 );
 const ProfilePage = lazyRouteComponent(() => import('./routes/profile.tsx'), 'ProfilePage');

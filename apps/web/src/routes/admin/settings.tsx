@@ -1,29 +1,30 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
-  Download,
-  KeyRound,
-  RefreshCw,
-  RotateCcw,
-  TerminalSquare,
-  Timer,
-  Wrench,
-} from 'lucide-react';
+  DownloadSimpleIcon as Download,
+  KeyIcon as KeyRound,
+  ArrowsClockwiseIcon as RefreshCw,
+  ArrowCounterClockwiseIcon as RotateCcw,
+  TerminalWindowIcon as TerminalSquare,
+  TimerIcon as Timer,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Field } from '../../components/Field.tsx';
-import { displaySettingValue, KeyValueEditor } from '../../components/KeyValueEditor.tsx';
-import { Notice } from '../../components/Notice.tsx';
-import { Loading, Page, PageHeader } from '../../components/Page.tsx';
-import { toast } from '../../components/Toast.tsx';
-import { UnitInput } from '../../components/UnitInput.tsx';
-import { SecretsSection } from '../../features/admin/SecretsSection.tsx';
+import { Field } from '../../components/field.tsx';
+import { displaySettingValue, KeyValueEditor } from '../../components/key-value-editor.tsx';
+import { Notice } from '../../components/notice.tsx';
+import { Loading, Page, PageHeader } from '../../components/page.tsx';
+import { toast } from '../../components/toast.tsx';
+import { UnitInput } from '../../components/unit-input.tsx';
+import { SecretsSection } from '../../features/admin/secrets-section.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
-import { SettingsCard, SettingsIcon } from '../../features/settings/SettingsCard.tsx';
+import { SettingsCard, SettingsIcon } from '../../features/settings/settings-card.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
-import { queryClient } from '../../lib/queryClient.ts';
+import { queryClient } from '../../lib/query-client.ts';
 import { versionLabel } from '../../lib/version.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const ROWS_KEY = 'ui.defaultConsoleRows';
 const COLS_KEY = 'ui.defaultConsoleCols';
@@ -274,16 +275,16 @@ export function SettingsAdminPage() {
             title="Console defaults"
             description="The terminal size a console tab opens with when a node does not override it. Rows are the height; columns are the width."
             actions={
-              <button
+              <Button
                 type="button"
-                className="nb-button"
-                data-size="sm"
                 onClick={onConsoleDefaults}
                 disabled={!canWrite}
+                variant="outline"
+                size="xs"
               >
                 <RotateCcw size={13} aria-hidden />
                 Reset to defaults
-              </button>
+              </Button>
             }
           >
             <div className="grid gap-3 sm:grid-cols-2">
@@ -427,16 +428,16 @@ export function SettingsAdminPage() {
             title="Controller updates"
             description="Updates come from this project's GitHub releases. Stable follows tagged releases; nightly follows every commit on main. Save the channel before checking."
             actions={
-              <button
+              <Button
                 type="button"
-                className="nb-button"
-                data-size="sm"
                 onClick={() => void updateCheck.refetch()}
                 disabled={!canRead || updateCheck.isFetching}
+                variant="outline"
+                size="xs"
               >
                 <RefreshCw size={13} aria-hidden />
                 {updateCheck.isFetching ? 'Checking…' : 'Check now'}
-              </button>
+              </Button>
             }
           >
             <fieldset className="border-0 p-0">
@@ -498,19 +499,18 @@ export function SettingsAdminPage() {
               ) : updateCheck.data?.installable === false ? (
                 <span style={{ color: 'var(--color-ink-faint)' }}>{updateCheck.data.reason}</span>
               ) : updateCheck.data?.available ? (
-                <button
+                <Button
                   type="button"
-                  className="nb-button"
-                  data-variant="primary"
-                  data-size="sm"
                   onClick={() => installUpdate.mutate({})}
                   disabled={!canWrite || installUpdate.isPending}
+                  variant="default"
+                  size="xs"
                 >
                   <Download size={13} aria-hidden />
                   {installUpdate.isPending
                     ? 'Installing…'
                     : `Install ${updateCheck.data.latestVersion ?? 'update'}`}
-                </button>
+                </Button>
               ) : updateCheck.data?.latestVersion === null ? (
                 <span style={{ color: 'var(--color-ink-faint)' }}>
                   No releases published on this channel yet.
@@ -573,23 +573,24 @@ export function SettingsAdminPage() {
                 You have unsaved changes.
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <button
+                <Button
                   type="button"
-                  className="nb-button"
                   onClick={onDiscard}
                   disabled={updateSettings.isPending}
+                  variant="outline"
+                  size="sm"
                 >
                   Discard
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="nb-button"
-                  data-variant="primary"
                   onClick={onSave}
                   disabled={updateSettings.isPending || hasFieldErrors}
+                  variant="default"
+                  size="sm"
                 >
                   {updateSettings.isPending ? 'Saving…' : 'Save changes'}
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}

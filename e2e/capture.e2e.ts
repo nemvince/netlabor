@@ -28,11 +28,12 @@ test.describe('capture', () => {
 
     const dialog = page.getByRole('dialog', { name: /^Link / });
     await expect(dialog).toBeVisible({ timeout: 15_000 });
+    await dialog.getByRole('tab', { name: 'Capture' }).click();
 
     const start = dialog.getByRole('button', { name: 'Start capture' });
     const stop = dialog.getByRole('button', { name: 'Stop capture' });
     await expect(start.or(stop).first()).toBeVisible();
-    await expect(dialog.getByText('Capture', { exact: true })).toBeVisible();
+    await expect(dialog.locator('span.nb-rule-label', { hasText: 'Capture' })).toBeVisible();
 
     const download = dialog.getByRole('link', { name: 'Download pcap' });
     if ((await download.count()) > 0) {

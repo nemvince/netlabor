@@ -15,7 +15,7 @@ export interface SoftwareEntry {
   name: string;
   group: SoftwareGroup;
   description: string;
-  /** lucide-react icon name, resolved by the web UI. */
+  /** phosphor icon name, resolved by the web UI. */
   icon: string;
   /** Package list per OS family; omitting a family hides the entry there. */
   packages: Partial<Record<OsFamily, string[]>>;

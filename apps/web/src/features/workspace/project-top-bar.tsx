@@ -1,0 +1,387 @@
+import type { ProjectRow } from '@netlabor/contract';
+import { Link } from '@tanstack/react-router';
+import {
+  ArrowLeftIcon as ArrowLeft,
+  CheckIcon as Check,
+  CopyIcon as Copy,
+  DownloadSimpleIcon as Download,
+  EyeIcon as Eye,
+  FolderOpenIcon as FolderOpen,
+  SquaresFourIcon as LayoutTemplate,
+  LockIcon as Lock,
+  DotsThreeIcon as MoreHorizontal,
+  ArrowDownIcon as PanelBottom,
+  SidebarSimpleIcon as PanelLeft,
+  SidebarIcon as PanelRight,
+  PlayIcon as Play,
+  PowerIcon as Power,
+  SlidersHorizontalIcon as Settings2,
+  SquareIcon as Square,
+  LockOpenIcon as Unlock,
+  WrenchIcon as Wrench,
+  LightningIcon as Zap,
+} from '@phosphor-icons/react';
+import {
+  DropdownMenu,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@netlabor/ui/components/dropdown-menu';
+import type { ReactNode } from 'react';
+import { Badge } from '../../components/badge.tsx';
+import { TOOL_TABS, type ToolTab } from '../tools/tool-tabs.ts';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
+
+const MENU_CLASS = 'z-50 min-w-52 rounded-[3px] border p-1';
+const MENU_STYLE = {
+  background: 'var(--color-panel)',
+  borderColor: 'var(--color-rule-strong)',
+  boxShadow: '0 12px 32px rgba(0,0,0,0.4)',
+} as const;
+const ITEM_CLASS =
+  'flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12px] outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-40 data-[highlighted]:bg-white/[0.06]';
+
+function MenuItem({
+  icon,
+  children,
+  onSelect,
+  disabled,
+}: {
+  icon: ReactNode;
+  children: ReactNode;
+  onSelect: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <DropdownMenuItem className={ITEM_CLASS} disabled={disabled} onClick={onSelect}>
+      <span aria-hidden style={{ color: 'var(--color-ink-faint)' }}>
+        {icon}
+      </span>
+      {children}
+    </DropdownMenuItem>
+  );
+}
+
+/** Workspace top bar: project lifecycle, bulk power, and grouped project tools. */
+export function ProjectTopBar({
+  project,
+  nodeCount,
+  busy,
+  exportProgress,
+  canOpen,
+  canWrite,
+  canExport,
+  canFault,
+  canSettings,
+  onToggleOpen,
+  onStartAll,
+  onStopAll,
+  onToggleLock,
+  onOpenSnapshots,
+  onOpenFaults,
+  onOpenSettings,
+  onOpenFiles,
+  onOpenTemplates,
+  onOpenNetworkTool,
+  onExport,
+  onDuplicate,
+  paletteOpen,
+  inspectorOpen,
+  dockOpen,
+  onTogglePalette,
+  onToggleInspector,
+  onToggleDock,
+  collaborators,
+  selfCollabId,
+  collabStatus,
+}: {
+  project: ProjectRow;
+  nodeCount: number;
+  busy: string | null;
+  exportProgress: number | null;
+  canOpen: boolean;
+  canWrite: boolean;
+  canExport: boolean;
+  canFault: boolean;
+  canSettings: boolean;
+  onToggleOpen: () => void;
+  onStartAll: () => void;
+  onStopAll: () => void;
+  onToggleLock: () => void;
+  onOpenSnapshots: () => void;
+  onOpenFaults: () => void;
+  onOpenSettings: () => void;
+  onOpenFiles: () => void;
+  onOpenTemplates: () => void;
+  onOpenNetworkTool: (tool: ToolTab) => void;
+  onExport: () => void;
+  onDuplicate: () => void;
+  paletteOpen: boolean;
+  inspectorOpen: boolean;
+  dockOpen: boolean;
+  onTogglePalette: () => void;
+  onToggleInspector: () => void;
+  onToggleDock: () => void;
+  collaborators: { id: string; name: string; color: string }[];
+  selfCollabId: string | null;
+  collabStatus: 'connecting' | 'live' | 'offline';
+}) {
+  const opened = project.status === 'opened';
+  return (
+    <header
+      className="flex min-h-[42px] shrink-0 flex-wrap items-center gap-2 border-b px-2 py-1 sm:h-[42px] sm:flex-nowrap sm:py-0"
+      style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
+    >
+      <Link
+        to="/projects"
+        aria-label="Back to projects"
+        title="Back to projects"
+        className={buttonVariants({ variant: 'ghost', size: 'xs' })}
+      >
+        <ArrowLeft size={14} aria-hidden />
+      </Link>
+      <span className="min-w-0">
+        <span className="block max-w-[240px] truncate text-[13px] leading-[1.2] font-semibold">
+          {project.name}
+        </span>
+        <span
+          className="tabular block text-[10px] leading-[1.3]"
+          style={{ color: 'var(--color-ink-faint)' }}
+          title={`Project ${project.id}`}
+        >
+          {nodeCount === 1 ? '1 node' : `${nodeCount} nodes`}
+        </span>
+      </span>
+      <Badge tone={opened ? 'up' : 'neutral'}>{opened ? 'opened' : 'closed'}</Badge>
+      {project.locked ? <Badge tone="warn">locked</Badge> : null}
+      <span aria-hidden className="mx-1 h-4 w-px" style={{ background: 'var(--color-rule)' }} />
+
+      {canOpen ? (
+        <Button
+          type="button"
+          disabled={busy !== null}
+          onClick={onToggleOpen}
+          variant="outline"
+          size="xs"
+        >
+          <Power size={13} aria-hidden />{' '}
+          {busy === 'toggle-open' ? 'Working…' : opened ? 'Close' : 'Open'}
+        </Button>
+      ) : null}
+      <Button
+        type="button"
+        disabled={!opened || busy !== null || nodeCount === 0}
+        onClick={onStartAll}
+        title="Start every stopped node"
+        aria-label="Start all"
+        variant="outline"
+        size="xs"
+      >
+        <Play size={13} aria-hidden />{' '}
+        <span className="hidden sm:inline">{busy === 'start-all' ? 'Starting…' : 'Start all'}</span>
+      </Button>
+      <Button
+        type="button"
+        disabled={!opened || busy !== null || nodeCount === 0}
+        onClick={onStopAll}
+        title="Stop every running node"
+        aria-label="Stop all"
+        variant="outline"
+        size="xs"
+      >
+        <Square size={13} aria-hidden />{' '}
+        <span className="hidden sm:inline">{busy === 'stop-all' ? 'Stopping…' : 'Stop all'}</span>
+      </Button>
+
+      <span className="ml-auto flex items-center gap-1">
+        {collaborators.length > 0 ? (
+          <span
+            className="flex items-center gap-1 pr-1"
+            title={
+              collabStatus === 'live'
+                ? `${collaborators.length} live collaborator${collaborators.length === 1 ? '' : 's'}`
+                : 'Collaboration reconnecting'
+            }
+          >
+            <span className="flex -space-x-1">
+              {collaborators.slice(0, 5).map((participant) => {
+                const initials = participant.name
+                  .split(/\s+/)
+                  .map((part) => part[0])
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase();
+                return (
+                  <span
+                    key={participant.id}
+                    className="flex size-5 items-center justify-center rounded-full border text-[10px] font-semibold"
+                    style={{
+                      background: participant.color,
+                      borderColor: 'var(--color-panel)',
+                      color: '#111417',
+                      zIndex: participant.id === selfCollabId ? 2 : 1,
+                    }}
+                    title={`${participant.name}${participant.id === selfCollabId ? ' (you)' : ''}`}
+                  >
+                    {initials || '?'}
+                  </span>
+                );
+              })}
+              {collaborators.length > 5 ? (
+                <span
+                  className="flex size-5 items-center justify-center rounded-full border text-[10px]"
+                  style={{
+                    background: 'var(--color-panel-raised)',
+                    borderColor: 'var(--color-panel)',
+                    color: 'var(--color-ink-dim)',
+                  }}
+                  title={collaborators
+                    .slice(5)
+                    .map((participant) => participant.name)
+                    .join(', ')}
+                >
+                  +{collaborators.length - 5}
+                </span>
+              ) : null}
+            </span>
+            <span
+              aria-hidden
+              className="size-[5px] rounded-full"
+              style={{
+                background:
+                  collabStatus === 'live' ? 'var(--color-signal-up)' : 'var(--color-signal-warn)',
+              }}
+            />
+          </span>
+        ) : null}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button type="button" title="Panel visibility" variant="outline" size="xs">
+                <Eye size={13} aria-hidden /> View
+              </Button>
+            }
+          ></DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={4}
+              className={MENU_CLASS}
+              style={MENU_STYLE}
+            >
+              <MenuItem
+                icon={paletteOpen ? <Check size={13} /> : <PanelLeft size={13} />}
+                onSelect={onTogglePalette}
+              >
+                Palette <span style={{ color: 'var(--color-ink-faint)' }}>P</span>
+              </MenuItem>
+              <MenuItem
+                icon={inspectorOpen ? <Check size={13} /> : <PanelRight size={13} />}
+                onSelect={onToggleInspector}
+              >
+                Inspector
+              </MenuItem>
+              <MenuItem
+                icon={dockOpen ? <Check size={13} /> : <PanelBottom size={13} />}
+                onSelect={onToggleDock}
+              >
+                Console dock
+              </MenuItem>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button type="button" title="Project tools" variant="outline" size="xs">
+                <MoreHorizontal size={14} aria-hidden /> More
+              </Button>
+            }
+          ></DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent
+              align="end"
+              sideOffset={4}
+              className={MENU_CLASS}
+              style={MENU_STYLE}
+            >
+              {canWrite ? (
+                <MenuItem
+                  icon={project.locked ? <Unlock size={13} /> : <Lock size={13} />}
+                  onSelect={onToggleLock}
+                  disabled={busy !== null}
+                >
+                  {project.locked ? 'Unlock topology' : 'Lock topology'}
+                </MenuItem>
+              ) : null}
+              {canFault ? (
+                <MenuItem icon={<Zap size={13} />} onSelect={onOpenFaults}>
+                  Faults…
+                </MenuItem>
+              ) : null}
+              {canSettings ? (
+                <MenuItem icon={<Settings2 size={13} />} onSelect={onOpenSettings}>
+                  Settings…
+                </MenuItem>
+              ) : null}
+              <DropdownMenuSeparator
+                className="my-1 h-px"
+                style={{ background: 'var(--color-rule)' }}
+              />
+              <MenuItem icon={<FolderOpen size={13} />} onSelect={onOpenFiles}>
+                Files…
+              </MenuItem>
+              <MenuItem icon={<LayoutTemplate size={13} />} onSelect={onOpenTemplates}>
+                Templates…
+              </MenuItem>
+              <MenuItem icon={<Copy size={13} />} onSelect={onOpenSnapshots}>
+                Snapshots…
+              </MenuItem>
+              <DropdownMenuSeparator
+                className="my-1 h-px"
+                style={{ background: 'var(--color-rule)' }}
+              />
+              <DropdownMenuGroup>
+                <DropdownMenuLabel
+                  className="px-2 py-1 text-[10px] uppercase tracking-wide"
+                  style={{ color: 'var(--color-ink-faint)' }}
+                >
+                  Network tools
+                </DropdownMenuLabel>
+                {TOOL_TABS.map((tool) => (
+                  <MenuItem
+                    key={tool.id}
+                    icon={<Wrench size={13} />}
+                    onSelect={() => onOpenNetworkTool(tool.id)}
+                  >
+                    {tool.label}
+                  </MenuItem>
+                ))}
+              </DropdownMenuGroup>
+              {canExport ? (
+                <MenuItem
+                  icon={<Download size={13} />}
+                  onSelect={onExport}
+                  disabled={exportProgress !== null}
+                >
+                  {exportProgress !== null ? `Exporting ${exportProgress}%…` : 'Export project…'}
+                </MenuItem>
+              ) : null}
+              {canWrite ? (
+                <MenuItem icon={<Copy size={13} />} onSelect={onDuplicate} disabled={busy !== null}>
+                  Duplicate project…
+                </MenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenu>
+      </span>
+    </header>
+  );
+}

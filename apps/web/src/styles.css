@@ -1,7 +1,13 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import '@netlabor/ui/globals.css';
+
 @import '@fontsource-variable/instrument-sans';
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
+
+/* Primitives live in the workspace package; Tailwind must scan them too. */
+@source '../../../packages/ui/src';
 
 /*
  * Netlabor visual system: graphite & copper instrument, not SaaS dashboard.
@@ -85,6 +91,12 @@
   button {
     font: inherit;
   }
+  /* Native controls keep the copper accent; shadcn primitives style themselves. */
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'] {
+    accent-color: var(--color-copper);
+  }
   code,
   kbd,
   samp,
@@ -109,118 +121,7 @@
   }
 }
 
-/* ---------------------------------------------------------------- fields --- */
-
-.nb-field {
-  width: 100%;
-  background: var(--color-panel-sunken);
-  border: 1px solid var(--color-rule-strong);
-  border-radius: var(--radius-panel);
-  padding: 0.38rem 0.55rem;
-  color: var(--color-ink);
-  min-height: 30px;
-}
-.nb-field::placeholder {
-  color: var(--color-ink-faint);
-}
-.nb-field:hover {
-  border-color: color-mix(in oklab, var(--color-rule-strong) 70%, white);
-}
-.nb-field:focus {
-  border-color: var(--color-copper);
-  outline: none;
-  box-shadow: 0 0 0 1px var(--color-copper);
-}
-.nb-field:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Selects: visible control, readable popup, explicit chevron. */
-select.nb-field {
-  appearance: none;
-  padding-right: 1.9rem;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ccd3d8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.55rem center;
-  cursor: pointer;
-}
-select.nb-field option {
-  background: var(--color-panel-raised);
-  color: var(--color-ink);
-}
-select.nb-field:focus {
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ef9a45' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-}
-textarea.nb-field {
-  min-height: 72px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-}
-input[type='checkbox'],
-input[type='radio'] {
-  accent-color: var(--color-copper);
-}
-input[type='range'] {
-  accent-color: var(--color-copper);
-}
-
-/* --------------------------------------------------------------- buttons --- */
-
-.nb-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid var(--color-rule-strong);
-  border-radius: var(--radius-panel);
-  background: var(--color-panel-raised);
-  color: var(--color-ink);
-  padding: 0.32rem 0.6rem;
-  min-height: 24px;
-  font-weight: 500;
-  line-height: 1.2;
-  cursor: pointer;
-}
-.nb-button:hover {
-  border-color: var(--color-copper);
-  background: color-mix(in oklab, var(--color-panel-raised) 80%, var(--color-copper) 8%);
-}
-.nb-button[data-variant='primary'] {
-  background: var(--color-copper);
-  border-color: var(--color-copper);
-  color: #1a1209;
-}
-.nb-button[data-variant='primary']:hover {
-  background: color-mix(in oklab, var(--color-copper) 85%, white);
-}
-.nb-button[data-size='sm'] {
-  padding: 0.18rem 0.45rem;
-  font-size: 0.72rem;
-}
-.nb-button[data-variant='danger'] {
-  background: var(--color-signal-down);
-  border-color: var(--color-signal-down);
-  color: #1b0d0b;
-}
-.nb-button[data-variant='danger']:hover {
-  background: color-mix(in oklab, var(--color-signal-down) 85%, white);
-  border-color: color-mix(in oklab, var(--color-signal-down) 85%, white);
-}
-.nb-button[data-variant='ghost'] {
-  background: transparent;
-  border-color: transparent;
-  color: var(--color-ink-dim);
-  padding: 0.18rem 0.3rem;
-}
-.nb-button[data-variant='ghost']:hover {
-  border-color: var(--color-rule-strong);
-  background: var(--color-panel-raised);
-  color: var(--color-ink);
-}
-.nb-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* --------------------------------------------------------------- panels --- */
 
 .nb-panel {
   background: var(--color-panel);

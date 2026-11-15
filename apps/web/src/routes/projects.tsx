@@ -2,28 +2,28 @@ import type { ProjectRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
-  Copy,
-  Download,
-  FileJson2,
-  FolderKanban,
-  Lock,
-  Play,
-  Plus,
-  Settings2,
-  Square,
-  Trash2,
-  Unlock,
-  Upload,
-} from 'lucide-react';
+  CopyIcon as Copy,
+  DownloadSimpleIcon as Download,
+  FileCodeIcon as FileJson2,
+  KanbanIcon as FolderKanban,
+  LockIcon as Lock,
+  PlayIcon as Play,
+  PlusIcon as Plus,
+  SlidersHorizontalIcon as Settings2,
+  SquareIcon as Square,
+  TrashIcon as Trash2,
+  LockOpenIcon as Unlock,
+  UploadSimpleIcon as Upload,
+} from '@phosphor-icons/react';
 import { useDeferredValue, useState } from 'react';
-import { Badge } from '../components/Badge.tsx';
-import { ConfirmDialog } from '../components/ConfirmDialog.tsx';
-import { EmptyState } from '../components/EmptyState.tsx';
-import { Select } from '../components/Field.tsx';
-import { Loading, Page, PageHeader } from '../components/Page.tsx';
-import { SearchInput } from '../components/SearchInput.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../components/Table.tsx';
-import { toast } from '../components/Toast.tsx';
+import { Badge } from '../components/badge.tsx';
+import { ConfirmDialog } from '../components/confirm-dialog.tsx';
+import { EmptyState } from '../components/empty-state.tsx';
+import { Select } from '../components/field.tsx';
+import { Loading, Page, PageHeader } from '../components/page.tsx';
+import { SearchInput } from '../components/search-input.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../components/table.tsx';
+import { toast } from '../components/toast.tsx';
 import { NotAllowed } from '../features/auth/require-auth.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import {
@@ -31,14 +31,15 @@ import {
   DuplicateProjectDialog,
   ExportNotice,
   ImportProjectDialog,
-} from '../features/projects/ProjectDialogs.tsx';
-import { ApplyManifestDialog } from '../features/projects/ApplyManifestDialog.tsx';
-import { ProjectSettingsDialog } from '../features/projects/ProjectSettingsDialog.tsx';
+} from '../features/projects/project-dialogs.tsx';
+import { ApplyManifestDialog } from '../features/projects/apply-manifest-dialog.tsx';
+import { ProjectSettingsDialog } from '../features/projects/project-settings-dialog.tsx';
 import { useProjectExport } from '../features/projects/use-project-export.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp } from '../lib/format.ts';
-import { queryClient } from '../lib/queryClient.ts';
+import { queryClient } from '../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 function refetchProjects() {
   void queryClient.invalidateQueries({ queryKey: orpc.projects.list.key() });
@@ -127,27 +128,33 @@ export function ProjectsPage() {
           <span className="flex items-center gap-2">
             {canWrite ? (
               <>
-                <button
+                <Button
                   type="button"
-                  className="nb-button"
                   onClick={() => {
                     setApplyTarget(null);
                     setApplyOpen(true);
                   }}
+                  variant="outline"
+                  size="sm"
                 >
                   <FileJson2 size={14} aria-hidden /> Apply manifest
-                </button>
-                <button type="button" className="nb-button" onClick={() => setImportOpen(true)}>
-                  <Upload size={14} aria-hidden /> Import
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="nb-button"
-                  data-variant="primary"
+                  onClick={() => setImportOpen(true)}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Upload size={14} aria-hidden /> Import
+                </Button>
+                <Button
+                  type="button"
                   onClick={() => setCreateOpen(true)}
+                  variant="default"
+                  size="sm"
                 >
                   <Plus size={14} aria-hidden /> New project
-                </button>
+                </Button>
               </>
             ) : null}
           </span>
@@ -217,14 +224,14 @@ export function ProjectsPage() {
             description="Create a project, or clear the search and status filters."
             action={
               canWrite ? (
-                <button
+                <Button
                   type="button"
-                  className="nb-button"
-                  data-variant="primary"
                   onClick={() => setCreateOpen(true)}
+                  variant="default"
+                  size="sm"
                 >
                   <Plus size={14} aria-hidden /> New project
-                </button>
+                </Button>
               ) : null
             }
           />
@@ -296,11 +303,8 @@ export function ProjectsPage() {
                     <Td align="right">
                       <span className="inline-flex items-center gap-1">
                         {can('project.open') ? (
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
                             title={isOpened ? `Close ${project.name}` : `Open ${project.name}`}
                             aria-label={isOpened ? `Close ${project.name}` : `Open ${project.name}`}
                             disabled={pending}
@@ -308,20 +312,19 @@ export function ProjectsPage() {
                               if (isOpened) closeProject.mutate({ id: project.id });
                               else openProject.mutate({ id: project.id });
                             }}
+                            variant="ghost"
+                            size="xs"
                           >
                             {isOpened ? (
                               <Square size={13} aria-hidden />
                             ) : (
                               <Play size={13} aria-hidden />
                             )}
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite ? (
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
                             title={
                               project.locked ? `Unlock ${project.name}` : `Lock ${project.name}`
                             }
@@ -333,87 +336,84 @@ export function ProjectsPage() {
                               if (project.locked) unlockProject.mutate({ id: project.id });
                               else lockProject.mutate({ id: project.id });
                             }}
+                            variant="ghost"
+                            size="xs"
                           >
                             {project.locked ? (
                               <Unlock size={13} aria-hidden />
                             ) : (
                               <Lock size={13} aria-hidden />
                             )}
-                          </button>
+                          </Button>
                         ) : null}
                         {can('project.export') ? (
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
                             title={`Export ${project.name}`}
                             aria-label={`Export ${project.name}`}
                             disabled={
                               exportState?.busy === true && exportState.projectId === project.id
                             }
                             onClick={() => void runExport(project.id)}
+                            variant="ghost"
+                            size="xs"
                           >
                             <Download size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite ? (
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
                             title={`Duplicate ${project.name}`}
                             aria-label={`Duplicate ${project.name}`}
                             onClick={() => setDuplicate(project)}
+                            variant="ghost"
+                            size="xs"
                           >
                             <Copy size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite ? (
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
                             title={`Apply a manifest to ${project.name}`}
                             aria-label={`Apply a manifest to ${project.name}`}
                             onClick={() => {
                               setApplyTarget(project);
                               setApplyOpen(true);
                             }}
+                            variant="ghost"
+                            size="xs"
                           >
                             <FileJson2 size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {canWrite || canMembers ? (
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
                             title={`Settings for ${project.name}`}
                             aria-label={`Settings for ${project.name}`}
                             onClick={() => setSettingsTarget(project)}
+                            variant="ghost"
+                            size="xs"
                           >
                             <Settings2 size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                         {can('project.delete') ? (
-                          <button
+                          <Button
                             type="button"
-                            className="nb-button"
-                            data-size="sm"
-                            data-variant="ghost"
                             title={`Delete ${project.name}`}
                             aria-label={`Delete ${project.name}`}
                             onClick={() => {
                               remove.reset();
                               setDeleteTarget(project);
                             }}
+                            variant="ghost"
+                            size="xs"
                           >
                             <Trash2 size={13} aria-hidden />
-                          </button>
+                          </Button>
                         ) : null}
                       </span>
                     </Td>

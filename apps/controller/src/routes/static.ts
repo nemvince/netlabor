@@ -32,7 +32,7 @@ const MIME: Record<string, string> = {
   '.wasm': 'application/wasm',
 };
 
-const IMMUTABLE = /-[A-Za-z0-9_]{8,}\.(js|css|woff2?|png|svg)$/;
+const IMMUTABLE = /-[A-Za-z0-9_-]{8,}\.(js|css|woff2?|png|svg)$/;
 
 export async function serveStatic(
   request: Request,

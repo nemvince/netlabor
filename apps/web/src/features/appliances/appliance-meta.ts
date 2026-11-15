@@ -1,5 +1,5 @@
 import type { ApplianceBuildStatus, Desktop, OsFamily, OsImageRow } from '@netlabor/contract';
-import type { BadgeTone } from '../../components/Badge.tsx';
+import type { BadgeTone } from '../../components/badge.tsx';
 
 export const DESKTOP_OPTIONS: { value: Desktop; label: string; hint: string }[] = [
   { value: 'none', label: 'None', hint: 'server image, console only' },

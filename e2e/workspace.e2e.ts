@@ -41,6 +41,22 @@ test.describe('workspace', () => {
     }
   });
 
+  test('opens the project menu with its grouped tools', async ({ page }) => {
+    const project = await resolveProject(page);
+    test.skip(!project, 'no visible project to open');
+    if (!project) return;
+
+    await gotoWorkspace(page, project.id);
+    await page.getByRole('button', { name: 'More' }).click();
+
+    const menu = page.getByRole('menu');
+    await expect(menu).toBeVisible();
+    // The "Network tools" label is a Base UI GroupLabel and only renders
+    // inside a DropdownMenuGroup; a bare label throws at runtime.
+    await expect(menu.getByText('Network tools', { exact: true })).toBeVisible();
+    await expect(menu.getByRole('menuitem').first()).toBeVisible();
+  });
+
   test('selecting a canvas node opens its properties', async ({ page }) => {
     const project = await resolveProject(page);
     test.skip(!project, 'no visible project to open');

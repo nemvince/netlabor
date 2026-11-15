@@ -1,26 +1,27 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type ApiKeyCreated, type ApiKeyRow, PRIVILEGES, type Privilege } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyRound, Plus } from 'lucide-react';
+import { KeyIcon as KeyRound, PlusIcon as Plus } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Badge } from '../../components/Badge.tsx';
-import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
-import { CopyButton } from '../../components/CopyButton.tsx';
-import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
-import { EmptyState } from '../../components/EmptyState.tsx';
-import { Field, Input } from '../../components/Field.tsx';
-import { Notice } from '../../components/Notice.tsx';
-import { Loading, Page, PageHeader } from '../../components/Page.tsx';
-import { PrivilegeGrid } from '../../components/PrivilegeGrid.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
+import { Badge } from '../../components/badge.tsx';
+import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
+import { CopyButton } from '../../components/copy-button.tsx';
+import { Dialog, DialogFooter } from '../../components/dialog.tsx';
+import { EmptyState } from '../../components/empty-state.tsx';
+import { Field, Input } from '../../components/field.tsx';
+import { Notice } from '../../components/notice.tsx';
+import { Loading, Page, PageHeader } from '../../components/page.tsx';
+import { PrivilegeGrid } from '../../components/privilege-grid.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../../components/table.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { READ_PRIVILEGES } from '../../lib/privileges.ts';
-import { queryClient } from '../../lib/queryClient.ts';
+import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 const keySchema = z.object({
   name: z.string().min(1, 'enter a key name').max(128, 'use at most 128 characters'),
@@ -131,14 +132,9 @@ function CreateKeyDialog({
             <dd>{created.key.expiresAt ? formatStamp(created.key.expiresAt) : 'never'}</dd>
           </dl>
           <DialogFooter>
-            <button
-              type="button"
-              className="nb-button"
-              data-variant="primary"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" onClick={() => onOpenChange(false)} variant="default" size="sm">
               Done
-            </button>
+            </Button>
           </DialogFooter>
         </div>
       </Dialog>
@@ -179,27 +175,22 @@ function CreateKeyDialog({
             available
           </span>
           <span className="flex items-center gap-1">
-            <button
-              type="button"
-              className="nb-button"
-              data-size="sm"
-              onClick={() => select(available)}
-            >
+            <Button type="button" onClick={() => select(available)} variant="outline" size="xs">
               All
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="nb-button"
-              data-size="sm"
               onClick={() =>
                 select(READ_PRIVILEGES.filter((privilege) => available.includes(privilege)))
               }
+              variant="outline"
+              size="xs"
             >
               Read-only
-            </button>
-            <button type="button" className="nb-button" data-size="sm" onClick={() => select([])}>
+            </Button>
+            <Button type="button" onClick={() => select([])} variant="outline" size="xs">
               Clear
-            </button>
+            </Button>
           </span>
         </div>
         {form.formState.errors.scopes ? (
@@ -207,17 +198,12 @@ function CreateKeyDialog({
         ) : null}
         <PrivilegeGrid selected={selected} onToggle={toggle} available={available} />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={createKey.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={createKey.isPending} variant="default" size="sm">
             {createKey.isPending ? 'Creating…' : 'Create key'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -253,15 +239,10 @@ export function ApiKeysAdminPage() {
         title="API keys"
         description="Long-lived bearer keys for oRPC and MCP clients. Session-only procedures reject them by design."
         actions={
-          <button
-            type="button"
-            className="nb-button"
-            data-variant="primary"
-            onClick={() => setCreateOpen(true)}
-          >
+          <Button type="button" onClick={() => setCreateOpen(true)} variant="default" size="sm">
             <Plus size={14} aria-hidden />
             Create key
-          </button>
+          </Button>
         }
       />
 
@@ -276,14 +257,9 @@ export function ApiKeysAdminPage() {
             title="No API keys"
             description="Create a key to let a script or MCP client call the controller without a browser session."
             action={
-              <button
-                type="button"
-                className="nb-button"
-                data-variant="primary"
-                onClick={() => setCreateOpen(true)}
-              >
+              <Button type="button" onClick={() => setCreateOpen(true)} variant="default" size="sm">
                 Create key
-              </button>
+              </Button>
             }
           />
         ) : (
@@ -336,14 +312,14 @@ export function ApiKeysAdminPage() {
                           {formatStamp(key.revokedAt)}
                         </span>
                       ) : (
-                        <button
+                        <Button
                           type="button"
-                          className="nb-button"
-                          data-size="sm"
                           onClick={() => setRevokeTarget(key)}
+                          variant="outline"
+                          size="xs"
                         >
                           Revoke
-                        </button>
+                        </Button>
                       )}
                     </Td>
                   </Tr>

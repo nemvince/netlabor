@@ -1,26 +1,33 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { GroupRow, RoleRow, UserRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyRound, Pencil, Plus, Trash, UsersRound } from 'lucide-react';
+import {
+  KeyIcon as KeyRound,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  TrashIcon as Trash,
+  UsersIcon as UsersRound,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Badge } from '../../components/Badge.tsx';
-import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
-import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
-import { EmptyState } from '../../components/EmptyState.tsx';
-import { CheckboxOption, Field, Input } from '../../components/Field.tsx';
-import { Notice } from '../../components/Notice.tsx';
-import { Loading, Page, PageHeader } from '../../components/Page.tsx';
-import { SearchInput } from '../../components/SearchInput.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
-import { GroupsSection } from '../../features/admin/GroupSection.tsx';
+import { Badge } from '../../components/badge.tsx';
+import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
+import { Dialog, DialogFooter } from '../../components/dialog.tsx';
+import { EmptyState } from '../../components/empty-state.tsx';
+import { CheckboxOption, Field, Input } from '../../components/field.tsx';
+import { Notice } from '../../components/notice.tsx';
+import { Loading, Page, PageHeader } from '../../components/page.tsx';
+import { SearchInput } from '../../components/search-input.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../../components/table.tsx';
+import { GroupsSection } from '../../features/admin/group-section.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
-import { queryClient } from '../../lib/queryClient.ts';
+import { queryClient } from '../../lib/query-client.ts';
+import { Button } from '@netlabor/ui/components/button';
 
 interface AssignmentOption {
   id: string;
@@ -230,17 +237,12 @@ function CreateUserDialog({
           emptyText="No groups exist yet."
         />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={createUser.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={createUser.isPending} variant="default" size="sm">
             {createUser.isPending ? 'Creating…' : 'Create user'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -360,17 +362,12 @@ function EditUserDialog({
         />
         <LinkedIdentities userId={user.id} />
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={updateUser.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={updateUser.isPending} variant="default" size="sm">
             {updateUser.isPending ? 'Saving…' : 'Save changes'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -455,17 +452,12 @@ function SetPasswordDialog({
           />
         </Field>
         <DialogFooter>
-          <button type="button" className="nb-button" onClick={() => onOpenChange(false)}>
+          <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
-          </button>
-          <button
-            type="submit"
-            className="nb-button"
-            data-variant="primary"
-            disabled={setPassword.isPending}
-          >
+          </Button>
+          <Button type="submit" disabled={setPassword.isPending} variant="default" size="sm">
             {setPassword.isPending ? 'Setting…' : 'Set password'}
-          </button>
+          </Button>
         </DialogFooter>
       </form>
     </Dialog>
@@ -533,15 +525,15 @@ export function UsersAdminPage() {
               wrapperStyle={{ width: 220 }}
             />
             {canWrite ? (
-              <button
+              <Button
                 type="button"
-                className="nb-button"
-                data-variant="primary"
                 onClick={() => setDialog({ mode: 'create' })}
+                variant="default"
+                size="sm"
               >
                 <Plus size={14} aria-hidden />
                 Create user
-              </button>
+              </Button>
             ) : null}
           </>
         }
@@ -563,14 +555,14 @@ export function UsersAdminPage() {
             }
             action={
               canWrite ? (
-                <button
+                <Button
                   type="button"
-                  className="nb-button"
-                  data-variant="primary"
                   onClick={() => setDialog({ mode: 'create' })}
+                  variant="default"
+                  size="sm"
                 >
                   Create user
-                </button>
+                </Button>
               ) : undefined
             }
           />
@@ -626,39 +618,36 @@ export function UsersAdminPage() {
                   <Td align="right">
                     {canWrite ? (
                       <span className="inline-flex items-center gap-0.5">
-                        <button
+                        <Button
                           type="button"
-                          className="nb-button"
-                          data-variant="ghost"
-                          data-size="sm"
                           aria-label={`Edit ${user.username}`}
                           title="Edit user"
                           onClick={() => setDialog({ mode: 'edit', user })}
+                          variant="ghost"
+                          size="xs"
                         >
                           <Pencil size={13} aria-hidden />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
-                          className="nb-button"
-                          data-variant="ghost"
-                          data-size="sm"
                           aria-label={`Set password for ${user.username}`}
                           title="Set password"
                           onClick={() => setDialog({ mode: 'password', user })}
+                          variant="ghost"
+                          size="xs"
                         >
                           <KeyRound size={13} aria-hidden />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           type="button"
-                          className="nb-button"
-                          data-variant="ghost"
-                          data-size="sm"
                           aria-label={`Delete ${user.username}`}
                           title="Delete user"
                           onClick={() => setDeleteTarget(user)}
+                          variant="ghost"
+                          size="xs"
                         >
                           <Trash size={13} aria-hidden />
-                        </button>
+                        </Button>
                       </span>
                     ) : (
                       <span className="text-[11px]" style={{ color: 'var(--color-ink-faint)' }}>

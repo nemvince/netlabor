@@ -1,0 +1,72 @@
+---
+import {
+  RobotIcon as Bot,
+  StackIcon as Boxes,
+  BracketsCurlyIcon as Braces,
+  PlugIcon as Cable,
+  CameraIcon as Camera,
+  PuzzlePieceIcon as Component,
+  FileCodeIcon as FileJson,
+  KanbanIcon as FolderKanban,
+  HardDrivesIcon as HardDriveDownload,
+  SquaresFourIcon as LayoutGrid,
+  SquaresFourIcon as LayoutTemplate,
+  type Icon,
+  NetworkIcon as Network,
+  PaletteIcon as Palette,
+  RocketIcon as Rocket,
+  ShapesIcon as Shapes,
+  ShieldCheckIcon as ShieldCheck,
+  TerminalWindowIcon as SquareTerminal,
+  UsersIcon as Users,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
+import { nav } from '../lib/nav.ts';
+
+const { path } = Astro.props as { path: string };
+
+const ICONS: Record<string, Icon> = {
+  '/': LayoutGrid,
+  '/getting-started': Rocket,
+  '/concepts/projects': FolderKanban,
+  '/concepts/nodes': Boxes,
+  '/concepts/links': Cable,
+  '/concepts/consoles': SquareTerminal,
+  '/concepts/drawings': Shapes,
+  '/concepts/snapshots': Camera,
+  '/concepts/collaboration': Users,
+  '/appliances': HardDriveDownload,
+  '/templates': LayoutTemplate,
+  '/apply': FileJson,
+  '/mcp': Bot,
+  '/api': Braces,
+  '/administration': ShieldCheck,
+  '/operations': Wrench,
+  '/architecture': Network,
+  '/components': Component,
+  '/theme': Palette,
+};
+---
+
+<nav aria-label="Documentation">
+  {
+    nav.map((group) => (
+      <div class="docs-nav-group">
+        <p class="docs-nav-group__label">{group.label}</p>
+        {group.items.map((item) => {
+          const Icon = ICONS[item.href];
+          return (
+            <a
+              class="nb-rail-link"
+              href={item.href}
+              aria-current={item.href === path ? 'page' : undefined}
+            >
+              {Icon ? <Icon size={13} strokeWidth={1.75} aria-hidden /> : null}
+              <span>{item.label}</span>
+            </a>
+          );
+        })}
+      </div>
+    ))
+  }
+</nav>
