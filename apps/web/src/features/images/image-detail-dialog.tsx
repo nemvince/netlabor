@@ -6,7 +6,7 @@ import { DetailList } from '../../components/detail-list.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { formatBytes } from '../../lib/bytes.ts';
 import { formatStamp } from '../../lib/format.ts';
-import { Button } from '@netlabor/ui/components/button';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 function replicaTone(state: ImageRow['replicas'][number]['state'] | 'absent') {
   if (state === 'present') return 'up';
@@ -148,13 +148,13 @@ export function ImageDetailDialog({
         <Button type="button" onClick={close} variant="outline" size="sm">
           Close
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false} render={<a href={`/api/blobs/${image.sha256}/${encodeURIComponent(image.filename)}`} download />}
+        <a
+          href={`/api/blobs/${image.sha256}/${encodeURIComponent(image.filename)}`}
+          download
+          className={buttonVariants({ variant: 'outline', size: 'sm' })}
         >
           <Download size={12} aria-hidden /> Download
-        </Button>
+        </a>
         {canSync ? (
           <Button type="button" disabled={computes.length === 0} title={computes.length === 0 ? 'No compute is registered yet' : 'Sync to computes'} onClick={onSync} variant="outline" size="sm">
             <RefreshCw size={12} aria-hidden /> Sync

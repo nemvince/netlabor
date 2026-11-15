@@ -1,6 +1,6 @@
 import { Page } from '../components/page.tsx';
 import { messageOf } from '../lib/errors.ts';
-import { Button } from '@netlabor/ui/components/button';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 /** Router error boundary: an unreachable controller or failed guard lands here. */
 export function RouteError({ error, reset }: { error: unknown; reset: () => void }) {
@@ -16,9 +16,9 @@ export function RouteError({ error, reset }: { error: unknown; reset: () => void
           <Button type="button" onClick={reset} variant="default" size="sm">
             Try again
           </Button>
-          <Button variant="outline" size="sm" nativeButton={false} render={<a href="/login" />}>
+          <a href="/login" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
             Go to sign in
-          </Button>
+          </a>
         </div>
       </div>
     </Page>

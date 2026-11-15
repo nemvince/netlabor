@@ -10,7 +10,7 @@ import {
   siOpenwrt,
   siOpnsense,
   type SimpleIcon,
-} from 'simple-icons/icons';
+} from 'simple-icons';
 import { useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Loading } from '../../components/page.tsx';

@@ -13,7 +13,7 @@ import {
 import type { ReactNode } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { TOOL_TABS, type ToolTab } from '../tools/tool-tabs.ts';
-import { Button } from '@netlabor/ui/components/button';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 const MENU_CLASS = 'z-50 min-w-52 rounded-[3px] border p-1';
 const MENU_STYLE = {
@@ -36,7 +36,7 @@ function MenuItem({
   disabled?: boolean;
 }) {
   return (
-    <DropdownMenuItem className={ITEM_CLASS} disabled={disabled} onSelect={onSelect}>
+    <DropdownMenuItem className={ITEM_CLASS} disabled={disabled} onClick={onSelect}>
       <span aria-hidden style={{ color: 'var(--color-ink-faint)' }}>
         {icon}
       </span>
@@ -115,15 +115,14 @@ export function ProjectTopBar({
       className="flex min-h-[42px] shrink-0 flex-wrap items-center gap-2 border-b px-2 py-1 sm:h-[42px] sm:flex-nowrap sm:py-0"
       style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel)' }}
     >
-      <Button
-        variant="ghost"
-        size="xs"
-        nativeButton={false} render={<Link to="/projects" />}
+      <Link
+        to="/projects"
         aria-label="Back to projects"
         title="Back to projects"
+        className={buttonVariants({ variant: 'ghost', size: 'xs' })}
       >
         <ArrowLeft size={14} aria-hidden />
-      </Button>
+      </Link>
       <span className="min-w-0">
         <span className="block max-w-[240px] truncate text-[13px] leading-[1.2] font-semibold">
           {project.name}

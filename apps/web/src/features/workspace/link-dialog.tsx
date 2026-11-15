@@ -13,7 +13,7 @@ import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
 import { LinkMarkersPanel } from './link-markers-panel.tsx';
-import { Button } from '@netlabor/ui/components/button';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 interface FilterDraft {
   delayMs: string;
@@ -501,17 +501,17 @@ export function LinkDialog({
                 </Button>
                 {linkData.capture ? (
                   <>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                      nativeButton={false} render={<a href={`/api/links/${linkData.id}/capture.pcap`} download />}
+                    <a
+                      href={`/api/links/${linkData.id}/capture.pcap`}
+                      download
                       aria-disabled={linkData.capture.sizeBytes === 0}
+                      className={buttonVariants({ variant: 'outline', size: 'xs' })}
                       style={{
                         opacity: linkData.capture.sizeBytes === 0 ? 0.5 : 1,
                       }}
                     >
                       <Download size={12} aria-hidden /> Download pcap
-                    </Button>
+                    </a>
                     <Button type="button" onClick={() => { onOpenWireshark( linkData.id, `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`, ); onClose(); }} variant="outline" size="xs">
                       <Waves size={12} aria-hidden /> Open Wireshark
                     </Button>

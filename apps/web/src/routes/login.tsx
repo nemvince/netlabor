@@ -10,7 +10,7 @@ import { useMe } from '../features/auth/use-me.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { queryClient } from '../lib/query-client.ts';
-import { Button } from '@netlabor/ui/components/button';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'enter your username').max(128),
@@ -138,15 +138,13 @@ export function LoginPage() {
             </div>
             <div className="mt-3 flex flex-col gap-2">
               {providers.data.map((provider) => (
-                <Button
+                <a
                   key={provider.id}
-                  variant="outline"
-                  size="sm"
-                  className="justify-center"
-                  nativeButton={false} render={<a href={`/auth/oidc/${provider.id}/start`} />}
+                  href={`/auth/oidc/${provider.id}/start`}
+                  className={buttonVariants({ variant: 'outline', size: 'sm', className: 'justify-center' })}
                 >
                   Continue with {provider.name}
-                </Button>
+                </a>
               ))}
             </div>
           </div>

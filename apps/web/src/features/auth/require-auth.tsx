@@ -5,7 +5,7 @@ import { Page, PageHeader } from '../../components/page.tsx';
 import { orpc } from '../../lib/api.ts';
 import { isUnauthorized } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
-import { Button } from '@netlabor/ui/components/button';
+import { buttonVariants } from '@netlabor/ui/components/button';
 
 /**
  * Route guard for every protected route. It resolves `auth.me` through the
@@ -37,9 +37,9 @@ export function NotAllowed({ requirement }: { requirement: string }) {
           title="Your account cannot open this page"
           description={`Ask an administrator to add ${requirement} to one of your roles, or go back to a page you can read.`}
           action={
-            <Button variant="outline" size="sm" nativeButton={false} render={<Link to="/" />}>
+            <Link to="/" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
               Back to overview
-            </Button>
+            </Link>
           }
         />
       </div>

@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { Page } from '../components/page.tsx';
-import { Button } from '@netlabor/ui/components/button';
+import { buttonVariants } from '@netlabor/ui/components/button';
 
 export function NotFoundPage() {
   return (
@@ -11,9 +11,9 @@ export function NotFoundPage() {
         <p className="mt-2 max-w-prose text-[13px]" style={{ color: 'var(--color-ink-dim)' }}>
           The route you asked for is not part of this controller.
         </p>
-        <Button variant="outline" size="sm" className="mt-5" nativeButton={false} render={<Link to="/" />}>
+        <Link to="/" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'mt-5' })}>
           Back to control plane
-        </Button>
+        </Link>
       </div>
     </Page>
   );

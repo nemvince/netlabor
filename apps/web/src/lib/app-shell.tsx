@@ -288,7 +288,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <DropdownMenuItem
                       className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12.5px] outline-none data-[highlighted]:bg-[var(--color-panel-raised)]"
                       style={{ color: 'var(--color-signal-down)' }}
-                      onSelect={() => logout.mutate({})}
+                      onClick={() => logout.mutate({})}
                     >
                       <LogOut size={13} aria-hidden /> Sign out
                     </DropdownMenuItem>

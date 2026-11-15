@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { orpc } from '../lib/api.ts';
 import { Field, Select } from './field.tsx';
-import { Button } from '@netlabor/ui/components/button';
+import { buttonVariants } from '@netlabor/ui/components/button';
 
 function sizeLabel(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
@@ -64,15 +64,14 @@ export function ImagePicker({
             </option>
           ))}
         </Select>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="shrink-0"
+        <Link
+          to="/library"
+          search={{ tab: 'images' }}
           title="Open the image library"
-          nativeButton={false} render={<Link to="/library" search={{ tab: 'images' }} />}
+          className={buttonVariants({ variant: 'ghost', size: 'sm', className: 'shrink-0' })}
         >
           manage
-        </Button>
+        </Link>
       </div>
       {rows.length === 0 && !images.isPending ? (
         <p className="mt-1 text-[11px] text-signal-warn">

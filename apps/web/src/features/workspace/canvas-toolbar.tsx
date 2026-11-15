@@ -93,7 +93,7 @@ function MenuItem({
   disabled?: boolean;
 }) {
   return (
-    <DropdownMenuItem className={ITEM_CLASS} disabled={disabled} onSelect={onSelect}>
+    <DropdownMenuItem className={ITEM_CLASS} disabled={disabled} onClick={onSelect}>
       <span aria-hidden style={{ color: 'var(--color-ink-faint)' }}>
         {icon}
       </span>
@@ -116,7 +116,7 @@ function ViewToggle({
       className={ITEM_CLASS}
       checked={checked}
       onCheckedChange={() => onCheckedChange(!checked)}
-      onSelect={(event) => event.preventDefault()}
+      onClick={(event) => event.preventDefault()}
     >
       {children}
     </DropdownMenuCheckboxItem>

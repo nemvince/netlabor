@@ -45,7 +45,7 @@ import { useWorkspaceStore } from './store.ts';
 import { type MarkerFlash, NODE_HEIGHT, NODE_WIDTH } from './types.ts';
 import { useProjectCollab } from './use-project-collab.ts';
 import { useProjectEvents } from './use-project-events.ts';
-import { Button } from '@netlabor/ui/components/button';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 function nodeInputFromRow(row: NodeRow): NodeCreateInput {
   return {
@@ -139,9 +139,9 @@ export function WorkspacePage({ projectId }: { projectId: string }) {
         <Notice tone="error">
           {project.isError ? messageOf(project.error) : 'The project was not returned.'}
         </Notice>
-        <Button variant="outline" size="sm" className="mt-3" nativeButton={false} render={<Link to="/projects" />}>
+        <Link to="/projects" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'mt-3' })}>
           Back to projects
-        </Button>
+        </Link>
       </div>
     );
   }

@@ -10,7 +10,7 @@ import { Notice } from '../../components/notice.tsx';
 import { client } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { PacketAnalysisPanel } from './packet-analysis-panel.tsx';
-import { Button } from '@netlabor/ui/components/button';
+import { Button, buttonVariants } from '@netlabor/ui/components/button';
 
 interface WireFrameRow {
   num: number;
@@ -925,15 +925,15 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
           <Button type="button" title="Follow stream" aria-label="Follow stream" disabled={session !== 'live'} onClick={() => { setFollowResult(null); setFollowError(null); setFollowOpen(true); }} variant="ghost" size="xs">
             <Search size={12} aria-hidden /> Follow
           </Button>
-          <Button
-            variant="ghost"
-            size="xs"
-            nativeButton={false} render={<a href={pcapUrl ?? `/api/links/${linkId}/capture.pcap`} download />}
+          <a
+            href={pcapUrl ?? `/api/links/${linkId}/capture.pcap`}
+            download
             title="Download capture"
             aria-label="Download capture"
+            className={buttonVariants({ variant: 'ghost', size: 'xs' })}
           >
             <Download size={12} aria-hidden />
-          </Button>
+          </a>
         </span>
       </div>
 
