@@ -11,7 +11,7 @@ export function NotFoundPage() {
         <p className="mt-2 max-w-prose text-[13px]" style={{ color: 'var(--color-ink-dim)' }}>
           The route you asked for is not part of this controller.
         </p>
-        <Button variant="outline" size="sm" className="mt-5" render={<Link to="/" />}>
+        <Button variant="outline" size="sm" className="mt-5" nativeButton={false} render={<Link to="/" />}>
           Back to control plane
         </Button>
       </div>

@@ -32,7 +32,7 @@ export function TabBar<T extends string>({
       <TabsList
         aria-label={label}
         variant="line"
-        className="h-auto w-full flex-wrap justify-start gap-1 rounded-none border-b border-border"
+        className="h-auto w-full flex-wrap justify-start gap-1 rounded-none border-b border-border p-0"
       >
         {items.map((item) => {
           const Icon = item.icon;
@@ -40,7 +40,7 @@ export function TabBar<T extends string>({
             <TabsTrigger
               key={item.id}
               value={item.id}
-              className="h-auto gap-1 rounded-none px-3 py-1.5 text-[12px] after:bg-primary data-[state=inactive]:text-muted-foreground"
+              className="h-auto flex-none gap-1 rounded-none border-0 bg-transparent px-3 py-1.5 text-[12px] font-medium text-muted-foreground after:bg-primary hover:text-foreground data-active:border-transparent data-active:bg-transparent data-active:text-foreground data-active:after:opacity-100 dark:data-active:bg-transparent"
             >
               {Icon ? <Icon size={13} aria-hidden /> : null}
               {item.label}

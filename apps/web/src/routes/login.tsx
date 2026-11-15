@@ -143,7 +143,7 @@ export function LoginPage() {
                   variant="outline"
                   size="sm"
                   className="justify-center"
-                  render={<a href={`/auth/oidc/${provider.id}/start`} />}
+                  nativeButton={false} render={<a href={`/auth/oidc/${provider.id}/start`} />}
                 >
                   Continue with {provider.name}
                 </Button>

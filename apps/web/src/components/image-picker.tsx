@@ -69,7 +69,7 @@ export function ImagePicker({
           size="sm"
           className="shrink-0"
           title="Open the image library"
-          render={<Link to="/library" search={{ tab: 'images' }} />}
+          nativeButton={false} render={<Link to="/library" search={{ tab: 'images' }} />}
         >
           manage
         </Button>

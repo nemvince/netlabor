@@ -504,7 +504,7 @@ export function LinkDialog({
                     <Button
                       variant="outline"
                       size="xs"
-                      render={<a href={`/api/links/${linkData.id}/capture.pcap`} download />}
+                      nativeButton={false} render={<a href={`/api/links/${linkData.id}/capture.pcap`} download />}
                       aria-disabled={linkData.capture.sizeBytes === 0}
                       style={{
                         opacity: linkData.capture.sizeBytes === 0 ? 0.5 : 1,

@@ -118,7 +118,7 @@ export function ProjectTopBar({
       <Button
         variant="ghost"
         size="xs"
-        render={<Link to="/projects" />}
+        nativeButton={false} render={<Link to="/projects" />}
         aria-label="Back to projects"
         title="Back to projects"
       >

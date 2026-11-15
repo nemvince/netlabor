@@ -928,7 +928,7 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
           <Button
             variant="ghost"
             size="xs"
-            render={<a href={pcapUrl ?? `/api/links/${linkId}/capture.pcap`} download />}
+            nativeButton={false} render={<a href={pcapUrl ?? `/api/links/${linkId}/capture.pcap`} download />}
             title="Download capture"
             aria-label="Download capture"
           >

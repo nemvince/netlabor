@@ -151,7 +151,7 @@ export function ImageDetailDialog({
         <Button
           variant="outline"
           size="sm"
-          render={<a href={`/api/blobs/${image.sha256}/${encodeURIComponent(image.filename)}`} download />}
+          nativeButton={false} render={<a href={`/api/blobs/${image.sha256}/${encodeURIComponent(image.filename)}`} download />}
         >
           <Download size={12} aria-hidden /> Download
         </Button>

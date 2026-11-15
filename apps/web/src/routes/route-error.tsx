@@ -16,7 +16,7 @@ export function RouteError({ error, reset }: { error: unknown; reset: () => void
           <Button type="button" onClick={reset} variant="default" size="sm">
             Try again
           </Button>
-          <Button variant="outline" size="sm" render={<a href="/login" />}>
+          <Button variant="outline" size="sm" nativeButton={false} render={<a href="/login" />}>
             Go to sign in
           </Button>
         </div>

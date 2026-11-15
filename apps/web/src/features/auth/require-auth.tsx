@@ -37,7 +37,7 @@ export function NotAllowed({ requirement }: { requirement: string }) {
           title="Your account cannot open this page"
           description={`Ask an administrator to add ${requirement} to one of your roles, or go back to a page you can read.`}
           action={
-            <Button variant="outline" size="sm" render={<Link to="/" />}>
+            <Button variant="outline" size="sm" nativeButton={false} render={<Link to="/" />}>
               Back to overview
             </Button>
           }

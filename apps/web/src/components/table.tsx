@@ -43,7 +43,11 @@ export function Table({
 }
 
 export function THead({ children }: { children: ReactNode }) {
-  return <TableHeader className="border-border">{children}</TableHeader>;
+  return (
+    <TableHeader className="border-border">
+      <TableRow>{children}</TableRow>
+    </TableHeader>
+  );
 }
 
 export function TBody({ children }: { children: ReactNode }) {
@@ -61,7 +65,7 @@ export function Th({
     <TableHead
       scope="col"
       className={cn(
-        'nb-rule-label h-auto px-3 py-2 font-normal',
+        'nb-rule-label h-auto px-3 py-2 font-normal whitespace-nowrap',
         align === 'right' && 'text-right',
         align === 'center' && 'text-center',
       )}

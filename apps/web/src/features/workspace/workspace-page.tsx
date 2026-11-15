@@ -139,7 +139,7 @@ export function WorkspacePage({ projectId }: { projectId: string }) {
         <Notice tone="error">
           {project.isError ? messageOf(project.error) : 'The project was not returned.'}
         </Notice>
-        <Button variant="outline" size="sm" className="mt-3" render={<Link to="/projects" />}>
+        <Button variant="outline" size="sm" className="mt-3" nativeButton={false} render={<Link to="/projects" />}>
           Back to projects
         </Button>
       </div>

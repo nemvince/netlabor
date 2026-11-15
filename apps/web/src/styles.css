@@ -1,9 +1,13 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import '@netlabor/ui/globals.css';
+
 @import '@fontsource-variable/instrument-sans';
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
+
+/* Primitives live in the workspace package; Tailwind must scan them too. */
+@source '../../../packages/ui/src';
 
 /*
  * Netlabor visual system: graphite & copper instrument, not SaaS dashboard.
@@ -86,6 +90,12 @@
   textarea,
   button {
     font: inherit;
+  }
+  /* Native controls keep the copper accent; shadcn primitives style themselves. */
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='range'] {
+    accent-color: var(--color-copper);
   }
   code,
   kbd,
