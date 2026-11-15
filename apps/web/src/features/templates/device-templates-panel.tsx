@@ -1,14 +1,6 @@
 import type { ImageRow, NodeType, SymbolRow, TemplateRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowRightLeft,
-  Copy,
-  FileCode2,
-  LayoutTemplate,
-  Pencil,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import { ArrowsLeftRightIcon as ArrowRightLeft, CopyIcon as Copy, FileCodeIcon as FileCode2, SquaresFourIcon as LayoutTemplate, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';

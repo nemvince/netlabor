@@ -13,25 +13,7 @@ import {
   type TemplateRow,
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Activity,
-  ArrowLeftRight,
-  Cable,
-  Container,
-  Database,
-  Download,
-  FileCode,
-  Gauge,
-  GitBranch,
-  Globe,
-  Hammer,
-  KeyRound,
-  Lock,
-  Network,
-  Shield,
-  Terminal,
-  X,
-} from 'lucide-react';
+import { ActivityIcon as Activity, ArrowsLeftRightIcon as ArrowLeftRight, PlugIcon as Cable, CubeIcon as Container, DatabaseIcon as Database, DownloadSimpleIcon as Download, FileCodeIcon as FileCode, GaugeIcon as Gauge, GitBranchIcon as GitBranch, GlobeIcon as Globe, HammerIcon as Hammer, KeyIcon as KeyRound, LockIcon as Lock, NetworkIcon as Network, ShieldIcon as Shield, TerminalIcon as Terminal, XIcon as X   } from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { Field, Input, Select, Textarea } from '../../components/field.tsx';
@@ -285,7 +267,7 @@ export function AdoptOsImageDialog({
   );
 }
 
-/** lucide icons for catalog software entries, keyed by the catalog icon name. */
+/** phosphor icons for catalog software entries, keyed by the catalog icon name. */
 const SOFTWARE_ICONS: Record<string, typeof Globe> = {
   Activity,
   ArrowLeftRight,

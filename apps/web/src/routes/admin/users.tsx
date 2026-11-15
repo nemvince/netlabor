@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { GroupRow, RoleRow, UserRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyRound, Pencil, Plus, Trash, UsersRound } from 'lucide-react';
+import { KeyIcon as KeyRound, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash, UsersIcon as UsersRound   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

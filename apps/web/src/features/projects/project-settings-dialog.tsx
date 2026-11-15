@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ProjectRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Plus, SlidersHorizontal, UsersRound, X } from 'lucide-react';
+import { PlusIcon as Plus, SlidersHorizontalIcon as SlidersHorizontal, UsersIcon as UsersRound, XIcon as X   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';

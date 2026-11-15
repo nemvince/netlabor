@@ -1,4 +1,4 @@
-import { LoaderCircle } from 'lucide-react';
+import { CircleNotchIcon  } from '@phosphor-icons/react';
 import { type ReactNode, useEffect } from 'react';
 
 /** Page frame: one max width, dense vertical rhythm, hairline header rule. */
@@ -64,7 +64,7 @@ export function Section({
 export function Loading({ label = 'Loading…' }: { label?: string }) {
   return (
     <div className="flex items-center gap-2 py-6 text-[12px] text-muted-foreground">
-      <LoaderCircle size={14} className="animate-spin" aria-hidden />
+      <CircleNotchIcon size={14} className="animate-spin" aria-hidden />
       {label}
     </div>
   );

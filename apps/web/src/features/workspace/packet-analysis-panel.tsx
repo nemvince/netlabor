@@ -1,6 +1,6 @@
 import type { PacketAnalyzeOutput, PacketFieldRow, PacketFrame } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { LoaderCircle, RotateCw, X } from 'lucide-react';
+import { CircleNotchIcon as LoaderCircle, ArrowClockwiseIcon as RotateCw, XIcon as X   } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Field, Input } from '../../components/field.tsx';

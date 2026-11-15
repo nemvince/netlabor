@@ -1,6 +1,6 @@
 import type { ImageKind, ImageRow } from '@netlabor/contract';
 import { IMAGE_KINDS } from '@netlabor/contract';
-import { FileUp, UploadCloud } from 'lucide-react';
+import { FileArrowUpIcon as FileUp, CloudArrowUpIcon as UploadCloud   } from '@phosphor-icons/react';
 import { type DragEvent, useRef, useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { Field, Input, Select } from '../../components/field.tsx';

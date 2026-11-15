@@ -1,6 +1,6 @@
 import type { FaultRow, LinkRow, NodeRow, TemplateRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ChevronDown, ChevronRight, Play, Trash2, Zap } from 'lucide-react';
+import { WarningIcon as AlertTriangle, CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, PlayIcon as Play, TrashIcon as Trash2, LightningIcon as Zap   } from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Dialog } from '../../components/dialog.tsx';

@@ -1,6 +1,6 @@
 import type { LinkRow, LinkStatus, NodeRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { HardDrive } from 'lucide-react';
+import { HardDriveIcon as HardDrive  } from '@phosphor-icons/react';
 import { useEffect, useId, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { orpc } from '../../lib/api.ts';

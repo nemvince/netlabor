@@ -1,32 +1,13 @@
+import { AlignCenterHorizontalIcon as AlignCenterHorizontal, AlignCenterVerticalIcon as AlignCenterVertical, AlignBottomIcon as AlignEndHorizontal, AlignRightIcon as AlignEndVertical, AlignTopIcon as AlignStartHorizontal, AlignLeftIcon as AlignStartVertical, PlugIcon as Cable, ClipboardIcon as ClipboardPaste, ColumnsIcon as Columns3, CopyIcon as Copy, GridNineIcon as Grid3x3, ImageIcon as ImageIcon, StackIcon as Layers, LinkIcon as Link2, MagnetIcon as Magnet, MapTrifoldIcon as MapIcon, PaintBrushBroadIcon as PaintBucket, PlayIcon as Play, RectangleIcon as RectangleHorizontal, ArrowArcRightIcon as Redo2, RowsIcon as Rows3, SquareIcon as Square, StickerIcon as StickyNote, TrashIcon as Trash2, TextAaIcon as Type, ArrowArcLeftIcon as Undo2   } from '@phosphor-icons/react';
 import {
-  AlignCenterHorizontal,
-  AlignCenterVertical,
-  AlignEndHorizontal,
-  AlignEndVertical,
-  AlignStartHorizontal,
-  AlignStartVertical,
-  Cable,
-  ClipboardPaste,
-  Columns3,
-  Copy,
-  Grid3x3,
-  Image as ImageIcon,
-  Layers,
-  Link2,
-  Magnet,
-  Map as MapIcon,
-  PaintBucket,
-  Play,
-  RectangleHorizontal,
-  Redo2,
-  Rows3,
-  Square,
-  StickyNote,
-  Trash2,
-  Type,
-  Undo2,
-} from 'lucide-react';
-import { DropdownMenu } from 'radix-ui';
+  DropdownMenu,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+} from '@netlabor/ui/components/dropdown-menu';
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
 
@@ -124,12 +105,12 @@ function MenuItem({
   disabled?: boolean;
 }) {
   return (
-    <DropdownMenu.Item className={ITEM_CLASS} disabled={disabled} onSelect={onSelect}>
+    <DropdownMenuItem className={ITEM_CLASS} disabled={disabled} onSelect={onSelect}>
       <span aria-hidden style={{ color: 'var(--color-ink-faint)' }}>
         {icon}
       </span>
       {children}
-    </DropdownMenu.Item>
+    </DropdownMenuItem>
   );
 }
 
@@ -143,14 +124,14 @@ function ViewToggle({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <DropdownMenu.CheckboxItem
+    <DropdownMenuCheckboxItem
       className={ITEM_CLASS}
       checked={checked}
       onCheckedChange={() => onCheckedChange(!checked)}
       onSelect={(event) => event.preventDefault()}
     >
       {children}
-    </DropdownMenu.CheckboxItem>
+    </DropdownMenuCheckboxItem>
   );
 }
 
@@ -228,8 +209,8 @@ export function CanvasToolbar({
         <Link2 size={13} aria-hidden /> Connect
       </ToolButton>
       <Separator />
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={
           <button
             type="button"
             className="nb-button"
@@ -240,9 +221,10 @@ export function CanvasToolbar({
           >
             <AlignStartVertical size={13} aria-hidden /> Align
           </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
+        }>
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent
             align="start"
             sideOffset={6}
             className={MENU_CLASS}
@@ -257,7 +239,7 @@ export function CanvasToolbar({
             <MenuItem icon={<AlignEndVertical size={13} />} onSelect={() => onAlign('right')}>
               Align right
             </MenuItem>
-            <DropdownMenu.Separator
+            <DropdownMenuSeparator
               className="my-1 h-px"
               style={{ background: 'var(--color-rule)' }}
             />
@@ -270,7 +252,7 @@ export function CanvasToolbar({
             <MenuItem icon={<AlignEndHorizontal size={13} />} onSelect={() => onAlign('bottom')}>
               Align bottom
             </MenuItem>
-            <DropdownMenu.Separator
+            <DropdownMenuSeparator
               className="my-1 h-px"
               style={{ background: 'var(--color-rule)' }}
             />
@@ -288,11 +270,11 @@ export function CanvasToolbar({
             >
               Distribute vertically
             </MenuItem>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={
           <button
             type="button"
             className="nb-button"
@@ -303,9 +285,10 @@ export function CanvasToolbar({
           >
             <Type size={13} aria-hidden /> Insert
           </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
+        }>
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent
             align="start"
             sideOffset={6}
             className={MENU_CLASS}
@@ -329,9 +312,9 @@ export function CanvasToolbar({
             >
               Image…
             </MenuItem>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenu>
       <input
         ref={imageInputRef}
         type="file"
@@ -344,8 +327,8 @@ export function CanvasToolbar({
           if (file) onAddImage(file);
         }}
       />
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={
           <button
             type="button"
             className="nb-button"
@@ -355,9 +338,10 @@ export function CanvasToolbar({
           >
             <Grid3x3 size={13} aria-hidden /> View
           </button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
+        }>
+        </DropdownMenuTrigger>
+        <DropdownMenuPortal>
+          <DropdownMenuContent
             align="start"
             sideOffset={6}
             className={MENU_CLASS}
@@ -400,9 +384,9 @@ export function CanvasToolbar({
                 </button>
               ) : null}
             </label>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
+          </DropdownMenuContent>
+        </DropdownMenuPortal>
+      </DropdownMenu>
       <label
         className="flex items-center gap-1 px-1 text-[10px]"
         style={{ color: 'var(--color-ink-faint)' }}

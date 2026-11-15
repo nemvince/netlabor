@@ -1,5 +1,5 @@
 import type { ComputeRow, ImageRow } from '@netlabor/contract';
-import { Download, Pencil, RefreshCw, Trash2 } from 'lucide-react';
+import { DownloadSimpleIcon as Download, PencilIcon as Pencil, ArrowsClockwiseIcon as RefreshCw, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { Badge } from '../../components/badge.tsx';
 import { CopyButton } from '../../components/copy-button.tsx';
 import { DetailList } from '../../components/detail-list.tsx';

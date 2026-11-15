@@ -1,6 +1,6 @@
 import type { TemplateRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { FilePlus2, Save, Trash2 } from 'lucide-react';
+import { FilePlusIcon as FilePlus2, FloppyDiskIcon as Save, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';

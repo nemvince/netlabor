@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { ArrowLeftRight, Plus, Trash2 } from 'lucide-react';
+import { ArrowsLeftRightIcon as ArrowLeftRight, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { CopyButton } from '../../components/copy-button.tsx';

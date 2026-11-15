@@ -1,6 +1,6 @@
 /** Remembered IPv4 networks: stored in the browser and fed by the subnet tools. */
 
-import { BookmarkPlus, Trash2 } from 'lucide-react';
+import { BookmarkSimpleIcon as BookmarkPlus, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';

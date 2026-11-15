@@ -1,8 +1,8 @@
-import type { LucideIcon } from 'lucide-react';
+import { type Icon  } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 
 /** Copper instrument plate used by every settings card and disclosure. */
-export function SettingsIcon({ icon: Icon }: { icon: LucideIcon }) {
+export function SettingsIcon({ icon: Icon }: { icon: Icon }) {
   return (
     <span
       aria-hidden
@@ -30,7 +30,7 @@ export function SettingsCard({
   actions,
   children,
 }: {
-  icon: LucideIcon;
+  icon: Icon;
   title: string;
   description: string;
   actions?: ReactNode;

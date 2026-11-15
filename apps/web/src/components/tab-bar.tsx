@@ -1,10 +1,10 @@
-import type { LucideIcon } from 'lucide-react';
+import { type Icon  } from '@phosphor-icons/react';
 import { Tabs, TabsList, TabsTrigger } from '@netlabor/ui/components/tabs';
 
 export interface TabItem<T extends string> {
   id: T;
   label: string;
-  icon?: LucideIcon;
+  icon?: Icon;
 }
 
 /**

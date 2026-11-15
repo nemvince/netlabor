@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { PlusIcon, TrashIcon  } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@netlabor/ui/components/button';
 import { Input } from './field.tsx';
@@ -130,7 +130,7 @@ export function KeyValueEditor({
             disabled={disabled}
             onClick={() => commit(rows.filter((entry) => entry.id !== row.id))}
           >
-            <Trash2 size={12} aria-hidden />
+            <TrashIcon size={12} aria-hidden />
           </Button>
         </div>
       ))}
@@ -142,7 +142,7 @@ export function KeyValueEditor({
         disabled={disabled}
         onClick={() => commit([...rows, { id: crypto.randomUUID(), key: '', value: '' }])}
       >
-        <Plus size={12} aria-hidden /> {addLabel}
+        <PlusIcon size={12} aria-hidden /> {addLabel}
       </Button>
     </fieldset>
   );

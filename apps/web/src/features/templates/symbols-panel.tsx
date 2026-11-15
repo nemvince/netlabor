@@ -1,6 +1,6 @@
 import type { SymbolRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { FileUp, Trash2 } from 'lucide-react';
+import { FileArrowUpIcon as FileUp, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useMemo, useRef, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';

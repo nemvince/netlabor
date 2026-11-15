@@ -6,16 +6,7 @@ import {
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import {
-  Download,
-  FileText,
-  HardDriveDownload,
-  Pencil,
-  Plus,
-  RefreshCw,
-  Trash2,
-  Wrench,
-} from 'lucide-react';
+import { DownloadSimpleIcon as Download, FileTextIcon as FileText, HardDrivesIcon as HardDriveDownload, PencilIcon as Pencil, PlusIcon as Plus, ArrowsClockwiseIcon as RefreshCw, TrashIcon as Trash2, WrenchIcon as Wrench   } from '@phosphor-icons/react';
 import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';

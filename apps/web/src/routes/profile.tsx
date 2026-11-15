@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { SessionRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { KeyRound, Monitor, SlidersHorizontal, Smartphone, UserRound, Wrench } from 'lucide-react';
+import { KeyIcon as KeyRound, MonitorIcon as Monitor, SlidersHorizontalIcon as SlidersHorizontal, DeviceMobileIcon as Smartphone, UserIcon as UserRound, WrenchIcon as Wrench   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

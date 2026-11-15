@@ -1,17 +1,5 @@
 import type { EventEnvelope } from '@netlabor/contract';
-import {
-  ChevronDown,
-  ChevronUp,
-  Globe,
-  Maximize2,
-  Minimize2,
-  Monitor,
-  ScrollText,
-  SquareTerminal,
-  Waves,
-  Wrench,
-  X,
-} from 'lucide-react';
+import { CaretDownIcon as ChevronDown, CaretUpIcon as ChevronUp, GlobeIcon as Globe, ArrowsOutIcon as Maximize2, ArrowsInIcon as Minimize2, MonitorIcon as Monitor, ScrollIcon as ScrollText, TerminalIcon as SquareTerminal, WavesIcon as Waves, WrenchIcon as Wrench, XIcon as X   } from '@phosphor-icons/react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { EventLog } from './event-log.tsx';
 import { type DockTabSpec, useWorkspaceStore } from './store.ts';

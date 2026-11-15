@@ -1,5 +1,5 @@
 import type { EventEnvelope } from '@netlabor/contract';
-import { Eraser } from 'lucide-react';
+import { EraserIcon as Eraser  } from '@phosphor-icons/react';
 import type { SseStatus } from './use-project-events.ts';
 
 const clock = new Intl.DateTimeFormat(undefined, {

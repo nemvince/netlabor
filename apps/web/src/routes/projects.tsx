@@ -1,20 +1,7 @@
 import type { ProjectRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  Copy,
-  Download,
-  FileJson2,
-  FolderKanban,
-  Lock,
-  Play,
-  Plus,
-  Settings2,
-  Square,
-  Trash2,
-  Unlock,
-  Upload,
-} from 'lucide-react';
+import { CopyIcon as Copy, DownloadSimpleIcon as Download, FileCodeIcon as FileJson2, KanbanIcon as FolderKanban, LockIcon as Lock, PlayIcon as Play, PlusIcon as Plus, SlidersHorizontalIcon as Settings2, SquareIcon as Square, TrashIcon as Trash2, LockOpenIcon as Unlock, UploadSimpleIcon as Upload   } from '@phosphor-icons/react';
 import { useDeferredValue, useState } from 'react';
 import { Badge } from '../components/badge.tsx';
 import { ConfirmDialog } from '../components/confirm-dialog.tsx';

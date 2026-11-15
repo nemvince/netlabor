@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import { type Icon  } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 
 /** Empty state: says what is missing and offers the action that fills it. */
@@ -8,7 +8,7 @@ export function EmptyState({
   description,
   action,
 }: {
-  icon?: LucideIcon;
+  icon?: Icon;
   title: string;
   description: string;
   action?: ReactNode;

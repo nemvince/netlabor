@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PRIVILEGES, type Privilege, type RoleRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Eye, Pencil, Plus, ShieldCheck, Trash } from 'lucide-react';
+import { EyeIcon as Eye, PencilIcon as Pencil, PlusIcon as Plus, ShieldCheckIcon as ShieldCheck, TrashIcon as Trash   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

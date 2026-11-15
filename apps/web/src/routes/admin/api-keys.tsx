@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type ApiKeyCreated, type ApiKeyRow, PRIVILEGES, type Privilege } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyRound, Plus } from 'lucide-react';
+import { KeyIcon as KeyRound, PlusIcon as Plus   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

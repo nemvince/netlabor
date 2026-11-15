@@ -1,6 +1,6 @@
 import type { NodeRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Download, File, Folder, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { DownloadSimpleIcon as Download, FileIcon as File, FolderIcon as Folder, ArrowsClockwiseIcon as RefreshCw, FloppyDiskIcon as Save, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useDeferredValue, useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Input } from '../../components/field.tsx';

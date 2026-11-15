@@ -1,6 +1,6 @@
 import type { ComputeRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { Cpu, HardDrive, MemoryStick, X } from 'lucide-react';
+import { CpuIcon as Cpu, HardDriveIcon as HardDrive, MemoryIcon as MemoryStick, XIcon as X   } from '@phosphor-icons/react';
 import { Badge } from '../../components/badge.tsx';
 import { Notice } from '../../components/notice.tsx';
 import { Loading } from '../../components/page.tsx';

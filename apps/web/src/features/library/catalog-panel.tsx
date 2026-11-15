@@ -1,7 +1,7 @@
 /** Appliance marketplace: browse the curated catalog and install entries. */
 
 import { useQuery } from '@tanstack/react-query';
-import { Check, Download, Monitor, Network, Shield } from 'lucide-react';
+import { CheckIcon as Check, DownloadSimpleIcon as Download, MonitorIcon as Monitor, NetworkIcon as Network, ShieldIcon as Shield   } from '@phosphor-icons/react';
 import {
   siAlpinelinux,
   siDebian,

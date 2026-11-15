@@ -1,6 +1,6 @@
 import type { NodeRow } from '@netlabor/contract';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { HardDrive, Maximize2, Plus, Trash2 } from 'lucide-react';
+import { HardDriveIcon as HardDrive, ArrowsOutIcon as Maximize2, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Field, Input } from '../../components/field.tsx';

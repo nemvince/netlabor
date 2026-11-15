@@ -1,5 +1,5 @@
 import type { ComputeRow, ImageRow, JobRow } from '@netlabor/contract';
-import { CheckCircle2, RefreshCw, XCircle } from 'lucide-react';
+import { CheckCircleIcon as CheckCircle2, ArrowsClockwiseIcon as RefreshCw, XCircleIcon as XCircle   } from '@phosphor-icons/react';
 import { useRef, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';

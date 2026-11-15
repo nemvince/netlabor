@@ -1,6 +1,6 @@
 import type { ComputeRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Activity, Gauge, KeyRound, Pencil, Plus, Server, Trash2 } from 'lucide-react';
+import { ActivityIcon as Activity, GaugeIcon as Gauge, KeyIcon as KeyRound, PencilIcon as Pencil, PlusIcon as Plus, HardDrivesIcon as Server, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Badge } from '../components/badge.tsx';
 import { ConfirmDialog } from '../components/confirm-dialog.tsx';

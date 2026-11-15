@@ -1,5 +1,5 @@
 import type { LinkRow, NodeRow } from '@netlabor/contract';
-import { Search, X } from 'lucide-react';
+import { MagnifyingGlassIcon as Search, XIcon as X   } from '@phosphor-icons/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 type PortRow = NodeRow['ports'][number];

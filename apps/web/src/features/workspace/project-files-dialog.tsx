@@ -1,14 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  ChevronRight,
-  File,
-  FilePlus2,
-  Folder,
-  FolderUp,
-  RefreshCw,
-  Save,
-  Trash2,
-} from 'lucide-react';
+import { CaretRightIcon as ChevronRight, FileIcon as File, FilePlusIcon as FilePlus2, FolderIcon as Folder, FileArrowUpIcon as FolderUp, ArrowsClockwiseIcon as RefreshCw, FloppyDiskIcon as Save, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Dialog } from '../../components/dialog.tsx';

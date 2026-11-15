@@ -13,7 +13,7 @@ import {
   VpcsProperties,
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import type { z } from 'zod';
 import { Field, Input, Select, Textarea } from '../../components/field.tsx';
 import { ImagePicker } from '../../components/image-picker.tsx';

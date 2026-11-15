@@ -1,9 +1,9 @@
-import { Search } from 'lucide-react';
+import { MagnifyingGlassIcon  } from '@phosphor-icons/react';
 import type { ComponentProps, CSSProperties } from 'react';
 import { Input } from './field.tsx';
 
 /**
- * Search field with the icon inside the control. The left padding is a
+ * MagnifyingGlassIcon field with the icon inside the control. The left padding is a
  * utility class on top of the shared field padding.
  */
 export function SearchInput({
@@ -18,7 +18,7 @@ export function SearchInput({
 }) {
   return (
     <div className={`relative ${wrapperClassName}`} style={wrapperStyle}>
-      <Search
+      <MagnifyingGlassIcon
         size={13}
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 text-muted-foreground"

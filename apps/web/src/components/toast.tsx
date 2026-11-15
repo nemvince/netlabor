@@ -1,4 +1,4 @@
-import { CheckCircle2, Info, Loader2, X, XCircle } from 'lucide-react';
+import { CheckCircleIcon, InfoIcon, CircleNotchIcon, XIcon, XCircleIcon  } from '@phosphor-icons/react';
 import { create } from 'zustand';
 
 export type ToastTone = 'success' | 'error' | 'info' | 'progress';
@@ -80,10 +80,10 @@ export const toast = {
 };
 
 const TONE = {
-  success: { color: 'var(--color-signal-up)', iconClass: 'text-signal-up', Icon: CheckCircle2 },
-  error: { color: 'var(--color-signal-down)', iconClass: 'text-signal-down', Icon: XCircle },
-  info: { color: 'var(--color-signal-info)', iconClass: 'text-signal-info', Icon: Info },
-  progress: { color: 'var(--color-primary)', iconClass: 'text-primary', Icon: Loader2 },
+  success: { color: 'var(--color-signal-up)', iconClass: 'text-signal-up', Icon: CheckCircleIcon },
+  error: { color: 'var(--color-signal-down)', iconClass: 'text-signal-down', Icon: XCircleIcon },
+  info: { color: 'var(--color-signal-info)', iconClass: 'text-signal-info', Icon: InfoIcon },
+  progress: { color: 'var(--color-primary)', iconClass: 'text-primary', Icon: CircleNotchIcon },
 } as const;
 
 function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: () => void }) {
@@ -128,7 +128,7 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: () => void
         className="shrink-0 rounded-sm p-0.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
         onClick={onDismiss}
       >
-        <X size={13} aria-hidden />
+        <XIcon size={13} aria-hidden />
       </button>
     </div>
   );

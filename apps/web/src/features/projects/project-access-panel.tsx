@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PROJECT_ROLE_NAMES } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Copy, Link2, Trash2, UserPlus } from 'lucide-react';
+import { CopyIcon as Copy, LinkIcon as Link2, TrashIcon as Trash2, UserPlusIcon as UserPlus   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

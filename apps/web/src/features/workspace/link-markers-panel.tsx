@@ -1,7 +1,7 @@
 import type { EventEnvelope, MarkerRow } from '@netlabor/contract';
 import { MarkerHit } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { Pause, Play, Plus, Trash2 } from 'lucide-react';
+import { PauseIcon as Pause, PlayIcon as Play, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { Badge } from '../../components/badge.tsx';

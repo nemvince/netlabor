@@ -8,17 +8,7 @@ import { setupPresets, softwareCatalog } from '@netlabor/catalog';
 import type { Desktop, JobRow, OsFamily } from '@netlabor/contract';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  ArrowRight,
-  Cable,
-  Check,
-  Circle,
-  CircleCheck,
-  CircleDashed,
-  Database,
-  Globe,
-  Server,
-} from 'lucide-react';
+import { ArrowRightIcon as ArrowRight, PlugIcon as Cable, CheckIcon as Check, CircleIcon as Circle, CheckCircleIcon as CircleCheck, CircleDashedIcon as CircleDashed, DatabaseIcon as Database, GlobeIcon as Globe, HardDrivesIcon as Server   } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { Field, Input, Select } from '../../components/field.tsx';
 import { Notice } from '../../components/notice.tsx';

@@ -64,10 +64,14 @@ export function ImagePicker({
             </option>
           ))}
         </Select>
-        <Button asChild variant="ghost" size="sm" className="shrink-0" title="Open the image library">
-          <Link to="/library" search={{ tab: 'images' }}>
-            manage
-          </Link>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="shrink-0"
+          title="Open the image library"
+          render={<Link to="/library" search={{ tab: 'images' }} />}
+        >
+          manage
         </Button>
       </div>
       {rows.length === 0 && !images.isPending ? (

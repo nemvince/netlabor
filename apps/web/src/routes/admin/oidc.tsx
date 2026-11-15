@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { OidcProviderRow, RoleRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, Globe, Pencil, Plus, Trash } from 'lucide-react';
+import { CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, GlobeIcon as Globe, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash   } from '@phosphor-icons/react';
 import { Fragment, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';

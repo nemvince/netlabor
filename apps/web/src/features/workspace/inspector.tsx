@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { DrawingRow, LinkRow, NodeRow, ProjectRow, SymbolRow } from '@netlabor/contract';
-import { Save } from 'lucide-react';
+import { FloppyDiskIcon as Save  } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

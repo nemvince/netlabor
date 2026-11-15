@@ -1,13 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  Download,
-  KeyRound,
-  RefreshCw,
-  RotateCcw,
-  TerminalSquare,
-  Timer,
-  Wrench,
-} from 'lucide-react';
+import { DownloadSimpleIcon as Download, KeyIcon as KeyRound, ArrowsClockwiseIcon as RefreshCw, ArrowCounterClockwiseIcon as RotateCcw, TerminalWindowIcon as TerminalSquare, TimerIcon as Timer, WrenchIcon as Wrench   } from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Field } from '../../components/field.tsx';
 import { displaySettingValue, KeyValueEditor } from '../../components/key-value-editor.tsx';

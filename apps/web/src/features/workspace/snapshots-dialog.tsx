@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Camera, Download, RotateCcw, Trash2 } from 'lucide-react';
+import { CameraIcon as Camera, DownloadSimpleIcon as Download, ArrowCounterClockwiseIcon as RotateCcw, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

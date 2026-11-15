@@ -10,7 +10,7 @@ import {
   type TemplateRow,
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { Plus, Trash2 } from 'lucide-react';
+import { PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

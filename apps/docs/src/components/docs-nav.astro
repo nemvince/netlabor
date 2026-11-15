@@ -1,31 +1,31 @@
 ---
 import {
-  Bot,
-  Boxes,
-  Braces,
-  Cable,
-  Camera,
-  Component,
-  FileJson,
-  FolderKanban,
-  HardDriveDownload,
-  LayoutGrid,
-  LayoutTemplate,
-  type LucideIcon,
-  Network,
-  Palette,
-  Rocket,
-  Shapes,
-  ShieldCheck,
-  SquareTerminal,
-  Users,
-  Wrench,
-} from 'lucide-react';
+  RobotIcon as Bot,
+  StackIcon as Boxes,
+  BracketsCurlyIcon as Braces,
+  PlugIcon as Cable,
+  CameraIcon as Camera,
+  PuzzlePieceIcon as Component,
+  FileCodeIcon as FileJson,
+  KanbanIcon as FolderKanban,
+  HardDrivesIcon as HardDriveDownload,
+  SquaresFourIcon as LayoutGrid,
+  SquaresFourIcon as LayoutTemplate,
+  type Icon,
+  NetworkIcon as Network,
+  PaletteIcon as Palette,
+  RocketIcon as Rocket,
+  ShapesIcon as Shapes,
+  ShieldCheckIcon as ShieldCheck,
+  TerminalWindowIcon as SquareTerminal,
+  UsersIcon as Users,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
 import { nav } from '../lib/nav.ts';
 
 const { path } = Astro.props as { path: string };
 
-const ICONS: Record<string, LucideIcon> = {
+const ICONS: Record<string, Icon> = {
   '/': LayoutGrid,
   '/getting-started': Rocket,
   '/concepts/projects': FolderKanban,

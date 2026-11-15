@@ -1,7 +1,7 @@
 import type { ComputeRow, ImageKind, ImageRow } from '@netlabor/contract';
 import { IMAGE_KINDS } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, HardDrive, RefreshCw, UploadCloud } from 'lucide-react';
+import { FileTextIcon as FileText, HardDriveIcon as HardDrive, ArrowsClockwiseIcon as RefreshCw, CloudArrowUpIcon as UploadCloud   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Badge, type BadgeTone } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';

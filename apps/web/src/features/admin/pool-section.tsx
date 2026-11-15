@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ComputeRow, PoolRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Layers, Pencil, Plus, Trash } from 'lucide-react';
+import { StackIcon as Layers, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash   } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

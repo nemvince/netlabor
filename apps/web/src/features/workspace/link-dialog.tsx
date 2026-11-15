@@ -1,17 +1,6 @@
 import type { EventEnvelope, LinkFilters } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Download,
-  MapPin,
-  Palette,
-  Pause,
-  Play,
-  Radio,
-  RotateCcw,
-  SlidersHorizontal,
-  Square,
-  Waves,
-} from 'lucide-react';
+import { DownloadSimpleIcon as Download, MapPinIcon as MapPin, PaletteIcon as Palette, PauseIcon as Pause, PlayIcon as Play, BroadcastIcon as Radio, ArrowCounterClockwiseIcon as RotateCcw, SlidersHorizontalIcon as SlidersHorizontal, SquareIcon as Square, WavesIcon as Waves   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';

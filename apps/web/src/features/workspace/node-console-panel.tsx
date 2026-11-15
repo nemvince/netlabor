@@ -1,5 +1,5 @@
 import type { NodeRow } from '@netlabor/contract';
-import { Pause, Play, RotateCw, Square, SquareTerminal, TimerReset } from 'lucide-react';
+import { PauseIcon as Pause, PlayIcon as Play, ArrowClockwiseIcon as RotateCw, SquareIcon as Square, TerminalIcon as SquareTerminal, ClockCounterClockwiseIcon as TimerReset   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Input } from '../../components/field.tsx';
 import { Notice } from '../../components/notice.tsx';

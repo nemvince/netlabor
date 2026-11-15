@@ -1,6 +1,6 @@
 import type { ProjectApplyInput, ProjectApplyResult, ProjectRow } from '@netlabor/contract';
 import { useMutation } from '@tanstack/react-query';
-import { FileJson2 } from 'lucide-react';
+import { FileCodeIcon as FileJson2  } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { Field, Textarea } from '../../components/field.tsx';

@@ -1,27 +1,15 @@
 import type { ProjectRow } from '@netlabor/contract';
 import { Link } from '@tanstack/react-router';
+import { ArrowLeftIcon as ArrowLeft, CheckIcon as Check, CopyIcon as Copy, DownloadSimpleIcon as Download, EyeIcon as Eye, FolderOpenIcon as FolderOpen, SquaresFourIcon as LayoutTemplate, LockIcon as Lock, DotsThreeIcon as MoreHorizontal, ArrowDownIcon as PanelBottom, SidebarSimpleIcon as PanelLeft, SidebarIcon as PanelRight, PlayIcon as Play, PowerIcon as Power, SlidersHorizontalIcon as Settings2, SquareIcon as Square, LockOpenIcon as Unlock, WrenchIcon as Wrench, LightningIcon as Zap   } from '@phosphor-icons/react';
 import {
-  ArrowLeft,
-  Check,
-  Copy,
-  Download,
-  Eye,
-  FolderOpen,
-  LayoutTemplate,
-  Lock,
-  MoreHorizontal,
-  PanelBottom,
-  PanelLeft,
-  PanelRight,
-  Play,
-  Power,
-  Settings2,
-  Square,
-  Unlock,
-  Wrench,
-  Zap,
-} from 'lucide-react';
-import { DropdownMenu } from 'radix-ui';
+  DropdownMenu,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@netlabor/ui/components/dropdown-menu';
 import type { ReactNode } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { TOOL_TABS, type ToolTab } from '../tools/tool-tabs.ts';
@@ -47,12 +35,12 @@ function MenuItem({
   disabled?: boolean;
 }) {
   return (
-    <DropdownMenu.Item className={ITEM_CLASS} disabled={disabled} onSelect={onSelect}>
+    <DropdownMenuItem className={ITEM_CLASS} disabled={disabled} onSelect={onSelect}>
       <span aria-hidden style={{ color: 'var(--color-ink-faint)' }}>
         {icon}
       </span>
       {children}
-    </DropdownMenu.Item>
+    </DropdownMenuItem>
   );
 }
 
@@ -252,14 +240,15 @@ export function ProjectTopBar({
             />
           </span>
         ) : null}
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={
             <button type="button" className="nb-button" data-size="sm" title="Panel visibility">
               <Eye size={13} aria-hidden /> View
             </button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
+          }>
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent
               align="end"
               sideOffset={4}
               className={MENU_CLASS}
@@ -283,18 +272,19 @@ export function ProjectTopBar({
               >
                 Console dock
               </MenuItem>
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenu>
 
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={
             <button type="button" className="nb-button" data-size="sm" title="Project tools">
               <MoreHorizontal size={14} aria-hidden /> More
             </button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content
+          }>
+          </DropdownMenuTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuContent
               align="end"
               sideOffset={4}
               className={MENU_CLASS}
@@ -319,7 +309,7 @@ export function ProjectTopBar({
                   Settings…
                 </MenuItem>
               ) : null}
-              <DropdownMenu.Separator
+              <DropdownMenuSeparator
                 className="my-1 h-px"
                 style={{ background: 'var(--color-rule)' }}
               />
@@ -332,16 +322,16 @@ export function ProjectTopBar({
               <MenuItem icon={<Copy size={13} />} onSelect={onOpenSnapshots}>
                 Snapshots…
               </MenuItem>
-              <DropdownMenu.Separator
+              <DropdownMenuSeparator
                 className="my-1 h-px"
                 style={{ background: 'var(--color-rule)' }}
               />
-              <DropdownMenu.Label
+              <DropdownMenuLabel
                 className="px-2 py-1 text-[10px] uppercase tracking-wide"
                 style={{ color: 'var(--color-ink-faint)' }}
               >
                 Network tools
-              </DropdownMenu.Label>
+              </DropdownMenuLabel>
               {TOOL_TABS.map((tool) => (
                 <MenuItem
                   key={tool.id}
@@ -365,9 +355,9 @@ export function ProjectTopBar({
                   Duplicate project…
                 </MenuItem>
               ) : null}
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
+            </DropdownMenuContent>
+          </DropdownMenuPortal>
+        </DropdownMenu>
       </span>
     </header>
   );

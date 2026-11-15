@@ -1,6 +1,6 @@
 import type { IdlepcProposal, NodeRow } from '@netlabor/contract';
 import { useQueryClient } from '@tanstack/react-query';
-import { Check, Gauge } from 'lucide-react';
+import { CheckIcon as Check, GaugeIcon as Gauge   } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import type { z } from 'zod';
 import { Notice } from '../../components/notice.tsx';

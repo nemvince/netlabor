@@ -1,5 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { Cable, FileCode2, HardDrive, LayoutTemplate, Store } from 'lucide-react';
+import { PlugIcon as Cable, FileCodeIcon as FileCode2, HardDriveIcon as HardDrive, SquaresFourIcon as LayoutTemplate, StorefrontIcon as Store   } from '@phosphor-icons/react';
 import { Loading, Page, PageHeader } from '../../components/page.tsx';
 import { TabBar } from '../../components/tab-bar.tsx';
 import { ApplianceImagesPanel } from '../appliances/appliance-images-panel.tsx';

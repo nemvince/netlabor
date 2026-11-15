@@ -1,4 +1,5 @@
-import { Check, Copy } from 'lucide-react';
+import { CheckIcon as Check, CopyIcon as Copy } from '@phosphor-icons/react';
+
 import { Button } from '@netlabor/ui/components/button';
 import { useEffect, useState } from 'react';
 

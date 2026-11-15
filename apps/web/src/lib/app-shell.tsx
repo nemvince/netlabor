@@ -1,27 +1,14 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
+import { CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, CpuIcon as Cpu, GlobeIcon as Globe, KeyIcon as KeyRound, SquaresFourIcon as LayoutTemplate, SquaresFourIcon as LayoutDashboard, SignOutIcon as LogOut, type Icon, NetworkIcon as Network, SidebarSimpleIcon as PanelLeftClose, SidebarIcon as PanelLeftOpen, ScrollIcon as ScrollText, HardDrivesIcon as Server, ShieldCheckIcon as ShieldCheck, SlidersHorizontalIcon as SlidersHorizontal, UserIcon as UserRound, UsersIcon as Users, WrenchIcon as Wrench   } from '@phosphor-icons/react';
 import {
-  ChevronDown,
-  ChevronRight,
-  Cpu,
-  Globe,
-  KeyRound,
-  LayoutDashboard,
-  LayoutTemplate,
-  LogOut,
-  type LucideIcon,
-  Network,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ScrollText,
-  Server,
-  ShieldCheck,
-  SlidersHorizontal,
-  UserRound,
-  Users,
-  Wrench,
-} from 'lucide-react';
-import { DropdownMenu } from 'radix-ui';
+  DropdownMenu,
+  DropdownMenuPortal,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from '@netlabor/ui/components/dropdown-menu';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Badge } from '../components/badge.tsx';
 import { ToastViewport } from '../components/toast.tsx';
@@ -50,7 +37,7 @@ type AppPath =
 interface NavItem {
   to: AppPath;
   label: string;
-  icon: LucideIcon;
+  icon: Icon;
   /** Any one of these privileges reveals the entry; absent means signed-in. */
   requires?: string[];
 }
@@ -247,8 +234,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="mt-auto border-t px-2 py-2" style={{ borderColor: 'var(--color-rule)' }}>
             {me ? (
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger render={
                   <button
                     type="button"
                     className={`flex w-full items-center gap-2 rounded-[3px] px-2 py-1.5 text-left hover:bg-[var(--color-panel-raised)] ${railCollapsed ? 'justify-center px-0' : ''}`}
@@ -274,9 +261,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                       </>
                     )}
                   </button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Portal>
-                  <DropdownMenu.Content
+                }>
+                </DropdownMenuTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuContent
                     align="start"
                     side="top"
                     sideOffset={6}
@@ -288,7 +276,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     }}
                   >
                     {me ? (
-                      <DropdownMenu.Item asChild>
+                      <DropdownMenuItem render={
                         <Link
                           to="/profile"
                           className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12.5px] outline-none data-[highlighted]:bg-[var(--color-panel-raised)]"
@@ -297,22 +285,23 @@ export function AppShell({ children }: { children: ReactNode }) {
                           <UserRound size={13} aria-hidden />
                           Profile & preferences
                         </Link>
-                      </DropdownMenu.Item>
+                      }
+                      />
                     ) : null}
-                    <DropdownMenu.Separator
+                    <DropdownMenuSeparator
                       className="my-1 h-px"
                       style={{ background: 'var(--color-rule)' }}
                     />
-                    <DropdownMenu.Item
+                    <DropdownMenuItem
                       className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12.5px] outline-none data-[highlighted]:bg-[var(--color-panel-raised)]"
                       style={{ color: 'var(--color-signal-down)' }}
                       onSelect={() => logout.mutate({})}
                     >
                       <LogOut size={13} aria-hidden /> Sign out
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Portal>
-              </DropdownMenu.Root>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenuPortal>
+              </DropdownMenu>
             ) : (
               <span
                 className="flex items-center gap-2.5 px-2 py-1.5 text-[12.5px]"

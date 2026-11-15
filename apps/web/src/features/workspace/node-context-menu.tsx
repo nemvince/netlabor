@@ -1,18 +1,5 @@
 import type { NodeRow } from '@netlabor/contract';
-import {
-  Ban,
-  Copy,
-  Globe,
-  Monitor,
-  Pause,
-  Pencil,
-  Play,
-  RotateCw,
-  Square,
-  SquareTerminal,
-  Trash2,
-  Wifi,
-} from 'lucide-react';
+import { ProhibitIcon as Ban, CopyIcon as Copy, GlobeIcon as Globe, MonitorIcon as Monitor, PauseIcon as Pause, PencilIcon as Pencil, PlayIcon as Play, ArrowClockwiseIcon as RotateCw, SquareIcon as Square, TerminalIcon as SquareTerminal, TrashIcon as Trash2, WifiHighIcon as Wifi   } from '@phosphor-icons/react';
 import { useEffect } from 'react';
 
 export type ContextAction =

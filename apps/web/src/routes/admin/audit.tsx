@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ChevronDown, ChevronRight, ScrollText } from 'lucide-react';
+import { CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, ScrollIcon as ScrollText   } from '@phosphor-icons/react';
 import { Fragment, useEffect, useState } from 'react';
 import { EmptyState } from '../../components/empty-state.tsx';
 import { Field, Input, Select } from '../../components/field.tsx';

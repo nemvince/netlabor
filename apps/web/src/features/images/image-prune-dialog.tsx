@@ -1,6 +1,6 @@
 import type { JobRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircle2, RefreshCw, Trash2, XCircle } from 'lucide-react';
+import { CheckCircleIcon as CheckCircle2, ArrowsClockwiseIcon as RefreshCw, TrashIcon as Trash2, XCircleIcon as XCircle   } from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { Badge } from '../../components/badge.tsx';
