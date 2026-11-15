@@ -1,6 +1,10 @@
 import type { TemplateRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { FilePlusIcon as FilePlus2, FloppyDiskIcon as Save, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  FilePlusIcon as FilePlus2,
+  FloppyDiskIcon as Save,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
@@ -143,7 +147,13 @@ export function BaseConfigDialog({
         <div className="flex min-h-0 flex-col gap-1">
           <div className="flex items-center justify-between">
             <span className="nb-rule-label">Files</span>
-            <Button type="button" onClick={startNew} title="New base configuration" variant="ghost" size="xs">
+            <Button
+              type="button"
+              onClick={startNew}
+              title="New base configuration"
+              variant="ghost"
+              size="xs"
+            >
               <FilePlus2 size={12} aria-hidden /> New
             </Button>
           </div>
@@ -248,10 +258,22 @@ export function BaseConfigDialog({
             <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
               Close
             </Button>
-            <Button type="button" disabled={!existing || busy} onClick={() => setDeleteOpen(true)} variant="destructive" size="sm">
+            <Button
+              type="button"
+              disabled={!existing || busy}
+              onClick={() => setDeleteOpen(true)}
+              variant="destructive"
+              size="sm"
+            >
               <Trash2 size={12} aria-hidden /> Delete
             </Button>
-            <Button type="button" disabled={busy || jsonError !== null} onClick={() => void save()} variant="default" size="sm">
+            <Button
+              type="button"
+              disabled={busy || jsonError !== null}
+              onClick={() => void save()}
+              variant="default"
+              size="sm"
+            >
               <Save size={12} aria-hidden /> {busy ? 'Saving…' : 'Save file'}
             </Button>
           </DialogFooter>

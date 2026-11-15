@@ -1,6 +1,6 @@
 import type { IdlepcProposal, NodeRow } from '@netlabor/contract';
 import { useQueryClient } from '@tanstack/react-query';
-import { CheckIcon as Check, GaugeIcon as Gauge   } from '@phosphor-icons/react';
+import { CheckIcon as Check, GaugeIcon as Gauge } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import type { z } from 'zod';
 import { Notice } from '../../components/notice.tsx';
@@ -111,7 +111,13 @@ export function DynamipsIdlepcPanel({
           >
             {platform} · image {imageId.slice(0, 8)}
           </span>
-          <Button type="button" disabled={busy || !canProbe} onClick={() => void propose()} variant="outline" size="xs">
+          <Button
+            type="button"
+            disabled={busy || !canProbe}
+            onClick={() => void propose()}
+            variant="outline"
+            size="xs"
+          >
             {busy ? 'Probing…' : 'Get proposals'}
           </Button>
         </div>
@@ -136,7 +142,13 @@ export function DynamipsIdlepcPanel({
                   {proposal.description ? ` · ${proposal.description}` : ''}
                 </div>
               </div>
-              <Button type="button" disabled={!canUpdate || !running || applying !== null} onClick={() => void apply(proposal.idlepc)} variant="outline" size="xs">
+              <Button
+                type="button"
+                disabled={!canUpdate || !running || applying !== null}
+                onClick={() => void apply(proposal.idlepc)}
+                variant="outline"
+                size="xs"
+              >
                 {current === proposal.idlepc ? <Check size={12} aria-hidden /> : null}
                 {applying === proposal.idlepc ? 'Applying…' : 'Apply'}
               </Button>

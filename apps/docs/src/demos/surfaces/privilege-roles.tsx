@@ -30,7 +30,14 @@ export default function PrivilegeRoles({ roles }: PrivilegeRolesProps) {
       <fieldset className="docs-stack" style={{ border: 0, padding: 0, margin: 0 }}>
         <legend className="sr-only">Built-in role</legend>
         {roles.map((entry) => (
-          <Button key={entry.name} type="button" aria-pressed={entry.name === role.name} onClick={() => setActive(entry.name)} variant="outline" size="xs">
+          <Button
+            key={entry.name}
+            type="button"
+            aria-pressed={entry.name === role.name}
+            onClick={() => setActive(entry.name)}
+            variant="outline"
+            size="xs"
+          >
             {entry.name}
           </Button>
         ))}

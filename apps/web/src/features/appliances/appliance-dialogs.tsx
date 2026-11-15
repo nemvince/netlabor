@@ -13,7 +13,25 @@ import {
   type TemplateRow,
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIcon as Activity, ArrowsLeftRightIcon as ArrowLeftRight, PlugIcon as Cable, CubeIcon as Container, DatabaseIcon as Database, DownloadSimpleIcon as Download, FileCodeIcon as FileCode, GaugeIcon as Gauge, GitBranchIcon as GitBranch, GlobeIcon as Globe, HammerIcon as Hammer, KeyIcon as KeyRound, LockIcon as Lock, NetworkIcon as Network, ShieldIcon as Shield, TerminalIcon as Terminal, XIcon as X   } from '@phosphor-icons/react';
+import {
+  ActivityIcon as Activity,
+  ArrowsLeftRightIcon as ArrowLeftRight,
+  PlugIcon as Cable,
+  CubeIcon as Container,
+  DatabaseIcon as Database,
+  DownloadSimpleIcon as Download,
+  FileCodeIcon as FileCode,
+  GaugeIcon as Gauge,
+  GitBranchIcon as GitBranch,
+  GlobeIcon as Globe,
+  HammerIcon as Hammer,
+  KeyIcon as KeyRound,
+  LockIcon as Lock,
+  NetworkIcon as Network,
+  ShieldIcon as Shield,
+  TerminalIcon as Terminal,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { Field, Input, Select, Textarea } from '../../components/field.tsx';
@@ -177,7 +195,13 @@ export function OsImageCreateDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={busy} onClick={() => void save()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void save()}
+            variant="default"
+            size="sm"
+          >
             {busy ? (editing ? 'Saving…' : 'Adding…') : editing ? 'Save changes' : 'Add entry'}
           </Button>
         </DialogFooter>
@@ -247,7 +271,13 @@ export function AdoptOsImageDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={busy || !imageId} onClick={() => void adopt()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy || !imageId}
+            onClick={() => void adopt()}
+            variant="default"
+            size="sm"
+          >
             {busy ? 'Adopting…' : 'Adopt image'}
           </Button>
         </DialogFooter>
@@ -737,7 +767,13 @@ export function ApplianceBuildDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={busy || readyOsImages.length === 0} onClick={() => void create()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy || readyOsImages.length === 0}
+            onClick={() => void create()}
+            variant="default"
+            size="sm"
+          >
             {busy ? 'Queuing…' : 'Start build'}
           </Button>
         </DialogFooter>
@@ -936,7 +972,13 @@ export function BuildTemplateDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={busy} onClick={() => void create()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void create()}
+            variant="default"
+            size="sm"
+          >
             {busy ? 'Creating…' : 'Create template'}
           </Button>
         </DialogFooter>

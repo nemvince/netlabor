@@ -1,5 +1,15 @@
 import type { LinkRow } from '@netlabor/contract';
-import { DownloadSimpleIcon as Download, PauseIcon as Pause, PencilIcon as Pencil, PlayIcon as Play, BroadcastIcon as Radio, SquareIcon as Square, TrashIcon as Trash2, WavesIcon as Waves, XCircleIcon as XCircle   } from '@phosphor-icons/react';
+import {
+  DownloadSimpleIcon as Download,
+  PauseIcon as Pause,
+  PencilIcon as Pencil,
+  PlayIcon as Play,
+  BroadcastIcon as Radio,
+  SquareIcon as Square,
+  TrashIcon as Trash2,
+  WavesIcon as Waves,
+  XCircleIcon as XCircle,
+} from '@phosphor-icons/react';
 import { useEffect } from 'react';
 
 export type LinkContextAction =

@@ -1,7 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { GroupRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash, UsersIcon as UsersRound   } from '@phosphor-icons/react';
+import {
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  TrashIcon as Trash,
+  UsersIcon as UsersRound,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -208,10 +213,27 @@ export function GroupsSection({ canWrite }: { canWrite: boolean }) {
                 <Td align="right">
                   {canWrite ? (
                     <span className="inline-flex items-center gap-0.5">
-                      <Button type="button" aria-label={`Edit ${group.name}`} title="Edit group" onClick={() => setDialog({ group })} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`Edit ${group.name}`}
+                        title="Edit group"
+                        onClick={() => setDialog({ group })}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Pencil size={13} aria-hidden />
                       </Button>
-                      <Button type="button" aria-label={`Delete ${group.name}`} title="Delete group" onClick={() => { remove.reset(); setDeleteTarget(group); }} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`Delete ${group.name}`}
+                        title="Delete group"
+                        onClick={() => {
+                          remove.reset();
+                          setDeleteTarget(group);
+                        }}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Trash size={13} aria-hidden />
                       </Button>
                     </span>

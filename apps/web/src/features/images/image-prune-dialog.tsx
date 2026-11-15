@@ -1,6 +1,11 @@
 import type { JobRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { CheckCircleIcon as CheckCircle2, ArrowsClockwiseIcon as RefreshCw, TrashIcon as Trash2, XCircleIcon as XCircle   } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon as CheckCircle2,
+  ArrowsClockwiseIcon as RefreshCw,
+  TrashIcon as Trash2,
+  XCircleIcon as XCircle,
+} from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { Badge } from '../../components/badge.tsx';
@@ -198,13 +203,35 @@ export function ImagePruneDialog({
         ) : null}
 
         <DialogFooter>
-          <Button type="button" disabled={busy} onClick={() => onOpenChange(false)} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => onOpenChange(false)}
+            variant="outline"
+            size="sm"
+          >
             Close
           </Button>
-          <Button type="button" disabled={busy} onClick={() => { setPreview(null); setJob(null); void run(true); }} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              setPreview(null);
+              setJob(null);
+              void run(true);
+            }}
+            variant="outline"
+            size="sm"
+          >
             Re-run dry run
           </Button>
-          <Button type="button" disabled={busy || removable === 0} onClick={() => void run(false)} variant="destructive" size="sm">
+          <Button
+            type="button"
+            disabled={busy || removable === 0}
+            onClick={() => void run(false)}
+            variant="destructive"
+            size="sm"
+          >
             <Trash2 size={12} aria-hidden /> Prune {removable} replica(s)
           </Button>
         </DialogFooter>

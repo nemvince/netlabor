@@ -2,7 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { SessionRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { KeyIcon as KeyRound, MonitorIcon as Monitor, SlidersHorizontalIcon as SlidersHorizontal, DeviceMobileIcon as Smartphone, UserIcon as UserRound, WrenchIcon as Wrench   } from '@phosphor-icons/react';
+import {
+  KeyIcon as KeyRound,
+  MonitorIcon as Monitor,
+  SlidersHorizontalIcon as SlidersHorizontal,
+  DeviceMobileIcon as Smartphone,
+  UserIcon as UserRound,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -280,7 +287,13 @@ export function ProfilePage() {
           title="Sessions"
           description="Each row is one signed-in browser. Revoking a session takes effect immediately."
           actions={
-            <Button type="button" onClick={() => void sessions.refetch()} disabled={sessions.isFetching} variant="outline" size="xs">
+            <Button
+              type="button"
+              onClick={() => void sessions.refetch()}
+              disabled={sessions.isFetching}
+              variant="outline"
+              size="xs"
+            >
               {sessions.isFetching ? 'Refreshing…' : 'Refresh'}
             </Button>
           }
@@ -327,7 +340,12 @@ export function ProfilePage() {
                           sign out to end
                         </span>
                       ) : (
-                        <Button type="button" onClick={() => setRevokeTarget(session)} variant="outline" size="xs">
+                        <Button
+                          type="button"
+                          onClick={() => setRevokeTarget(session)}
+                          variant="outline"
+                          size="xs"
+                        >
                           Revoke
                         </Button>
                       )}
@@ -355,7 +373,13 @@ export function ProfilePage() {
           title="Preferences"
           description="Values stored with your account and read by the browser app. They override controller defaults for you only."
           actions={
-            <Button type="button" onClick={onSavePreferences} disabled={savePreferences.isPending || hasPreferenceErrors} variant="default" size="xs">
+            <Button
+              type="button"
+              onClick={onSavePreferences}
+              disabled={savePreferences.isPending || hasPreferenceErrors}
+              variant="default"
+              size="xs"
+            >
               {savePreferences.isPending ? 'Saving…' : 'Save preferences'}
             </Button>
           }

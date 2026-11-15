@@ -1,4 +1,4 @@
-import { MagnifyingGlassIcon  } from '@phosphor-icons/react';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import type { ComponentProps, CSSProperties } from 'react';
 import { Input } from './field.tsx';
 

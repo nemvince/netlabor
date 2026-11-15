@@ -1,7 +1,13 @@
 /** Appliance marketplace: browse the curated catalog and install entries. */
 
 import { useQuery } from '@tanstack/react-query';
-import { CheckIcon as Check, DownloadSimpleIcon as Download, MonitorIcon as Monitor, NetworkIcon as Network, ShieldIcon as Shield   } from '@phosphor-icons/react';
+import {
+  CheckIcon as Check,
+  DownloadSimpleIcon as Download,
+  MonitorIcon as Monitor,
+  NetworkIcon as Network,
+  ShieldIcon as Shield,
+} from '@phosphor-icons/react';
 import {
   siAlpinelinux,
   siDebian,
@@ -181,7 +187,14 @@ export function CatalogPanel({
                       <Check size={12} aria-hidden /> Installed
                     </Button>
                   ) : (
-                    <Button type="button" disabled={!canInstall || busy} title={canInstall ? undefined : 'Requires image.write and template.write'} onClick={() => void install(appliance.id, appliance.name)} variant="default" size="xs">
+                    <Button
+                      type="button"
+                      disabled={!canInstall || busy}
+                      title={canInstall ? undefined : 'Requires image.write and template.write'}
+                      onClick={() => void install(appliance.id, appliance.name)}
+                      variant="default"
+                      size="xs"
+                    >
                       <Download size={12} aria-hidden />
                       {busy ? `${percent}%` : 'Install'}
                     </Button>

@@ -1,6 +1,17 @@
 import type { EventEnvelope, LinkFilters } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { DownloadSimpleIcon as Download, MapPinIcon as MapPin, PaletteIcon as Palette, PauseIcon as Pause, PlayIcon as Play, BroadcastIcon as Radio, ArrowCounterClockwiseIcon as RotateCcw, SlidersHorizontalIcon as SlidersHorizontal, SquareIcon as Square, WavesIcon as Waves   } from '@phosphor-icons/react';
+import {
+  DownloadSimpleIcon as Download,
+  MapPinIcon as MapPin,
+  PaletteIcon as Palette,
+  PauseIcon as Pause,
+  PlayIcon as Play,
+  BroadcastIcon as Radio,
+  ArrowCounterClockwiseIcon as RotateCcw,
+  SlidersHorizontalIcon as SlidersHorizontal,
+  SquareIcon as Square,
+  WavesIcon as Waves,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
@@ -296,10 +307,22 @@ export function LinkDialog({
               {linkData.adapterB}/{linkData.portB} · {linkData.dataplane?.mode ?? 'inactive'}
             </span>
             <div className="ml-auto flex items-center gap-1">
-              <Button type="button" disabled={busy !== null || linkData.status === 'pending'} onClick={() => void resetDataplane()} variant="outline" size="xs">
+              <Button
+                type="button"
+                disabled={busy !== null || linkData.status === 'pending'}
+                onClick={() => void resetDataplane()}
+                variant="outline"
+                size="xs"
+              >
                 <RotateCcw size={12} aria-hidden /> {busy === 'reset' ? 'Resetting…' : 'Reset'}
               </Button>
-              <Button type="button" disabled={busy !== null || linkData.status === 'pending'} onClick={() => void toggleSuspend()} variant="outline" size="xs">
+              <Button
+                type="button"
+                disabled={busy !== null || linkData.status === 'pending'}
+                onClick={() => void toggleSuspend()}
+                variant="outline"
+                size="xs"
+              >
                 {linkData.suspend ? (
                   <>
                     <Play size={12} aria-hidden /> Resume link
@@ -324,12 +347,25 @@ export function LinkDialog({
             >
               <div className="mb-1.5 flex items-center justify-between gap-2">
                 <span className="nb-rule-label">Appearance</span>
-                <Button type="button" disabled={busy !== null} onClick={() => void saveAppearance()} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={busy !== null}
+                  onClick={() => void saveAppearance()}
+                  variant="outline"
+                  size="xs"
+                >
                   {busy === 'style' ? 'Saving…' : 'Save appearance'}
                 </Button>
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
-                <Button type="button" title="Default status colour" aria-label="Use default link colour" onClick={() => setStyleColor('')} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  title="Default status colour"
+                  aria-label="Use default link colour"
+                  onClick={() => setStyleColor('')}
+                  variant="outline"
+                  size="xs"
+                >
                   Auto
                 </Button>
                 {LINK_COLORS.map((preset) => (
@@ -386,10 +422,22 @@ export function LinkDialog({
                   Traffic filters
                 </span>
                 <div className="flex gap-1">
-                  <Button type="button" disabled={busy !== null} onClick={() => void clearFilters()} variant="outline" size="xs">
+                  <Button
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={() => void clearFilters()}
+                    variant="outline"
+                    size="xs"
+                  >
                     Clear
                   </Button>
-                  <Button type="button" disabled={busy !== null} onClick={() => void saveFilters()} variant="default" size="xs">
+                  <Button
+                    type="button"
+                    disabled={busy !== null}
+                    onClick={() => void saveFilters()}
+                    variant="default"
+                    size="xs"
+                  >
                     {busy === 'filters' ? 'Applying…' : 'Apply'}
                   </Button>
                 </div>
@@ -493,10 +541,22 @@ export function LinkDialog({
                 )}
               </div>
               <div className="flex flex-wrap gap-1">
-                <Button type="button" disabled={busy !== null} onClick={() => void capture('start')} variant="default" size="xs">
+                <Button
+                  type="button"
+                  disabled={busy !== null}
+                  onClick={() => void capture('start')}
+                  variant="default"
+                  size="xs"
+                >
                   <Radio size={12} aria-hidden /> Start capture
                 </Button>
-                <Button type="button" disabled={busy !== null || !linkData.capture} onClick={() => void capture('stop')} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={busy !== null || !linkData.capture}
+                  onClick={() => void capture('stop')}
+                  variant="outline"
+                  size="xs"
+                >
                   <Square size={12} aria-hidden /> Stop capture
                 </Button>
                 {linkData.capture ? (
@@ -512,7 +572,18 @@ export function LinkDialog({
                     >
                       <Download size={12} aria-hidden /> Download pcap
                     </a>
-                    <Button type="button" onClick={() => { onOpenWireshark( linkData.id, `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`, ); onClose(); }} variant="outline" size="xs">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        onOpenWireshark(
+                          linkData.id,
+                          `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`,
+                        );
+                        onClose();
+                      }}
+                      variant="outline"
+                      size="xs"
+                    >
                       <Waves size={12} aria-hidden /> Open Wireshark
                     </Button>
                   </>

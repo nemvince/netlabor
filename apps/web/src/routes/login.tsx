@@ -124,7 +124,13 @@ export function LoginPage() {
               {...form.register('password')}
             />
           </Field>
-          <Button type="submit" disabled={login.isPending} className="mt-1 justify-center" variant="default" size="sm">
+          <Button
+            type="submit"
+            disabled={login.isPending}
+            className="mt-1 justify-center"
+            variant="default"
+            size="sm"
+          >
             {login.isPending ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
@@ -141,7 +147,11 @@ export function LoginPage() {
                 <a
                   key={provider.id}
                   href={`/auth/oidc/${provider.id}/start`}
-                  className={buttonVariants({ variant: 'outline', size: 'sm', className: 'justify-center' })}
+                  className={buttonVariants({
+                    variant: 'outline',
+                    size: 'sm',
+                    className: 'justify-center',
+                  })}
                 >
                   Continue with {provider.name}
                 </a>

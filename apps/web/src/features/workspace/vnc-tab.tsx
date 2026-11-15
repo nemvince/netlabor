@@ -1,6 +1,6 @@
 import type { ConsoleTicketOutput } from '@netlabor/contract';
 import RFB from '@novnc/novnc';
-import { MonitorIcon as Monitor  } from '@phosphor-icons/react';
+import { MonitorIcon as Monitor } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import type { z } from 'zod';
 import { client } from '../../lib/api.ts';

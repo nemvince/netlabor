@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, ScrollIcon as ScrollText   } from '@phosphor-icons/react';
+import {
+  CaretDownIcon as ChevronDown,
+  CaretRightIcon as ChevronRight,
+  ScrollIcon as ScrollText,
+} from '@phosphor-icons/react';
 import { Fragment, useEffect, useState } from 'react';
 import { EmptyState } from '../../components/empty-state.tsx';
 import { Field, Input, Select } from '../../components/field.tsx';
@@ -72,7 +76,13 @@ export function AuditAdminPage() {
         title="Audit"
         description="Every mutation lands here with the actor, the resource, the client IP, and the redacted request payload."
         actions={
-          <Button type="button" onClick={() => void audit.refetch()} disabled={audit.isFetching} variant="outline" size="xs">
+          <Button
+            type="button"
+            onClick={() => void audit.refetch()}
+            disabled={audit.isFetching}
+            variant="outline"
+            size="xs"
+          >
             {audit.isFetching ? 'Refreshing…' : 'Refresh'}
           </Button>
         }
@@ -166,7 +176,14 @@ export function AuditAdminPage() {
                     <Fragment key={row.id}>
                       <Tr>
                         <Td>
-                          <Button type="button" aria-label={open ? 'Hide payload' : 'Show payload'} aria-expanded={open} onClick={() => toggleRow(row.id)} variant="ghost" size="xs">
+                          <Button
+                            type="button"
+                            aria-label={open ? 'Hide payload' : 'Show payload'}
+                            aria-expanded={open}
+                            onClick={() => toggleRow(row.id)}
+                            variant="ghost"
+                            size="xs"
+                          >
                             {open ? (
                               <ChevronDown size={13} aria-hidden />
                             ) : (
@@ -227,10 +244,22 @@ export function AuditAdminPage() {
                 rows {page * PAGE_SIZE + 1}–{page * PAGE_SIZE + rows.length}
               </span>
               <span className="flex items-center gap-1">
-                <Button type="button" disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={page === 0}
+                  onClick={() => setPage((value) => Math.max(0, value - 1))}
+                  variant="outline"
+                  size="xs"
+                >
                   Previous
                 </Button>
-                <Button type="button" disabled={rows.length < PAGE_SIZE} onClick={() => setPage((value) => value + 1)} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={rows.length < PAGE_SIZE}
+                  onClick={() => setPage((value) => value + 1)}
+                  variant="outline"
+                  size="xs"
+                >
                   Next
                 </Button>
               </span>

@@ -13,7 +13,7 @@ import {
   VpcsProperties,
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import { PlusIcon as Plus, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import type { z } from 'zod';
 import { Field, Input, Select, Textarea } from '../../components/field.tsx';
 import { ImagePicker } from '../../components/image-picker.tsx';
@@ -269,7 +269,13 @@ function PortsMappingEditor({
     >
       <div className="flex items-center justify-between gap-2">
         <span className="nb-rule-label">{field.label}</span>
-        <Button type="button" disabled={disabled} onClick={() => onChange([...rows, blankPort(kind, rows.length)])} variant="outline" size="xs">
+        <Button
+          type="button"
+          disabled={disabled}
+          onClick={() => onChange([...rows, blankPort(kind, rows.length)])}
+          variant="outline"
+          size="xs"
+        >
           <Plus size={12} aria-hidden /> Add port
         </Button>
       </div>
@@ -412,7 +418,14 @@ function PortsMappingEditor({
               </>
             ) : null}
             <div className="col-span-2 flex justify-end">
-              <Button type="button" aria-label={`Remove port ${index + 1}`} disabled={disabled} onClick={() => onChange(rows.filter((_, position) => position !== index))} variant="ghost" size="xs">
+              <Button
+                type="button"
+                aria-label={`Remove port ${index + 1}`}
+                disabled={disabled}
+                onClick={() => onChange(rows.filter((_, position) => position !== index))}
+                variant="ghost"
+                size="xs"
+              >
                 <Trash2 size={12} aria-hidden /> Remove
               </Button>
             </div>

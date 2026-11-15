@@ -1,4 +1,4 @@
-import { PlusIcon, TrashIcon  } from '@phosphor-icons/react';
+import { PlusIcon, TrashIcon } from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { Input } from './field.tsx';
 import { Button } from '@netlabor/ui/components/button';
@@ -87,9 +87,7 @@ export function KeyValueEditor({
   return (
     <fieldset className="m-0 grid gap-1.5 border-0 p-0" aria-label={ariaLabel}>
       {rows.length === 0 ? (
-        <p className="text-[11px] text-muted-foreground">
-          No entries yet.
-        </p>
+        <p className="text-[11px] text-muted-foreground">No entries yet.</p>
       ) : null}
       {rows.map((row, index) => (
         <div key={row.id} className="flex items-center gap-1.5">

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { type ApiKeyCreated, type ApiKeyRow, PRIVILEGES, type Privilege } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyIcon as KeyRound, PlusIcon as Plus   } from '@phosphor-icons/react';
+import { KeyIcon as KeyRound, PlusIcon as Plus } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -178,7 +178,14 @@ function CreateKeyDialog({
             <Button type="button" onClick={() => select(available)} variant="outline" size="xs">
               All
             </Button>
-            <Button type="button" onClick={() => select(READ_PRIVILEGES.filter((privilege) => available.includes(privilege))) } variant="outline" size="xs">
+            <Button
+              type="button"
+              onClick={() =>
+                select(READ_PRIVILEGES.filter((privilege) => available.includes(privilege)))
+              }
+              variant="outline"
+              size="xs"
+            >
               Read-only
             </Button>
             <Button type="button" onClick={() => select([])} variant="outline" size="xs">
@@ -305,7 +312,12 @@ export function ApiKeysAdminPage() {
                           {formatStamp(key.revokedAt)}
                         </span>
                       ) : (
-                        <Button type="button" onClick={() => setRevokeTarget(key)} variant="outline" size="xs">
+                        <Button
+                          type="button"
+                          onClick={() => setRevokeTarget(key)}
+                          variant="outline"
+                          size="xs"
+                        >
                           Revoke
                         </Button>
                       )}

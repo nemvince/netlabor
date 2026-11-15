@@ -1,4 +1,31 @@
-import { AlignCenterHorizontalIcon as AlignCenterHorizontal, AlignCenterVerticalIcon as AlignCenterVertical, AlignBottomIcon as AlignEndHorizontal, AlignRightIcon as AlignEndVertical, AlignTopIcon as AlignStartHorizontal, AlignLeftIcon as AlignStartVertical, PlugIcon as Cable, ClipboardIcon as ClipboardPaste, ColumnsIcon as Columns3, CopyIcon as Copy, GridNineIcon as Grid3x3, ImageIcon as ImageIcon, StackIcon as Layers, LinkIcon as Link2, MagnetIcon as Magnet, MapTrifoldIcon as MapIcon, PaintBrushBroadIcon as PaintBucket, PlayIcon as Play, RectangleIcon as RectangleHorizontal, ArrowArcRightIcon as Redo2, RowsIcon as Rows3, SquareIcon as Square, StickerIcon as StickyNote, TrashIcon as Trash2, TextAaIcon as Type, ArrowArcLeftIcon as Undo2   } from '@phosphor-icons/react';
+import {
+  AlignCenterHorizontalIcon as AlignCenterHorizontal,
+  AlignCenterVerticalIcon as AlignCenterVertical,
+  AlignBottomIcon as AlignEndHorizontal,
+  AlignRightIcon as AlignEndVertical,
+  AlignTopIcon as AlignStartHorizontal,
+  AlignLeftIcon as AlignStartVertical,
+  PlugIcon as Cable,
+  ClipboardIcon as ClipboardPaste,
+  ColumnsIcon as Columns3,
+  CopyIcon as Copy,
+  GridNineIcon as Grid3x3,
+  ImageIcon as ImageIcon,
+  StackIcon as Layers,
+  LinkIcon as Link2,
+  MagnetIcon as Magnet,
+  MapTrifoldIcon as MapIcon,
+  PaintBrushBroadIcon as PaintBucket,
+  PlayIcon as Play,
+  RectangleIcon as RectangleHorizontal,
+  ArrowArcRightIcon as Redo2,
+  RowsIcon as Rows3,
+  SquareIcon as Square,
+  StickerIcon as StickyNote,
+  TrashIcon as Trash2,
+  TextAaIcon as Type,
+  ArrowArcLeftIcon as Undo2,
+} from '@phosphor-icons/react';
 import {
   DropdownMenu,
   DropdownMenuPortal,
@@ -75,7 +102,19 @@ function ToolButton({
   children: ReactNode;
 }) {
   return (
-    <Button type="button" title={label} aria-label={label} aria-pressed={active} disabled={disabled} onClick={onClick} style={ active ? { color: 'var(--color-copper)', borderColor: 'var(--color-copper)' } : undefined } variant="ghost" size="xs">
+    <Button
+      type="button"
+      title={label}
+      aria-label={label}
+      aria-pressed={active}
+      disabled={disabled}
+      onClick={onClick}
+      style={
+        active ? { color: 'var(--color-copper)', borderColor: 'var(--color-copper)' } : undefined
+      }
+      variant="ghost"
+      size="xs"
+    >
       {children}
     </Button>
   );
@@ -198,12 +237,19 @@ export function CanvasToolbar({
       </ToolButton>
       <Separator />
       <DropdownMenu>
-        <DropdownMenuTrigger render={
-          <Button type="button" disabled={!canEdit || !multi} title={multi ? 'Align or distribute selection' : 'Select at least two nodes'} variant="ghost" size="xs">
-            <AlignStartVertical size={13} aria-hidden /> Align
-          </Button>
-        }>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              type="button"
+              disabled={!canEdit || !multi}
+              title={multi ? 'Align or distribute selection' : 'Select at least two nodes'}
+              variant="ghost"
+              size="xs"
+            >
+              <AlignStartVertical size={13} aria-hidden /> Align
+            </Button>
+          }
+        ></DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent
             align="start"
@@ -255,12 +301,19 @@ export function CanvasToolbar({
         </DropdownMenuPortal>
       </DropdownMenu>
       <DropdownMenu>
-        <DropdownMenuTrigger render={
-          <Button type="button" disabled={!canDraw} title="Insert a drawing annotation" variant="ghost" size="xs">
-            <Type size={13} aria-hidden /> Insert
-          </Button>
-        }>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              type="button"
+              disabled={!canDraw}
+              title="Insert a drawing annotation"
+              variant="ghost"
+              size="xs"
+            >
+              <Type size={13} aria-hidden /> Insert
+            </Button>
+          }
+        ></DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent
             align="start"
@@ -302,12 +355,13 @@ export function CanvasToolbar({
         }}
       />
       <DropdownMenu>
-        <DropdownMenuTrigger render={
-          <Button type="button" title="Canvas display options" variant="ghost" size="xs">
-            <Grid3x3 size={13} aria-hidden /> View
-          </Button>
-        }>
-        </DropdownMenuTrigger>
+        <DropdownMenuTrigger
+          render={
+            <Button type="button" title="Canvas display options" variant="ghost" size="xs">
+              <Grid3x3 size={13} aria-hidden /> View
+            </Button>
+          }
+        ></DropdownMenuTrigger>
         <DropdownMenuPortal>
           <DropdownMenuContent
             align="start"

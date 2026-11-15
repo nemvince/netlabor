@@ -1,5 +1,5 @@
 import type { AgentCapabilities, ImageRow, TemplateRow } from '@netlabor/contract';
-import { ImageIcon as ImageOff, PlugIcon as Plug, StarIcon as Star   } from '@phosphor-icons/react';
+import { ImageIcon as ImageOff, PlugIcon as Plug, StarIcon as Star } from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Notice } from '../../components/notice.tsx';
 import { SearchInput } from '../../components/search-input.tsx';

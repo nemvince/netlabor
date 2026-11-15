@@ -1,6 +1,13 @@
 import type { FaultRow, LinkRow, NodeRow, TemplateRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { WarningIcon as AlertTriangle, CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, PlayIcon as Play, TrashIcon as Trash2, LightningIcon as Zap   } from '@phosphor-icons/react';
+import {
+  WarningIcon as AlertTriangle,
+  CaretDownIcon as ChevronDown,
+  CaretRightIcon as ChevronRight,
+  PlayIcon as Play,
+  TrashIcon as Trash2,
+  LightningIcon as Zap,
+} from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Dialog } from '../../components/dialog.tsx';
@@ -364,10 +371,22 @@ export function FaultsDialog({
                   </span>
                 </div>
               </div>
-              <Button type="button" disabled={busy || selectedCandidates.length === 0} onClick={() => void inject()} variant="default" size="sm">
+              <Button
+                type="button"
+                disabled={busy || selectedCandidates.length === 0}
+                onClick={() => void inject()}
+                variant="default"
+                size="sm"
+              >
                 <Zap size={13} aria-hidden /> {busy ? 'Applying…' : 'Inject faults'}
               </Button>
-              <Button type="button" disabled={busy || activeFaults.length === 0} onClick={() => void clearFaults()} variant="destructive" size="sm">
+              <Button
+                type="button"
+                disabled={busy || activeFaults.length === 0}
+                onClick={() => void clearFaults()}
+                variant="destructive"
+                size="sm"
+              >
                 <Trash2 size={13} aria-hidden /> Clear active faults
               </Button>
             </div>
@@ -516,7 +535,13 @@ function FaultTable({
                     cleared {formatStamp(fault.clearedAt)}
                   </span>
                 ) : (
-                  <Button type="button" disabled={busy} onClick={() => onClear(fault.id)} variant="outline" size="xs">
+                  <Button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => onClear(fault.id)}
+                    variant="outline"
+                    size="xs"
+                  >
                     <Play size={11} aria-hidden /> Recover
                   </Button>
                 )}

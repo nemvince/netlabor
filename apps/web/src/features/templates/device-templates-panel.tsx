@@ -1,6 +1,14 @@
 import type { ImageRow, NodeType, SymbolRow, TemplateRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowsLeftRightIcon as ArrowRightLeft, CopyIcon as Copy, FileCodeIcon as FileCode2, SquaresFourIcon as LayoutTemplate, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  ArrowsLeftRightIcon as ArrowRightLeft,
+  CopyIcon as Copy,
+  FileCodeIcon as FileCode2,
+  SquaresFourIcon as LayoutTemplate,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
@@ -85,7 +93,13 @@ function DuplicateTemplateDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={busy} onClick={() => void duplicate()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void duplicate()}
+            variant="default"
+            size="sm"
+          >
             {busy ? 'Duplicating…' : 'Duplicate'}
           </Button>
         </DialogFooter>
@@ -195,7 +209,13 @@ function CreateInProjectDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={busy || projects.length === 0} onClick={() => void create()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy || projects.length === 0}
+            onClick={() => void create()}
+            variant="default"
+            size="sm"
+          >
             {busy ? 'Creating…' : 'Create in project'}
           </Button>
         </DialogFooter>
@@ -511,7 +531,12 @@ export function DeviceTemplatesPanel({
         </span>
         <span className="flex-1" />
         {canWrite ? (
-          <Button type="button" onClick={() => setEditor({ template: null })} variant="default" size="sm">
+          <Button
+            type="button"
+            onClick={() => setEditor({ template: null })}
+            variant="default"
+            size="sm"
+          >
             <Plus size={14} aria-hidden /> New template
           </Button>
         ) : (
@@ -534,7 +559,12 @@ export function DeviceTemplatesPanel({
             title="Templates could not be read"
             description={messageOf(templates.error)}
             action={
-              <Button type="button" onClick={() => void templates.refetch()} variant="outline" size="sm">
+              <Button
+                type="button"
+                onClick={() => void templates.refetch()}
+                variant="outline"
+                size="sm"
+              >
                 Retry
               </Button>
             }
@@ -550,7 +580,15 @@ export function DeviceTemplatesPanel({
                   title="No template matches"
                   description="Clear the search and node-type filters, or create a template in the selected scope."
                   action={
-                    <Button type="button" onClick={() => { setSearch(''); setNodeTypeFilter('all'); }} variant="outline" size="sm">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setSearch('');
+                        setNodeTypeFilter('all');
+                      }}
+                      variant="outline"
+                      size="sm"
+                    >
                       Clear filters
                     </Button>
                   }
@@ -563,7 +601,12 @@ export function DeviceTemplatesPanel({
                   action={
                     <span className="flex flex-wrap items-center justify-center gap-2">
                       {canWrite ? (
-                        <Button type="button" onClick={() => setEditor({ template: null })} variant="default" size="sm">
+                        <Button
+                          type="button"
+                          onClick={() => setEditor({ template: null })}
+                          variant="default"
+                          size="sm"
+                        >
                           <Plus size={14} aria-hidden /> New template
                         </Button>
                       ) : null}
@@ -754,7 +797,13 @@ export function DeviceTemplatesPanel({
                         Missing {selectedMissing.join(', ')}. Nodes from this template cannot start
                         until the library has them.
                       </p>
-                      <Button type="button" onClick={onOpenAppliances} className="mt-1.5" variant="outline" size="xs">
+                      <Button
+                        type="button"
+                        onClick={onOpenAppliances}
+                        className="mt-1.5"
+                        variant="outline"
+                        size="xs"
+                      >
                         Open OS repository
                       </Button>
                     </div>
@@ -808,22 +857,56 @@ export function DeviceTemplatesPanel({
                   className="flex flex-wrap items-center gap-1 border-t px-3 py-2"
                   style={{ borderColor: 'var(--color-rule)' }}
                 >
-                  <Button type="button" onClick={() => setBaseConfigTarget(selected)} variant="outline" size="xs">
+                  <Button
+                    type="button"
+                    onClick={() => setBaseConfigTarget(selected)}
+                    variant="outline"
+                    size="xs"
+                  >
                     <FileCode2 size={12} aria-hidden /> Base configs
                   </Button>
                   {canWrite ? (
                     <>
-                      <Button type="button" onClick={() => setEditor({ template: selected })} variant="outline" size="xs">
+                      <Button
+                        type="button"
+                        onClick={() => setEditor({ template: selected })}
+                        variant="outline"
+                        size="xs"
+                      >
                         <Pencil size={12} aria-hidden /> Edit
                       </Button>
-                      <Button type="button" onClick={() => setDuplicateTarget(selected)} variant="outline" size="xs">
+                      <Button
+                        type="button"
+                        onClick={() => setDuplicateTarget(selected)}
+                        variant="outline"
+                        size="xs"
+                      >
                         <Copy size={12} aria-hidden /> Duplicate
                       </Button>
-                      <Button type="button" onClick={() => { setDeleteError(null); setDeleteTarget(selected); }} variant="destructive" size="xs">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setDeleteError(null);
+                          setDeleteTarget(selected);
+                        }}
+                        variant="destructive"
+                        size="xs"
+                      >
                         <Trash2 size={12} aria-hidden /> Delete
                       </Button>
                       {selected.projectId == null ? (
-                        <Button type="button" disabled={projectRows.length === 0} title={ projectRows.length === 0 ? 'No readable projects to copy into.' : 'Copy this global template into a project' } onClick={() => setCopyTarget(selected)} variant="default" size="xs">
+                        <Button
+                          type="button"
+                          disabled={projectRows.length === 0}
+                          title={
+                            projectRows.length === 0
+                              ? 'No readable projects to copy into.'
+                              : 'Copy this global template into a project'
+                          }
+                          onClick={() => setCopyTarget(selected)}
+                          variant="default"
+                          size="xs"
+                        >
                           <ArrowRightLeft size={12} aria-hidden /> Create in project
                         </Button>
                       ) : null}

@@ -1,4 +1,4 @@
-import { type Icon  } from '@phosphor-icons/react';
+import { type Icon } from '@phosphor-icons/react';
 import { Tabs, TabsList, TabsTrigger } from '@netlabor/ui/components/tabs';
 
 export interface TabItem<T extends string> {
@@ -24,11 +24,7 @@ export function TabBar<T extends string>({
   onChange: (id: T) => void;
 }) {
   return (
-    <Tabs
-      value={value}
-      onValueChange={(next: string) => onChange(next as T)}
-      className="flex-col"
-    >
+    <Tabs value={value} onValueChange={(next: string) => onChange(next as T)} className="flex-col">
       <TabsList
         aria-label={label}
         variant="line"

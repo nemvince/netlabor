@@ -42,9 +42,7 @@ export function ConfirmDialog({
         <AlertDialogTitle className="text-[15px] font-semibold tracking-tight">
           {title}
         </AlertDialogTitle>
-        <AlertDialogDescription className="text-[12px]">
-          {description}
-        </AlertDialogDescription>
+        <AlertDialogDescription className="text-[12px]">{description}</AlertDialogDescription>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <div className="flex flex-col gap-3">
             {children}

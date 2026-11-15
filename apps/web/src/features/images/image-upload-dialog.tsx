@@ -1,6 +1,6 @@
 import type { ImageKind, ImageRow } from '@netlabor/contract';
 import { IMAGE_KINDS } from '@netlabor/contract';
-import { FileArrowUpIcon as FileUp, CloudArrowUpIcon as UploadCloud   } from '@phosphor-icons/react';
+import { FileArrowUpIcon as FileUp, CloudArrowUpIcon as UploadCloud } from '@phosphor-icons/react';
 import { type DragEvent, useRef, useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { Field, Input, Select } from '../../components/field.tsx';
@@ -202,10 +202,25 @@ export function ImageUploadDialog({
         ) : null}
 
         <DialogFooter>
-          <Button type="button" disabled={stage === 'creating'} onClick={() => { if (stage === 'uploading') abortRef.current?.abort(); else onOpenChange(false); }} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={stage === 'creating'}
+            onClick={() => {
+              if (stage === 'uploading') abortRef.current?.abort();
+              else onOpenChange(false);
+            }}
+            variant="outline"
+            size="sm"
+          >
             {stage === 'uploading' ? 'Stop upload' : 'Cancel'}
           </Button>
-          <Button type="button" disabled={busy || file === null} onClick={() => void upload()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy || file === null}
+            onClick={() => void upload()}
+            variant="default"
+            size="sm"
+          >
             <FileUp size={13} aria-hidden />
             {stage === 'uploading' ? 'Uploading…' : stage === 'creating' ? 'Creating…' : 'Upload'}
           </Button>

@@ -1,5 +1,14 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CaretRightIcon as ChevronRight, FileIcon as File, FilePlusIcon as FilePlus2, FolderIcon as Folder, FileArrowUpIcon as FolderUp, ArrowsClockwiseIcon as RefreshCw, FloppyDiskIcon as Save, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  CaretRightIcon as ChevronRight,
+  FileIcon as File,
+  FilePlusIcon as FilePlus2,
+  FolderIcon as Folder,
+  FileArrowUpIcon as FolderUp,
+  ArrowsClockwiseIcon as RefreshCw,
+  FloppyDiskIcon as Save,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Dialog } from '../../components/dialog.tsx';
@@ -176,17 +185,37 @@ export function ProjectFilesDialog({
               {index > 0 ? (
                 <ChevronRight size={11} aria-hidden style={{ color: 'var(--color-ink-faint)' }} />
               ) : null}
-              <Button type="button" onClick={() => openDirectory(segment.path)} disabled={segment.path === directory} variant="outline" size="xs">
+              <Button
+                type="button"
+                onClick={() => openDirectory(segment.path)}
+                disabled={segment.path === directory}
+                variant="outline"
+                size="xs"
+              >
                 {segment.label}
               </Button>
             </span>
           ))}
           {directory !== '' ? (
-            <Button type="button" title="Go to the parent directory" onClick={() => openDirectory(parentPath(directory))} variant="ghost" size="xs">
+            <Button
+              type="button"
+              title="Go to the parent directory"
+              onClick={() => openDirectory(parentPath(directory))}
+              variant="ghost"
+              size="xs"
+            >
               <FolderUp size={12} aria-hidden /> Up
             </Button>
           ) : null}
-          <Button type="button" aria-label="Reload files" title="Reload files" onClick={() => void files.refetch()} className="ml-auto" variant="outline" size="xs">
+          <Button
+            type="button"
+            aria-label="Reload files"
+            title="Reload files"
+            onClick={() => void files.refetch()}
+            className="ml-auto"
+            variant="outline"
+            size="xs"
+          >
             <RefreshCw size={12} aria-hidden />
           </Button>
         </nav>
@@ -269,7 +298,14 @@ export function ProjectFilesDialog({
                 }}
                 className="py-1 text-[11px]"
               />
-              <Button type="button" disabled={!canRead || newName.trim() === '' || writeFile.isPending} title="Create an empty file in this directory" onClick={createFile} variant="outline" size="xs">
+              <Button
+                type="button"
+                disabled={!canRead || newName.trim() === '' || writeFile.isPending}
+                title="Create an empty file in this directory"
+                onClick={createFile}
+                variant="outline"
+                size="xs"
+              >
                 <FilePlus2 size={12} aria-hidden />
               </Button>
             </div>
@@ -285,11 +321,26 @@ export function ProjectFilesDialog({
                 {selected === '' ? 'Choose a file to edit.' : selected}
               </span>
               {selected !== '' && canDelete ? (
-                <Button type="button" disabled={deleteFile.isPending} aria-label={`Delete ${selected}`} title={`Delete ${selected}`} onClick={() => setDeleteTarget(selected)} variant="ghost" size="xs">
+                <Button
+                  type="button"
+                  disabled={deleteFile.isPending}
+                  aria-label={`Delete ${selected}`}
+                  title={`Delete ${selected}`}
+                  onClick={() => setDeleteTarget(selected)}
+                  variant="ghost"
+                  size="xs"
+                >
                   <Trash2 size={12} aria-hidden /> Delete
                 </Button>
               ) : null}
-              <Button type="button" disabled={!canRead || selected === '' || !dirty || writeFile.isPending} title={dirty ? 'Write the editor contents to this file' : 'No unsaved changes'} onClick={() => writeFile.mutate({ projectId, path: selected, content: draft })} variant="default" size="xs">
+              <Button
+                type="button"
+                disabled={!canRead || selected === '' || !dirty || writeFile.isPending}
+                title={dirty ? 'Write the editor contents to this file' : 'No unsaved changes'}
+                onClick={() => writeFile.mutate({ projectId, path: selected, content: draft })}
+                variant="default"
+                size="xs"
+              >
                 <Save size={12} aria-hidden /> {writeFile.isPending ? 'Saving…' : 'Save'}
               </Button>
             </div>

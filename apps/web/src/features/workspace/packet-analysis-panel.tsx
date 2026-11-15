@@ -1,6 +1,10 @@
 import type { PacketAnalyzeOutput, PacketFieldRow, PacketFrame } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { CircleNotchIcon as LoaderCircle, ArrowClockwiseIcon as RotateCw, XIcon as X   } from '@phosphor-icons/react';
+import {
+  CircleNotchIcon as LoaderCircle,
+  ArrowClockwiseIcon as RotateCw,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Field, Input } from '../../components/field.tsx';
@@ -296,7 +300,16 @@ export function PacketAnalysisPanel({ linkId, filter }: { linkId: string; filter
         </Field>
 
         <div className="flex items-center gap-2 pb-1">
-          <Button type="button" disabled={loading || limitValue === null} onClick={() => { setAppliedFilter(filter.trim()); setRunNonce((value) => value + 1); }} variant="default" size="xs">
+          <Button
+            type="button"
+            disabled={loading || limitValue === null}
+            onClick={() => {
+              setAppliedFilter(filter.trim());
+              setRunNonce((value) => value + 1);
+            }}
+            variant="default"
+            size="xs"
+          >
             {loading ? (
               <LoaderCircle size={12} className="animate-spin" aria-hidden />
             ) : (

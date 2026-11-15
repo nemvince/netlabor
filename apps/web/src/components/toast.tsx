@@ -1,4 +1,10 @@
-import { CheckCircleIcon, InfoIcon, CircleNotchIcon, XIcon, XCircleIcon  } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon,
+  InfoIcon,
+  CircleNotchIcon,
+  XIcon,
+  XCircleIcon,
+} from '@phosphor-icons/react';
 import { create } from 'zustand';
 
 export type ToastTone = 'success' | 'error' | 'info' | 'progress';

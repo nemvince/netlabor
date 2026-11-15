@@ -1,7 +1,12 @@
 import type { EventEnvelope, MarkerRow } from '@netlabor/contract';
 import { MarkerHit } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { PauseIcon as Pause, PlayIcon as Play, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  PauseIcon as Pause,
+  PlayIcon as Play,
+  PlusIcon as Plus,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { Badge } from '../../components/badge.tsx';
@@ -232,14 +237,32 @@ export function LinkMarkersPanel({
                 </span>
                 {canWrite ? (
                   <span className="flex items-center gap-0.5">
-                    <Button type="button" disabled={busy !== null} title={marker.paused ? 'Resume marker' : 'Pause marker'} aria-label={marker.paused ? `Resume ${marker.name}` : `Pause ${marker.name}`} onClick={() => void togglePaused(marker)} variant="ghost" size="xs">
+                    <Button
+                      type="button"
+                      disabled={busy !== null}
+                      title={marker.paused ? 'Resume marker' : 'Pause marker'}
+                      aria-label={marker.paused ? `Resume ${marker.name}` : `Pause ${marker.name}`}
+                      onClick={() => void togglePaused(marker)}
+                      variant="ghost"
+                      size="xs"
+                    >
                       {marker.paused ? (
                         <Play size={11} aria-hidden />
                       ) : (
                         <Pause size={11} aria-hidden />
                       )}
                     </Button>
-                    <Button type="button" title="Delete marker" aria-label={`Delete ${marker.name}`} onClick={() => { setDeleteError(null); setDeleteTarget(marker); }} variant="ghost" size="xs">
+                    <Button
+                      type="button"
+                      title="Delete marker"
+                      aria-label={`Delete ${marker.name}`}
+                      onClick={() => {
+                        setDeleteError(null);
+                        setDeleteTarget(marker);
+                      }}
+                      variant="ghost"
+                      size="xs"
+                    >
                       <Trash2 size={11} aria-hidden />
                     </Button>
                   </span>
@@ -318,7 +341,13 @@ export function LinkMarkersPanel({
             </Select>
           </Field>
           <div className="flex items-end">
-            <Button type="button" disabled={busy !== null} onClick={() => void createMarker()} variant="default" size="xs">
+            <Button
+              type="button"
+              disabled={busy !== null}
+              onClick={() => void createMarker()}
+              variant="default"
+              size="xs"
+            >
               <Plus size={12} aria-hidden /> {busy === 'create' ? 'Creating…' : 'Add marker'}
             </Button>
           </div>

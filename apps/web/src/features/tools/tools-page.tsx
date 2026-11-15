@@ -1,5 +1,9 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { ArrowsLeftRightIcon as ArrowLeftRight, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  ArrowsLeftRightIcon as ArrowLeftRight,
+  PlusIcon as Plus,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { CopyButton } from '../../components/copy-button.tsx';
@@ -315,12 +319,32 @@ function VlsmPlanner() {
                 spellCheck={false}
                 onChange={(event) => update(requirement.id, { request: event.target.value })}
               />
-              <Button type="button" aria-label={`Remove ${requirement.name || 'requirement'}`} title="Remove requirement" onClick={() => setRequirements((current) => current.filter((row) => row.id !== requirement.id)) } variant="ghost" size="xs">
+              <Button
+                type="button"
+                aria-label={`Remove ${requirement.name || 'requirement'}`}
+                title="Remove requirement"
+                onClick={() =>
+                  setRequirements((current) => current.filter((row) => row.id !== requirement.id))
+                }
+                variant="ghost"
+                size="xs"
+              >
                 <Trash2 size={12} aria-hidden />
               </Button>
             </div>
           ))}
-          <Button type="button" onClick={() => setRequirements((current) => [ ...current, { id: crypto.randomUUID(), name: '', request: '' }, ]) } className="mt-1 self-start" variant="outline" size="xs">
+          <Button
+            type="button"
+            onClick={() =>
+              setRequirements((current) => [
+                ...current,
+                { id: crypto.randomUUID(), name: '', request: '' },
+              ])
+            }
+            className="mt-1 self-start"
+            variant="outline"
+            size="xs"
+          >
             <Plus size={12} aria-hidden /> Add requirement
           </Button>
         </div>
@@ -511,7 +535,15 @@ function OverlapCheck() {
       description="Test whether two CIDR blocks overlap or contain each other."
       narrow
       actions={
-        <Button type="button" onClick={() => { setLeftInput(rightInput); setRightInput(leftInput); }} variant="outline" size="xs">
+        <Button
+          type="button"
+          onClick={() => {
+            setLeftInput(rightInput);
+            setRightInput(leftInput);
+          }}
+          variant="outline"
+          size="xs"
+        >
           <ArrowLeftRight size={12} aria-hidden /> Swap A/B
         </Button>
       }

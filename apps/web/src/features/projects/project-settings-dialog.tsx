@@ -1,7 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ProjectRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { PlusIcon as Plus, SlidersHorizontalIcon as SlidersHorizontal, UsersIcon as UsersRound, XIcon as X   } from '@phosphor-icons/react';
+import {
+  PlusIcon as Plus,
+  SlidersHorizontalIcon as SlidersHorizontal,
+  UsersIcon as UsersRound,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -233,14 +238,25 @@ function GeneralSettings({
                 placeholder="value"
                 {...form.register(`variables.${index}.value`)}
               />
-              <Button type="button" aria-label={`Remove variable ${index + 1}`} onClick={() => variables.remove(index)} variant="ghost" size="xs">
+              <Button
+                type="button"
+                aria-label={`Remove variable ${index + 1}`}
+                onClick={() => variables.remove(index)}
+                variant="ghost"
+                size="xs"
+              >
                 <X size={13} aria-hidden />
               </Button>
             </div>
           ))}
         </div>
         <div className="mt-1">
-          <Button type="button" onClick={() => variables.append({ key: '', value: '' })} variant="outline" size="xs">
+          <Button
+            type="button"
+            onClick={() => variables.append({ key: '', value: '' })}
+            variant="outline"
+            size="xs"
+          >
             <Plus size={12} aria-hidden /> Add variable
           </Button>
         </div>
@@ -279,7 +295,12 @@ function GeneralSettings({
         <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
           Cancel
         </Button>
-        <Button type="submit" disabled={save.isPending || project.locked} variant="default" size="sm">
+        <Button
+          type="submit"
+          disabled={save.isPending || project.locked}
+          variant="default"
+          size="sm"
+        >
           {save.isPending ? 'Saving…' : 'Save settings'}
         </Button>
       </DialogFooter>

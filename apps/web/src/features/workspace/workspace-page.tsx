@@ -139,7 +139,10 @@ export function WorkspacePage({ projectId }: { projectId: string }) {
         <Notice tone="error">
           {project.isError ? messageOf(project.error) : 'The project was not returned.'}
         </Notice>
-        <Link to="/projects" className={buttonVariants({ variant: 'outline', size: 'sm', className: 'mt-3' })}>
+        <Link
+          to="/projects"
+          className={buttonVariants({ variant: 'outline', size: 'sm', className: 'mt-3' })}
+        >
           Back to projects
         </Link>
       </div>
@@ -1340,7 +1343,16 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                       ? `${nodeRows.find((node) => node.id === connectSource.nodeId)?.name ?? 'node'}:${connectSource.adapter}/${connectSource.port} · click the second node`
                       : 'Connect · click the first node'}
                   </span>
-                  <Button type="button" onClick={() => { setConnectMode(false); setConnectSource(null); setPortMenu(null); }} variant="ghost" size="xs">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setConnectMode(false);
+                      setConnectSource(null);
+                      setPortMenu(null);
+                    }}
+                    variant="ghost"
+                    size="xs"
+                  >
                     Cancel
                   </Button>
                 </div>

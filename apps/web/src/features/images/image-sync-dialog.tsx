@@ -1,5 +1,9 @@
 import type { ComputeRow, ImageRow, JobRow } from '@netlabor/contract';
-import { CheckCircleIcon as CheckCircle2, ArrowsClockwiseIcon as RefreshCw, XCircleIcon as XCircle   } from '@phosphor-icons/react';
+import {
+  CheckCircleIcon as CheckCircle2,
+  ArrowsClockwiseIcon as RefreshCw,
+  XCircleIcon as XCircle,
+} from '@phosphor-icons/react';
 import { useRef, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
@@ -204,7 +208,13 @@ export function ImageSyncDialog({
         ) : null}
 
         <DialogFooter>
-          <Button type="button" disabled={busy} onClick={() => onOpenChange(false)} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => onOpenChange(false)}
+            variant="outline"
+            size="sm"
+          >
             Close
           </Button>
           {busy && job ? (
@@ -212,7 +222,13 @@ export function ImageSyncDialog({
               Cancel job
             </Button>
           ) : null}
-          <Button type="button" disabled={busy || selected.size === 0} onClick={() => void run()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy || selected.size === 0}
+            onClick={() => void run()}
+            variant="default"
+            size="sm"
+          >
             {busy ? 'Syncing…' : 'Sync image'}
           </Button>
         </DialogFooter>

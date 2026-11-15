@@ -1,6 +1,6 @@
 /** Remembered IPv4 networks: stored in the browser and fed by the subnet tools. */
 
-import { BookmarkSimpleIcon as BookmarkPlus, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import { BookmarkSimpleIcon as BookmarkPlus, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -55,7 +55,22 @@ export const useNetworkBook = create<NetworkBookState>()(
 export function RememberNetworkButton({ cidr, name }: { cidr: string; name?: string }) {
   const add = useNetworkBook((state) => state.add);
   return (
-    <Button type="button" aria-label={`Save ${cidr} to Networks`} title="Save to Networks" onClick={() => { try { const saved = add({ cidr, name }); if (saved) toast.success(`${saved.cidr} saved to Networks.`); else toast.info(`${cidr} is already in Networks.`); } catch (error) { toast.error(error instanceof Error ? error.message : String(error)); } }} variant="ghost" size="xs">
+    <Button
+      type="button"
+      aria-label={`Save ${cidr} to Networks`}
+      title="Save to Networks"
+      onClick={() => {
+        try {
+          const saved = add({ cidr, name });
+          if (saved) toast.success(`${saved.cidr} saved to Networks.`);
+          else toast.info(`${cidr} is already in Networks.`);
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : String(error));
+        }
+      }}
+      variant="ghost"
+      size="xs"
+    >
       <BookmarkPlus size={12} aria-hidden />
     </Button>
   );
@@ -145,7 +160,14 @@ export function NetworksTool() {
                   <Td align="right">
                     <span className="flex items-center justify-end gap-1">
                       <CopyButton value={network.cidr} label="Copy network" />
-                      <Button type="button" aria-label={`Remove ${network.name}`} title="Remove from Networks" onClick={() => remove(network.id)} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`Remove ${network.name}`}
+                        title="Remove from Networks"
+                        onClick={() => remove(network.id)}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Trash2 size={12} aria-hidden />
                       </Button>
                     </span>

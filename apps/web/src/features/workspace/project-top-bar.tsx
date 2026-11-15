@@ -1,6 +1,26 @@
 import type { ProjectRow } from '@netlabor/contract';
 import { Link } from '@tanstack/react-router';
-import { ArrowLeftIcon as ArrowLeft, CheckIcon as Check, CopyIcon as Copy, DownloadSimpleIcon as Download, EyeIcon as Eye, FolderOpenIcon as FolderOpen, SquaresFourIcon as LayoutTemplate, LockIcon as Lock, DotsThreeIcon as MoreHorizontal, ArrowDownIcon as PanelBottom, SidebarSimpleIcon as PanelLeft, SidebarIcon as PanelRight, PlayIcon as Play, PowerIcon as Power, SlidersHorizontalIcon as Settings2, SquareIcon as Square, LockOpenIcon as Unlock, WrenchIcon as Wrench, LightningIcon as Zap   } from '@phosphor-icons/react';
+import {
+  ArrowLeftIcon as ArrowLeft,
+  CheckIcon as Check,
+  CopyIcon as Copy,
+  DownloadSimpleIcon as Download,
+  EyeIcon as Eye,
+  FolderOpenIcon as FolderOpen,
+  SquaresFourIcon as LayoutTemplate,
+  LockIcon as Lock,
+  DotsThreeIcon as MoreHorizontal,
+  ArrowDownIcon as PanelBottom,
+  SidebarSimpleIcon as PanelLeft,
+  SidebarIcon as PanelRight,
+  PlayIcon as Play,
+  PowerIcon as Power,
+  SlidersHorizontalIcon as Settings2,
+  SquareIcon as Square,
+  LockOpenIcon as Unlock,
+  WrenchIcon as Wrench,
+  LightningIcon as Zap,
+} from '@phosphor-icons/react';
 import {
   DropdownMenu,
   DropdownMenuPortal,
@@ -141,16 +161,38 @@ export function ProjectTopBar({
       <span aria-hidden className="mx-1 h-4 w-px" style={{ background: 'var(--color-rule)' }} />
 
       {canOpen ? (
-        <Button type="button" disabled={busy !== null} onClick={onToggleOpen} variant="outline" size="xs">
+        <Button
+          type="button"
+          disabled={busy !== null}
+          onClick={onToggleOpen}
+          variant="outline"
+          size="xs"
+        >
           <Power size={13} aria-hidden />{' '}
           {busy === 'toggle-open' ? 'Working…' : opened ? 'Close' : 'Open'}
         </Button>
       ) : null}
-      <Button type="button" disabled={!opened || busy !== null || nodeCount === 0} onClick={onStartAll} title="Start every stopped node" aria-label="Start all" variant="outline" size="xs">
+      <Button
+        type="button"
+        disabled={!opened || busy !== null || nodeCount === 0}
+        onClick={onStartAll}
+        title="Start every stopped node"
+        aria-label="Start all"
+        variant="outline"
+        size="xs"
+      >
         <Play size={13} aria-hidden />{' '}
         <span className="hidden sm:inline">{busy === 'start-all' ? 'Starting…' : 'Start all'}</span>
       </Button>
-      <Button type="button" disabled={!opened || busy !== null || nodeCount === 0} onClick={onStopAll} title="Stop every running node" aria-label="Stop all" variant="outline" size="xs">
+      <Button
+        type="button"
+        disabled={!opened || busy !== null || nodeCount === 0}
+        onClick={onStopAll}
+        title="Stop every running node"
+        aria-label="Stop all"
+        variant="outline"
+        size="xs"
+      >
         <Square size={13} aria-hidden />{' '}
         <span className="hidden sm:inline">{busy === 'stop-all' ? 'Stopping…' : 'Stop all'}</span>
       </Button>
@@ -218,12 +260,13 @@ export function ProjectTopBar({
           </span>
         ) : null}
         <DropdownMenu>
-          <DropdownMenuTrigger render={
-            <Button type="button" title="Panel visibility" variant="outline" size="xs">
-              <Eye size={13} aria-hidden /> View
-            </Button>
-          }>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button type="button" title="Panel visibility" variant="outline" size="xs">
+                <Eye size={13} aria-hidden /> View
+              </Button>
+            }
+          ></DropdownMenuTrigger>
           <DropdownMenuPortal>
             <DropdownMenuContent
               align="end"
@@ -254,12 +297,13 @@ export function ProjectTopBar({
         </DropdownMenu>
 
         <DropdownMenu>
-          <DropdownMenuTrigger render={
-            <Button type="button" title="Project tools" variant="outline" size="xs">
-              <MoreHorizontal size={14} aria-hidden /> More
-            </Button>
-          }>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button type="button" title="Project tools" variant="outline" size="xs">
+                <MoreHorizontal size={14} aria-hidden /> More
+              </Button>
+            }
+          ></DropdownMenuTrigger>
           <DropdownMenuPortal>
             <DropdownMenuContent
               align="end"

@@ -1,7 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PROJECT_ROLE_NAMES } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CopyIcon as Copy, LinkIcon as Link2, TrashIcon as Trash2, UserPlusIcon as UserPlus   } from '@phosphor-icons/react';
+import {
+  CopyIcon as Copy,
+  LinkIcon as Link2,
+  TrashIcon as Trash2,
+  UserPlusIcon as UserPlus,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -194,7 +199,13 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
               <option value={168}>7 days</option>
             </Select>
           </Field>
-          <Button type="button" disabled={createLink.isPending} onClick={() => createLink.mutate()} variant="default" size="xs">
+          <Button
+            type="button"
+            disabled={createLink.isPending}
+            onClick={() => createLink.mutate()}
+            variant="default"
+            size="xs"
+          >
             {createLink.isPending ? 'Creating…' : 'Create link'}
           </Button>
         </div>
@@ -223,7 +234,14 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
                 <span style={{ color: 'var(--color-ink-faint)' }}>
                   · {link.createdByName ?? 'unknown'}
                 </span>
-                <Button type="button" disabled={revokeLink.isPending} onClick={() => revokeLink.mutate(link.id)} className="ml-auto" variant="ghost" size="xs">
+                <Button
+                  type="button"
+                  disabled={revokeLink.isPending}
+                  onClick={() => revokeLink.mutate(link.id)}
+                  className="ml-auto"
+                  variant="ghost"
+                  size="xs"
+                >
                   <Trash2 size={12} aria-hidden /> Revoke
                 </Button>
               </li>
@@ -282,7 +300,15 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
                   )}
                 </Td>
                 <Td align="right">
-                  <Button type="button" disabled={pending} aria-label={`Remove grant for ${grant.subjectName}`} title={`Remove ${grant.subjectName}`} onClick={() => remove.mutate({ id: grant.id, projectId })} variant="ghost" size="xs">
+                  <Button
+                    type="button"
+                    disabled={pending}
+                    aria-label={`Remove grant for ${grant.subjectName}`}
+                    title={`Remove ${grant.subjectName}`}
+                    onClick={() => remove.mutate({ id: grant.id, projectId })}
+                    variant="ghost"
+                    size="xs"
+                  >
                     <Trash2 size={13} aria-hidden /> Remove
                   </Button>
                 </Td>

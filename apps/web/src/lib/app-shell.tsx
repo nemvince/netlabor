@@ -1,6 +1,26 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
-import { CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, CpuIcon as Cpu, GlobeIcon as Globe, KeyIcon as KeyRound, SquaresFourIcon as LayoutTemplate, SquaresFourIcon as LayoutDashboard, SignOutIcon as LogOut, type Icon, NetworkIcon as Network, SidebarSimpleIcon as PanelLeftClose, SidebarIcon as PanelLeftOpen, ScrollIcon as ScrollText, HardDrivesIcon as Server, ShieldCheckIcon as ShieldCheck, SlidersHorizontalIcon as SlidersHorizontal, UserIcon as UserRound, UsersIcon as Users, WrenchIcon as Wrench   } from '@phosphor-icons/react';
+import {
+  CaretDownIcon as ChevronDown,
+  CaretRightIcon as ChevronRight,
+  CpuIcon as Cpu,
+  GlobeIcon as Globe,
+  KeyIcon as KeyRound,
+  SquaresFourIcon as LayoutTemplate,
+  SquaresFourIcon as LayoutDashboard,
+  SignOutIcon as LogOut,
+  type Icon,
+  NetworkIcon as Network,
+  SidebarSimpleIcon as PanelLeftClose,
+  SidebarIcon as PanelLeftOpen,
+  ScrollIcon as ScrollText,
+  HardDrivesIcon as Server,
+  ShieldCheckIcon as ShieldCheck,
+  SlidersHorizontalIcon as SlidersHorizontal,
+  UserIcon as UserRound,
+  UsersIcon as Users,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
 import {
   DropdownMenu,
   DropdownMenuPortal,
@@ -206,7 +226,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <div className="nb-rule-label mt-0.5">control plane</div>
               </Link>
             )}
-            <Button type="button" aria-label={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} onClick={toggleRail} className="shrink-0" variant="ghost" size="xs">
+            <Button
+              type="button"
+              aria-label={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              title={railCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              onClick={toggleRail}
+              className="shrink-0"
+              variant="ghost"
+              size="xs"
+            >
               {railCollapsed ? (
                 <PanelLeftOpen size={14} aria-hidden />
               ) : (
@@ -228,34 +256,35 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="mt-auto border-t px-2 py-2" style={{ borderColor: 'var(--color-rule)' }}>
             {me ? (
               <DropdownMenu>
-                <DropdownMenuTrigger render={
-                  <button
-                    type="button"
-                    className={`flex w-full items-center gap-2 rounded-[3px] px-2 py-1.5 text-left hover:bg-[var(--color-panel-raised)] ${railCollapsed ? 'justify-center px-0' : ''}`}
-                    style={{ color: 'var(--color-ink-dim)' }}
-                    aria-label={`Account menu for ${me.username}`}
-                    title={railCollapsed ? (me.displayName ?? me.username) : undefined}
-                  >
-                    <UserRound size={15} strokeWidth={1.75} aria-hidden />
-                    {railCollapsed ? null : (
-                      <>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[12.5px]">
-                            {me.displayName ?? me.username}
+                <DropdownMenuTrigger
+                  render={
+                    <button
+                      type="button"
+                      className={`flex w-full items-center gap-2 rounded-[3px] px-2 py-1.5 text-left hover:bg-[var(--color-panel-raised)] ${railCollapsed ? 'justify-center px-0' : ''}`}
+                      style={{ color: 'var(--color-ink-dim)' }}
+                      aria-label={`Account menu for ${me.username}`}
+                      title={railCollapsed ? (me.displayName ?? me.username) : undefined}
+                    >
+                      <UserRound size={15} strokeWidth={1.75} aria-hidden />
+                      {railCollapsed ? null : (
+                        <>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-[12.5px]">
+                              {me.displayName ?? me.username}
+                            </span>
+                            <span
+                              className="tabular block truncate text-[10px]"
+                              style={{ color: 'var(--color-ink-faint)' }}
+                            >
+                              @{me.username}
+                            </span>
                           </span>
-                          <span
-                            className="tabular block truncate text-[10px]"
-                            style={{ color: 'var(--color-ink-faint)' }}
-                          >
-                            @{me.username}
-                          </span>
-                        </span>
-                        <ChevronDown size={12} aria-hidden />
-                      </>
-                    )}
-                  </button>
-                }>
-                </DropdownMenuTrigger>
+                          <ChevronDown size={12} aria-hidden />
+                        </>
+                      )}
+                    </button>
+                  }
+                ></DropdownMenuTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuContent
                     align="start"
@@ -269,16 +298,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                     }}
                   >
                     {me ? (
-                      <DropdownMenuItem render={
-                        <Link
-                          to="/profile"
-                          className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12.5px] outline-none data-[highlighted]:bg-[var(--color-panel-raised)]"
-                          style={{ color: 'var(--color-ink-dim)' }}
-                        >
-                          <UserRound size={13} aria-hidden />
-                          Profile & preferences
-                        </Link>
-                      }
+                      <DropdownMenuItem
+                        render={
+                          <Link
+                            to="/profile"
+                            className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12.5px] outline-none data-[highlighted]:bg-[var(--color-panel-raised)]"
+                            style={{ color: 'var(--color-ink-dim)' }}
+                          >
+                            <UserRound size={13} aria-hidden />
+                            Profile & preferences
+                          </Link>
+                        }
                       />
                     ) : null}
                     <DropdownMenuSeparator

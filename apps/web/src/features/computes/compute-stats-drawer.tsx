@@ -1,6 +1,11 @@
 import type { ComputeRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { CpuIcon as Cpu, HardDriveIcon as HardDrive, MemoryIcon as MemoryStick, XIcon as X   } from '@phosphor-icons/react';
+import {
+  CpuIcon as Cpu,
+  HardDriveIcon as HardDrive,
+  MemoryIcon as MemoryStick,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { Badge } from '../../components/badge.tsx';
 import { Notice } from '../../components/notice.tsx';
 import { Loading } from '../../components/page.tsx';
@@ -88,7 +93,13 @@ export function ComputeStatsDrawer({
             {compute.url} · underlay {compute.underlayIndex} · {compute.underlayHost}
           </p>
         </div>
-        <Button type="button" aria-label="Close statistics" onClick={onClose} variant="ghost" size="xs">
+        <Button
+          type="button"
+          aria-label="Close statistics"
+          onClick={onClose}
+          variant="ghost"
+          size="xs"
+        >
           <X size={14} aria-hidden />
         </Button>
       </header>

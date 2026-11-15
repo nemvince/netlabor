@@ -1,7 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PRIVILEGES, type Privilege, type RoleRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { EyeIcon as Eye, PencilIcon as Pencil, PlusIcon as Plus, ShieldCheckIcon as ShieldCheck, TrashIcon as Trash   } from '@phosphor-icons/react';
+import {
+  EyeIcon as Eye,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  ShieldCheckIcon as ShieldCheck,
+  TrashIcon as Trash,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -128,10 +134,20 @@ function RoleDialog({
             {ALL_PRIVILEGES.length}
           </span>
           <span className="flex items-center gap-1">
-            <Button type="button" onClick={() => select(ALL_PRIVILEGES)} variant="outline" size="xs">
+            <Button
+              type="button"
+              onClick={() => select(ALL_PRIVILEGES)}
+              variant="outline"
+              size="xs"
+            >
               Select all
             </Button>
-            <Button type="button" onClick={() => select(READ_PRIVILEGES)} variant="outline" size="xs">
+            <Button
+              type="button"
+              onClick={() => select(READ_PRIVILEGES)}
+              variant="outline"
+              size="xs"
+            >
               Read-only
             </Button>
             <Button type="button" onClick={() => select([])} variant="outline" size="xs">
@@ -144,7 +160,12 @@ function RoleDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="submit" disabled={createRole.isPending || updateRole.isPending} variant="default" size="sm">
+          <Button
+            type="submit"
+            disabled={createRole.isPending || updateRole.isPending}
+            variant="default"
+            size="sm"
+          >
             {createRole.isPending || updateRole.isPending
               ? 'Saving…'
               : role
@@ -228,7 +249,12 @@ export function RolesAdminPage() {
         description="The six built-in roles are fixed; custom roles hold any subset of the privilege list."
         actions={
           canWrite ? (
-            <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+            <Button
+              type="button"
+              onClick={() => setDialog({ mode: 'create' })}
+              variant="default"
+              size="sm"
+            >
               <Plus size={14} aria-hidden />
               Create role
             </Button>
@@ -248,7 +274,12 @@ export function RolesAdminPage() {
             description="Create a role to give a group of users a shared privilege set."
             action={
               canWrite ? (
-                <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+                <Button
+                  type="button"
+                  onClick={() => setDialog({ mode: 'create' })}
+                  variant="default"
+                  size="sm"
+                >
                   Create role
                 </Button>
               ) : undefined
@@ -291,15 +322,36 @@ export function RolesAdminPage() {
                   <Td mono>{formatStamp(role.createdAt)}</Td>
                   <Td align="right">
                     <span className="inline-flex items-center gap-0.5">
-                      <Button type="button" aria-label={`View privileges of ${role.name}`} title="View privileges" onClick={() => setDialog({ mode: 'view', role })} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`View privileges of ${role.name}`}
+                        title="View privileges"
+                        onClick={() => setDialog({ mode: 'view', role })}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Eye size={13} aria-hidden />
                       </Button>
                       {!role.builtin && canWrite ? (
                         <>
-                          <Button type="button" aria-label={`Edit ${role.name}`} title="Edit role" onClick={() => setDialog({ mode: 'edit', role })} variant="ghost" size="xs">
+                          <Button
+                            type="button"
+                            aria-label={`Edit ${role.name}`}
+                            title="Edit role"
+                            onClick={() => setDialog({ mode: 'edit', role })}
+                            variant="ghost"
+                            size="xs"
+                          >
                             <Pencil size={13} aria-hidden />
                           </Button>
-                          <Button type="button" aria-label={`Delete ${role.name}`} title="Delete role" onClick={() => setDeleteTarget(role)} variant="ghost" size="xs">
+                          <Button
+                            type="button"
+                            aria-label={`Delete ${role.name}`}
+                            title="Delete role"
+                            onClick={() => setDeleteTarget(role)}
+                            variant="ghost"
+                            size="xs"
+                          >
                             <Trash size={13} aria-hidden />
                           </Button>
                         </>

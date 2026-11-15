@@ -1,7 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { GroupRow, RoleRow, UserRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyIcon as KeyRound, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash, UsersIcon as UsersRound   } from '@phosphor-icons/react';
+import {
+  KeyIcon as KeyRound,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  TrashIcon as Trash,
+  UsersIcon as UsersRound,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -519,7 +525,12 @@ export function UsersAdminPage() {
               wrapperStyle={{ width: 220 }}
             />
             {canWrite ? (
-              <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+              <Button
+                type="button"
+                onClick={() => setDialog({ mode: 'create' })}
+                variant="default"
+                size="sm"
+              >
                 <Plus size={14} aria-hidden />
                 Create user
               </Button>
@@ -544,7 +555,12 @@ export function UsersAdminPage() {
             }
             action={
               canWrite ? (
-                <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+                <Button
+                  type="button"
+                  onClick={() => setDialog({ mode: 'create' })}
+                  variant="default"
+                  size="sm"
+                >
                   Create user
                 </Button>
               ) : undefined
@@ -602,13 +618,34 @@ export function UsersAdminPage() {
                   <Td align="right">
                     {canWrite ? (
                       <span className="inline-flex items-center gap-0.5">
-                        <Button type="button" aria-label={`Edit ${user.username}`} title="Edit user" onClick={() => setDialog({ mode: 'edit', user })} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          aria-label={`Edit ${user.username}`}
+                          title="Edit user"
+                          onClick={() => setDialog({ mode: 'edit', user })}
+                          variant="ghost"
+                          size="xs"
+                        >
                           <Pencil size={13} aria-hidden />
                         </Button>
-                        <Button type="button" aria-label={`Set password for ${user.username}`} title="Set password" onClick={() => setDialog({ mode: 'password', user })} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          aria-label={`Set password for ${user.username}`}
+                          title="Set password"
+                          onClick={() => setDialog({ mode: 'password', user })}
+                          variant="ghost"
+                          size="xs"
+                        >
                           <KeyRound size={13} aria-hidden />
                         </Button>
-                        <Button type="button" aria-label={`Delete ${user.username}`} title="Delete user" onClick={() => setDeleteTarget(user)} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          aria-label={`Delete ${user.username}`}
+                          title="Delete user"
+                          onClick={() => setDeleteTarget(user)}
+                          variant="ghost"
+                          size="xs"
+                        >
                           <Trash size={13} aria-hidden />
                         </Button>
                       </span>

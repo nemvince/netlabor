@@ -1,6 +1,11 @@
 import type { NodeRow } from '@netlabor/contract';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { HardDriveIcon as HardDrive, ArrowsOutIcon as Maximize2, PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  HardDriveIcon as HardDrive,
+  ArrowsOutIcon as Maximize2,
+  PlusIcon as Plus,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Field, Input } from '../../components/field.tsx';
@@ -196,15 +201,36 @@ export function QemuDisksPanel({
                 />
               </Field>
               <div className="flex flex-1 flex-wrap justify-end gap-1">
-                <Button type="button" disabled={locked} onClick={() => { if (!existenceKnown || exists) setConfirm({ disk, action: 'create' }); else void run(disk, 'create'); }} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={locked}
+                  onClick={() => {
+                    if (!existenceKnown || exists) setConfirm({ disk, action: 'create' });
+                    else void run(disk, 'create');
+                  }}
+                  variant="outline"
+                  size="xs"
+                >
                   <Plus size={12} aria-hidden />
                   {busy === `${disk}:create` ? 'Creating…' : 'Create'}
                 </Button>
-                <Button type="button" disabled={locked} onClick={() => void run(disk, 'resize')} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={locked}
+                  onClick={() => void run(disk, 'resize')}
+                  variant="outline"
+                  size="xs"
+                >
                   <Maximize2 size={12} aria-hidden />
                   {busy === `${disk}:resize` ? 'Resizing…' : 'Resize'}
                 </Button>
-                <Button type="button" disabled={locked} onClick={() => setConfirm({ disk, action: 'delete' })} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={locked}
+                  onClick={() => setConfirm({ disk, action: 'delete' })}
+                  variant="outline"
+                  size="xs"
+                >
                   <Trash2 size={12} aria-hidden />
                   {busy === `${disk}:delete` ? 'Deleting…' : 'Delete'}
                 </Button>

@@ -1,7 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ComputeRow, PoolRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { StackIcon as Layers, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash   } from '@phosphor-icons/react';
+import {
+  StackIcon as Layers,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  TrashIcon as Trash,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -267,10 +272,27 @@ export function PoolsSection({
                 <Td align="right">
                   {canWrite ? (
                     <span className="inline-flex items-center gap-0.5">
-                      <Button type="button" aria-label={`Edit ${pool.name}`} title="Edit pool" onClick={() => setDialog({ pool })} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`Edit ${pool.name}`}
+                        title="Edit pool"
+                        onClick={() => setDialog({ pool })}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Pencil size={13} aria-hidden />
                       </Button>
-                      <Button type="button" aria-label={`Delete ${pool.name}`} title="Delete pool" onClick={() => { remove.reset(); setDeleteTarget(pool); }} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`Delete ${pool.name}`}
+                        title="Delete pool"
+                        onClick={() => {
+                          remove.reset();
+                          setDeleteTarget(pool);
+                        }}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Trash size={13} aria-hidden />
                       </Button>
                     </span>

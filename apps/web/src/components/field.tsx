@@ -20,10 +20,7 @@ export function Field({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <LabelPrimitive
-        htmlFor={htmlFor}
-        className="text-xs font-medium text-muted-foreground"
-      >
+      <LabelPrimitive htmlFor={htmlFor} className="text-xs font-medium text-muted-foreground">
         {label}
       </LabelPrimitive>
       {children}
@@ -38,8 +35,7 @@ export function Field({
   );
 }
 
-const fieldClassName =
-  'h-7 rounded-sm border-input bg-background px-2.5 py-1 text-xs md:text-xs';
+const fieldClassName = 'h-7 rounded-sm border-input bg-background px-2.5 py-1 text-xs md:text-xs';
 
 export function Input({ className, ...props }: ComponentProps<'input'>) {
   return <InputPrimitive {...props} className={cn(fieldClassName, className)} />;
@@ -101,9 +97,7 @@ export function CheckboxOption({
       <Checkbox id={inputId} {...props} />
       <span className="min-w-0">
         <span className="block text-foreground">{label}</span>
-        {description ? (
-          <span className="block text-muted-foreground">{description}</span>
-        ) : null}
+        {description ? <span className="block text-muted-foreground">{description}</span> : null}
       </span>
     </label>
   );

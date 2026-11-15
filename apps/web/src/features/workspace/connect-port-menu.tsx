@@ -1,5 +1,5 @@
 import type { LinkRow, NodeRow } from '@netlabor/contract';
-import { MagnifyingGlassIcon as Search, XIcon as X   } from '@phosphor-icons/react';
+import { MagnifyingGlassIcon as Search, XIcon as X } from '@phosphor-icons/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Input } from '@netlabor/ui/components/input';
 

@@ -1,5 +1,10 @@
 import type { ComputeRow, ImageRow } from '@netlabor/contract';
-import { DownloadSimpleIcon as Download, PencilIcon as Pencil, ArrowsClockwiseIcon as RefreshCw, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  DownloadSimpleIcon as Download,
+  PencilIcon as Pencil,
+  ArrowsClockwiseIcon as RefreshCw,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { Badge } from '../../components/badge.tsx';
 import { CopyButton } from '../../components/copy-button.tsx';
 import { DetailList } from '../../components/detail-list.tsx';
@@ -141,7 +146,13 @@ export function ImageDetailDialog({
 
       <DialogFooter>
         {canWrite ? (
-          <Button type="button" onClick={onDelete} className="mr-auto" variant="destructive" size="sm">
+          <Button
+            type="button"
+            onClick={onDelete}
+            className="mr-auto"
+            variant="destructive"
+            size="sm"
+          >
             <Trash2 size={12} aria-hidden /> Delete
           </Button>
         ) : null}
@@ -156,7 +167,14 @@ export function ImageDetailDialog({
           <Download size={12} aria-hidden /> Download
         </a>
         {canSync ? (
-          <Button type="button" disabled={computes.length === 0} title={computes.length === 0 ? 'No compute is registered yet' : 'Sync to computes'} onClick={onSync} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={computes.length === 0}
+            title={computes.length === 0 ? 'No compute is registered yet' : 'Sync to computes'}
+            onClick={onSync}
+            variant="outline"
+            size="sm"
+          >
             <RefreshCw size={12} aria-hidden /> Sync
           </Button>
         ) : null}

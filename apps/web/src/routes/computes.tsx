@@ -1,6 +1,14 @@
 import type { ComputeRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { ActivityIcon as Activity, GaugeIcon as Gauge, KeyIcon as KeyRound, PencilIcon as Pencil, PlusIcon as Plus, HardDrivesIcon as Server, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  ActivityIcon as Activity,
+  GaugeIcon as Gauge,
+  KeyIcon as KeyRound,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  HardDrivesIcon as Server,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Badge } from '../components/badge.tsx';
 import { ConfirmDialog } from '../components/confirm-dialog.tsx';
@@ -78,7 +86,12 @@ export function ComputesPage() {
         description="Every compute runs one agent that owns the local dataplane and emulators. Pools place nodes across a chosen set of computes."
         actions={
           canWrite ? (
-            <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+            <Button
+              type="button"
+              onClick={() => setDialog({ mode: 'create' })}
+              variant="default"
+              size="sm"
+            >
               <Plus size={14} aria-hidden /> Add compute
             </Button>
           ) : null
@@ -101,7 +114,12 @@ export function ComputesPage() {
             description="Register a compute agent to place project namespaces, switches, and emulators on a host."
             action={
               canWrite ? (
-                <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+                <Button
+                  type="button"
+                  onClick={() => setDialog({ mode: 'create' })}
+                  variant="default"
+                  size="sm"
+                >
                   <Plus size={14} aria-hidden /> Add compute
                 </Button>
               ) : null
@@ -180,22 +198,61 @@ export function ComputesPage() {
                     </Td>
                     <Td align="right">
                       <span className="inline-flex items-center gap-1">
-                        <Button type="button" title={`Ping ${compute.name}`} aria-label={`Ping ${compute.name}`} disabled={pinging} onClick={() => ping.mutate({ id: compute.id })} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          title={`Ping ${compute.name}`}
+                          aria-label={`Ping ${compute.name}`}
+                          disabled={pinging}
+                          onClick={() => ping.mutate({ id: compute.id })}
+                          variant="ghost"
+                          size="xs"
+                        >
                           <Activity size={13} aria-hidden />
                           {pinging ? '…' : null}
                         </Button>
-                        <Button type="button" title={`Statistics for ${compute.name}`} aria-label={`Statistics for ${compute.name}`} onClick={() => setStats(compute)} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          title={`Statistics for ${compute.name}`}
+                          aria-label={`Statistics for ${compute.name}`}
+                          onClick={() => setStats(compute)}
+                          variant="ghost"
+                          size="xs"
+                        >
                           <Gauge size={13} aria-hidden />
                         </Button>
                         {canWrite ? (
                           <>
-                            <Button type="button" title={`Edit ${compute.name}`} aria-label={`Edit ${compute.name}`} onClick={() => setDialog({ mode: 'edit', compute })} variant="ghost" size="xs">
+                            <Button
+                              type="button"
+                              title={`Edit ${compute.name}`}
+                              aria-label={`Edit ${compute.name}`}
+                              onClick={() => setDialog({ mode: 'edit', compute })}
+                              variant="ghost"
+                              size="xs"
+                            >
                               <Pencil size={13} aria-hidden />
                             </Button>
-                            <Button type="button" title={`Rotate token for ${compute.name}`} aria-label={`Rotate token for ${compute.name}`} onClick={() => setRotate(compute)} variant="ghost" size="xs">
+                            <Button
+                              type="button"
+                              title={`Rotate token for ${compute.name}`}
+                              aria-label={`Rotate token for ${compute.name}`}
+                              onClick={() => setRotate(compute)}
+                              variant="ghost"
+                              size="xs"
+                            >
                               <KeyRound size={13} aria-hidden />
                             </Button>
-                            <Button type="button" title={`Delete ${compute.name}`} aria-label={`Delete ${compute.name}`} onClick={() => { remove.reset(); setDeleteTarget(compute); }} variant="ghost" size="xs">
+                            <Button
+                              type="button"
+                              title={`Delete ${compute.name}`}
+                              aria-label={`Delete ${compute.name}`}
+                              onClick={() => {
+                                remove.reset();
+                                setDeleteTarget(compute);
+                              }}
+                              variant="ghost"
+                              size="xs"
+                            >
                               <Trash2 size={13} aria-hidden />
                             </Button>
                           </>

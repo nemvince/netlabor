@@ -8,7 +8,17 @@ import { setupPresets, softwareCatalog } from '@netlabor/catalog';
 import type { Desktop, JobRow, OsFamily } from '@netlabor/contract';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowRightIcon as ArrowRight, PlugIcon as Cable, CheckIcon as Check, CircleIcon as Circle, CheckCircleIcon as CircleCheck, CircleDashedIcon as CircleDashed, DatabaseIcon as Database, GlobeIcon as Globe, HardDrivesIcon as Server   } from '@phosphor-icons/react';
+import {
+  ArrowRightIcon as ArrowRight,
+  PlugIcon as Cable,
+  CheckIcon as Check,
+  CircleIcon as Circle,
+  CheckCircleIcon as CircleCheck,
+  CircleDashedIcon as CircleDashed,
+  DatabaseIcon as Database,
+  GlobeIcon as Globe,
+  HardDrivesIcon as Server,
+} from '@phosphor-icons/react';
 import { useEffect, useRef, useState } from 'react';
 import { Field, Input, Select } from '../../components/field.tsx';
 import { Notice } from '../../components/notice.tsx';
@@ -149,7 +159,14 @@ export function SetupWizard() {
                   onChange={(event) => setConfirm(event.target.value)}
                 />
               </Field>
-              <Button type="button" disabled={createAdmin.isPending} onClick={submitAccount} className="self-start" variant="default" size="sm">
+              <Button
+                type="button"
+                disabled={createAdmin.isPending}
+                onClick={submitAccount}
+                className="self-start"
+                variant="default"
+                size="sm"
+              >
                 {createAdmin.isPending ? 'Creating…' : 'Create admin account'}
               </Button>
             </div>
@@ -226,7 +243,13 @@ function EnvironmentStep({ onContinue }: { onContinue: () => void }) {
           </p>
         ) : null}
       </div>
-      <Button type="button" onClick={onContinue} className="mt-4 self-start" variant="default" size="sm">
+      <Button
+        type="button"
+        onClick={onContinue}
+        className="mt-4 self-start"
+        variant="default"
+        size="sm"
+      >
         Choose appliance presets <ArrowRight size={13} aria-hidden />
       </Button>
     </div>
@@ -365,7 +388,16 @@ function PresetsStep({
         })}
       </div>
       <div className="mt-4 flex items-center gap-2">
-        <Button type="button" disabled={osImages.isPending} onClick={() => { if (selected.length === 0 && !confirm('Prepare nothing and finish setup?')) return; onStarted(); }} variant="default" size="sm">
+        <Button
+          type="button"
+          disabled={osImages.isPending}
+          onClick={() => {
+            if (selected.length === 0 && !confirm('Prepare nothing and finish setup?')) return;
+            onStarted();
+          }}
+          variant="default"
+          size="sm"
+        >
           {selected.length > 0
             ? `Prepare ${selected.length} image${selected.length === 1 ? '' : 's'}`
             : 'Skip — nothing to prepare'}
@@ -533,7 +565,12 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
           title="Setup complete"
           hint="You skipped image preparation. Appliances can be built any time on the Library page."
         />
-        <Button type="button" onClick={() => void navigate({ to: '/', replace: true })} variant="default" size="sm">
+        <Button
+          type="button"
+          onClick={() => void navigate({ to: '/', replace: true })}
+          variant="default"
+          size="sm"
+        >
           Open netlabor <ArrowRight size={13} aria-hidden />
         </Button>
       </div>
@@ -641,7 +678,18 @@ function ProgressStep({ choices }: { choices: PresetChoice[] }) {
           );
         })}
       </ul>
-      <Button type="button" disabled={!allDone} title={allDone ? undefined : 'Templates are still being created'} onClick={() => { void queryClient.invalidateQueries({ queryKey: orpc.templates.list.key() }); void navigate({ to: '/', replace: true }); }} className="mt-4" variant="outline" size="sm">
+      <Button
+        type="button"
+        disabled={!allDone}
+        title={allDone ? undefined : 'Templates are still being created'}
+        onClick={() => {
+          void queryClient.invalidateQueries({ queryKey: orpc.templates.list.key() });
+          void navigate({ to: '/', replace: true });
+        }}
+        className="mt-4"
+        variant="outline"
+        size="sm"
+      >
         {allDone ? (
           <>
             <Check size={13} aria-hidden /> Setup complete — open netlabor

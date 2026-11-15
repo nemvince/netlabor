@@ -1,4 +1,4 @@
-import { type Icon  } from '@phosphor-icons/react';
+import { type Icon } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 
 /** Copper instrument plate used by every settings card and disclosure. */

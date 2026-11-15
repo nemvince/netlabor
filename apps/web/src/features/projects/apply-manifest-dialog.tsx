@@ -1,6 +1,6 @@
 import type { ProjectApplyInput, ProjectApplyResult, ProjectRow } from '@netlabor/contract';
 import { useMutation } from '@tanstack/react-query';
-import { FileCodeIcon as FileJson2  } from '@phosphor-icons/react';
+import { FileCodeIcon as FileJson2 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { Dialog, DialogFooter } from '../../components/dialog.tsx';
 import { Field, Textarea } from '../../components/field.tsx';
@@ -133,7 +133,13 @@ export function ApplyManifestDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
           </Button>
-          <Button type="button" disabled={apply.isPending || result !== null} onClick={submit} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={apply.isPending || result !== null}
+            onClick={submit}
+            variant="default"
+            size="sm"
+          >
             <FileJson2 size={13} aria-hidden />
             {apply.isPending ? 'Applying…' : 'Apply manifest'}
           </Button>

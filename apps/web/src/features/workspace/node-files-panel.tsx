@@ -1,6 +1,13 @@
 import type { NodeRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { DownloadSimpleIcon as Download, FileIcon as File, FolderIcon as Folder, ArrowsClockwiseIcon as RefreshCw, FloppyDiskIcon as Save, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  DownloadSimpleIcon as Download,
+  FileIcon as File,
+  FolderIcon as Folder,
+  ArrowsClockwiseIcon as RefreshCw,
+  FloppyDiskIcon as Save,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useDeferredValue, useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
 import { Input } from '../../components/field.tsx';
@@ -104,7 +111,14 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
           onChange={(event) => setDirectory(event.target.value)}
           className="py-1 text-[11px]"
         />
-        <Button type="button" aria-label="Reload files" title="Reload files" onClick={() => void files.refetch()} variant="outline" size="xs">
+        <Button
+          type="button"
+          aria-label="Reload files"
+          title="Reload files"
+          onClick={() => void files.refetch()}
+          variant="outline"
+          size="xs"
+        >
           <RefreshCw size={12} aria-hidden />
         </Button>
       </div>
@@ -165,13 +179,34 @@ export function NodeFilesPanel({ node }: { node: NodeRow }) {
               {selected}
             </span>
             <div className="flex items-center gap-1">
-              <Button type="button" disabled={downloading} onClick={() => void downloadFile()} variant="outline" size="xs">
+              <Button
+                type="button"
+                disabled={downloading}
+                onClick={() => void downloadFile()}
+                variant="outline"
+                size="xs"
+              >
                 <Download size={12} aria-hidden /> {downloading ? 'Downloading…' : 'Download'}
               </Button>
-              <Button type="button" disabled={deleteFile.isPending} onClick={() => setDeleteOpen(true)} variant="destructive" size="xs">
+              <Button
+                type="button"
+                disabled={deleteFile.isPending}
+                onClick={() => setDeleteOpen(true)}
+                variant="destructive"
+                size="xs"
+              >
                 <Trash2 size={12} aria-hidden /> Delete
               </Button>
-              <Button type="button" disabled={writeFile.isPending || content.isPending} onClick={() => { setNotice(null); writeFile.mutate({ nodeId: node.id, path: selected, content: draft }); }} variant="default" size="xs">
+              <Button
+                type="button"
+                disabled={writeFile.isPending || content.isPending}
+                onClick={() => {
+                  setNotice(null);
+                  writeFile.mutate({ nodeId: node.id, path: selected, content: draft });
+                }}
+                variant="default"
+                size="xs"
+              >
                 <Save size={12} aria-hidden /> {writeFile.isPending ? 'Saving…' : 'Save'}
               </Button>
             </div>

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { SquaresFourIcon as LayoutTemplate, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import { SquaresFourIcon as LayoutTemplate, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -162,15 +162,41 @@ export function ProjectTemplatesDialog({
                   <Td mono>{formatStamp(template.createdAt)}</Td>
                   <Td align="right">
                     <span className="flex items-center justify-end gap-1">
-                      <Button type="button" disabled={!canWrite || pending} title="Create a project from this template" onClick={() => { setApplyTemplateId(template.id); setApplyName(template.name); setError(null); setNotice(null); }} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        disabled={!canWrite || pending}
+                        title="Create a project from this template"
+                        onClick={() => {
+                          setApplyTemplateId(template.id);
+                          setApplyName(template.name);
+                          setError(null);
+                          setNotice(null);
+                        }}
+                        variant="ghost"
+                        size="xs"
+                      >
                         Use
                       </Button>
                       {deleteConfirmId === template.id ? (
-                        <Button type="button" disabled={pending} onClick={() => remove.mutate({ id: template.id })} variant="destructive" size="xs">
+                        <Button
+                          type="button"
+                          disabled={pending}
+                          onClick={() => remove.mutate({ id: template.id })}
+                          variant="destructive"
+                          size="xs"
+                        >
                           Confirm delete
                         </Button>
                       ) : (
-                        <Button type="button" disabled={!canWrite || pending} title={`Delete ${template.name}`} aria-label={`Delete ${template.name}`} onClick={() => setDeleteConfirmId(template.id)} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          disabled={!canWrite || pending}
+                          title={`Delete ${template.name}`}
+                          aria-label={`Delete ${template.name}`}
+                          onClick={() => setDeleteConfirmId(template.id)}
+                          variant="ghost"
+                          size="xs"
+                        >
                           <Trash2 size={12} aria-hidden />
                         </Button>
                       )}
@@ -252,7 +278,13 @@ export function ProjectTemplatesDialog({
                 onChange={(event) => setApplyName(event.target.value)}
               />
             </Field>
-            <Button type="button" disabled={!canWrite || pending || applyTemplateId === ''} onClick={submitApply} variant="outline" size="xs">
+            <Button
+              type="button"
+              disabled={!canWrite || pending || applyTemplateId === ''}
+              onClick={submitApply}
+              variant="outline"
+              size="xs"
+            >
               {apply.isPending ? 'Creating…' : 'Create project'}
             </Button>
           </div>

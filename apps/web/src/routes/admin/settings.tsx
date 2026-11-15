@@ -1,5 +1,13 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { DownloadSimpleIcon as Download, KeyIcon as KeyRound, ArrowsClockwiseIcon as RefreshCw, ArrowCounterClockwiseIcon as RotateCcw, TerminalWindowIcon as TerminalSquare, TimerIcon as Timer, WrenchIcon as Wrench   } from '@phosphor-icons/react';
+import {
+  DownloadSimpleIcon as Download,
+  KeyIcon as KeyRound,
+  ArrowsClockwiseIcon as RefreshCw,
+  ArrowCounterClockwiseIcon as RotateCcw,
+  TerminalWindowIcon as TerminalSquare,
+  TimerIcon as Timer,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Field } from '../../components/field.tsx';
 import { displaySettingValue, KeyValueEditor } from '../../components/key-value-editor.tsx';
@@ -267,7 +275,13 @@ export function SettingsAdminPage() {
             title="Console defaults"
             description="The terminal size a console tab opens with when a node does not override it. Rows are the height; columns are the width."
             actions={
-              <Button type="button" onClick={onConsoleDefaults} disabled={!canWrite} variant="outline" size="xs">
+              <Button
+                type="button"
+                onClick={onConsoleDefaults}
+                disabled={!canWrite}
+                variant="outline"
+                size="xs"
+              >
                 <RotateCcw size={13} aria-hidden />
                 Reset to defaults
               </Button>
@@ -414,7 +428,13 @@ export function SettingsAdminPage() {
             title="Controller updates"
             description="Updates come from this project's GitHub releases. Stable follows tagged releases; nightly follows every commit on main. Save the channel before checking."
             actions={
-              <Button type="button" onClick={() => void updateCheck.refetch()} disabled={!canRead || updateCheck.isFetching} variant="outline" size="xs">
+              <Button
+                type="button"
+                onClick={() => void updateCheck.refetch()}
+                disabled={!canRead || updateCheck.isFetching}
+                variant="outline"
+                size="xs"
+              >
                 <RefreshCw size={13} aria-hidden />
                 {updateCheck.isFetching ? 'Checking…' : 'Check now'}
               </Button>
@@ -479,7 +499,13 @@ export function SettingsAdminPage() {
               ) : updateCheck.data?.installable === false ? (
                 <span style={{ color: 'var(--color-ink-faint)' }}>{updateCheck.data.reason}</span>
               ) : updateCheck.data?.available ? (
-                <Button type="button" onClick={() => installUpdate.mutate({})} disabled={!canWrite || installUpdate.isPending} variant="default" size="xs">
+                <Button
+                  type="button"
+                  onClick={() => installUpdate.mutate({})}
+                  disabled={!canWrite || installUpdate.isPending}
+                  variant="default"
+                  size="xs"
+                >
                   <Download size={13} aria-hidden />
                   {installUpdate.isPending
                     ? 'Installing…'
@@ -547,10 +573,22 @@ export function SettingsAdminPage() {
                 You have unsaved changes.
               </p>
               <div className="flex flex-wrap items-center gap-2">
-                <Button type="button" onClick={onDiscard} disabled={updateSettings.isPending} variant="outline" size="sm">
+                <Button
+                  type="button"
+                  onClick={onDiscard}
+                  disabled={updateSettings.isPending}
+                  variant="outline"
+                  size="sm"
+                >
                   Discard
                 </Button>
-                <Button type="button" onClick={onSave} disabled={updateSettings.isPending || hasFieldErrors} variant="default" size="sm">
+                <Button
+                  type="button"
+                  onClick={onSave}
+                  disabled={updateSettings.isPending || hasFieldErrors}
+                  variant="default"
+                  size="sm"
+                >
                   {updateSettings.isPending ? 'Saving…' : 'Save changes'}
                 </Button>
               </div>

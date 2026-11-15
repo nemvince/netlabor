@@ -1,6 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CameraIcon as Camera, DownloadSimpleIcon as Download, ArrowCounterClockwiseIcon as RotateCcw, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import {
+  CameraIcon as Camera,
+  DownloadSimpleIcon as Download,
+  ArrowCounterClockwiseIcon as RotateCcw,
+  TrashIcon as Trash2,
+} from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -222,18 +227,46 @@ export function SnapshotsDialog({
                   </Td>
                   <Td align="right">
                     <span className="inline-flex items-center gap-1">
-                      <Button type="button" title={`Restore ${snapshot.name}`} aria-label={`Restore ${snapshot.name}`} disabled={busy} onClick={() => void restoreSnapshot(snapshot.id, snapshot.name)} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        title={`Restore ${snapshot.name}`}
+                        aria-label={`Restore ${snapshot.name}`}
+                        disabled={busy}
+                        onClick={() => void restoreSnapshot(snapshot.id, snapshot.name)}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <RotateCcw size={12} aria-hidden />
                       </Button>
-                      <Button type="button" title={`Download ${snapshot.name}`} aria-label={`Download ${snapshot.name}`} onClick={() => void downloadSnapshot(snapshot.id)} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        title={`Download ${snapshot.name}`}
+                        aria-label={`Download ${snapshot.name}`}
+                        onClick={() => void downloadSnapshot(snapshot.id)}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Download size={12} aria-hidden />
                       </Button>
                       {deleteConfirmId === snapshot.id ? (
-                        <Button type="button" disabled={remove.isPending} onClick={() => remove.mutate({ id: snapshot.id })} variant="destructive" size="xs">
+                        <Button
+                          type="button"
+                          disabled={remove.isPending}
+                          onClick={() => remove.mutate({ id: snapshot.id })}
+                          variant="destructive"
+                          size="xs"
+                        >
                           Confirm
                         </Button>
                       ) : (
-                        <Button type="button" title={`Delete ${snapshot.name}`} aria-label={`Delete ${snapshot.name}`} onClick={() => setDeleteConfirmId(snapshot.id)} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          title={`Delete ${snapshot.name}`}
+                          aria-label={`Delete ${snapshot.name}`}
+                          onClick={() => setDeleteConfirmId(snapshot.id)}
+                          variant="ghost"
+                          size="xs"
+                        >
                           <Trash2 size={12} aria-hidden />
                         </Button>
                       )}

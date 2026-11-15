@@ -10,7 +10,7 @@ import {
   type TemplateRow,
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { PlusIcon as Plus, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import { PlusIcon as Plus, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -435,7 +435,16 @@ export function TemplateDialog({
                           </Select>
                         </Field>
                       </div>
-                      <Button type="button" aria-label={`Remove required image ${required.name}`} onClick={() => setRequiredImages((current) => current.filter((_, i) => i !== index)) } className="mb-1 shrink-0" variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`Remove required image ${required.name}`}
+                        onClick={() =>
+                          setRequiredImages((current) => current.filter((_, i) => i !== index))
+                        }
+                        className="mb-1 shrink-0"
+                        variant="ghost"
+                        size="xs"
+                      >
                         <Trash2 size={12} aria-hidden />
                       </Button>
                     </div>
@@ -449,7 +458,23 @@ export function TemplateDialog({
               })}
             </div>
           )}
-          <Button type="button" onClick={() => setRequiredImages((current) => [ ...current, { name: `${nodeType} image`, kind: 'qemu', filenamePattern: '*', rowKey: crypto.randomUUID(), }, ]) } className="mt-2" variant="outline" size="xs">
+          <Button
+            type="button"
+            onClick={() =>
+              setRequiredImages((current) => [
+                ...current,
+                {
+                  name: `${nodeType} image`,
+                  kind: 'qemu',
+                  filenamePattern: '*',
+                  rowKey: crypto.randomUUID(),
+                },
+              ])
+            }
+            className="mt-2"
+            variant="outline"
+            size="xs"
+          >
             <Plus size={12} aria-hidden /> Add image requirement
           </Button>
         </section>

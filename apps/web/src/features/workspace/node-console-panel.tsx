@@ -1,5 +1,12 @@
 import type { NodeRow } from '@netlabor/contract';
-import { PauseIcon as Pause, PlayIcon as Play, ArrowClockwiseIcon as RotateCw, SquareIcon as Square, TerminalIcon as SquareTerminal, ClockCounterClockwiseIcon as TimerReset   } from '@phosphor-icons/react';
+import {
+  PauseIcon as Pause,
+  PlayIcon as Play,
+  ArrowClockwiseIcon as RotateCw,
+  SquareIcon as Square,
+  TerminalIcon as SquareTerminal,
+  ClockCounterClockwiseIcon as TimerReset,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Input } from '../../components/field.tsx';
 import { Notice } from '../../components/notice.tsx';
@@ -85,7 +92,14 @@ export function NodeConsolePanel({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col gap-1.5">
-        <Button type="button" disabled={!canConsole} onClick={onOpenConsole} className="w-full" variant="default" size="xs">
+        <Button
+          type="button"
+          disabled={!canConsole}
+          onClick={onOpenConsole}
+          className="w-full"
+          variant="default"
+          size="xs"
+        >
           <SquareTerminal size={12} aria-hidden /> Open console
         </Button>
         <details
@@ -98,22 +112,52 @@ export function NodeConsolePanel({
           <div className="mt-1.5 flex flex-wrap gap-1">
             {canControl ? (
               <>
-                <Button type="button" disabled={started || node.status === 'suspended'} onClick={() => onAction('start')} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={started || node.status === 'suspended'}
+                  onClick={() => onAction('start')}
+                  variant="outline"
+                  size="xs"
+                >
                   <Play size={12} aria-hidden /> Start
                 </Button>
-                <Button type="button" disabled={!started && node.status !== 'suspended'} onClick={() => onAction('stop')} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={!started && node.status !== 'suspended'}
+                  onClick={() => onAction('stop')}
+                  variant="outline"
+                  size="xs"
+                >
                   <Square size={12} aria-hidden /> Stop
                 </Button>
-                <Button type="button" disabled={!started} onClick={() => onAction('suspend')} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={!started}
+                  onClick={() => onAction('suspend')}
+                  variant="outline"
+                  size="xs"
+                >
                   <Pause size={12} aria-hidden /> Suspend
                 </Button>
-                <Button type="button" disabled={!started} onClick={() => onAction('reload')} variant="outline" size="xs">
+                <Button
+                  type="button"
+                  disabled={!started}
+                  onClick={() => onAction('reload')}
+                  variant="outline"
+                  size="xs"
+                >
                   <RotateCw size={12} aria-hidden /> Reload
                 </Button>
               </>
             ) : null}
             {node.consoleType === 'telnet' || node.consoleType === 'vnc' ? (
-              <Button type="button" disabled={!canConsole} onClick={() => void resetConsole()} variant="outline" size="xs">
+              <Button
+                type="button"
+                disabled={!canConsole}
+                onClick={() => void resetConsole()}
+                variant="outline"
+                size="xs"
+              >
                 <TimerReset size={12} aria-hidden /> Reset console
               </Button>
             ) : null}
@@ -152,7 +196,13 @@ export function NodeConsolePanel({
               onChange={(event) => setTimeoutMs(event.target.value)}
             />
           </label>
-          <Button type="button" disabled={busy || !canConsole} onClick={() => void runCommands()} variant="outline" size="xs">
+          <Button
+            type="button"
+            disabled={busy || !canConsole}
+            onClick={() => void runCommands()}
+            variant="outline"
+            size="xs"
+          >
             {busy ? 'Running…' : 'Run'}
           </Button>
         </div>

@@ -67,7 +67,15 @@ export default function PortPickerSurface({
             : `${claimed.map((port) => port.name).join(', ')} linked`}
         </span>
       </div>
-      <Button ref={trigger} type="button" aria-haspopup="dialog" aria-expanded={open} onClick={openMenu} variant="default" size="sm">
+      <Button
+        ref={trigger}
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={openMenu}
+        variant="default"
+        size="sm"
+      >
         Choose a port
       </Button>
       <p className="docs-ui-status" role="status" aria-live="polite">

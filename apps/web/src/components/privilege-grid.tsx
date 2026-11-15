@@ -25,10 +25,7 @@ export function PrivilegeGrid({
           : group.privileges;
         if (privileges.length === 0) return null;
         return (
-          <fieldset
-            key={group.prefix}
-            className="rounded-sm border border-border px-2.5 py-1.5"
-          >
+          <fieldset key={group.prefix} className="rounded-sm border border-border px-2.5 py-1.5">
             <legend className="nb-rule-label px-1">{group.label}</legend>
             <div className="mt-1 flex flex-col gap-0.5">
               {privileges.map((privilege) => (

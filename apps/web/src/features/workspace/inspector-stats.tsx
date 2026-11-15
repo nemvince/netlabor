@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { CpuIcon as Cpu, HardDriveIcon as HardDrive, MemoryIcon as MemoryStick   } from '@phosphor-icons/react';
+import {
+  CpuIcon as Cpu,
+  HardDriveIcon as HardDrive,
+  MemoryIcon as MemoryStick,
+} from '@phosphor-icons/react';
 import { Badge } from '../../components/badge.tsx';
 import { Notice } from '../../components/notice.tsx';
 import { Loading } from '../../components/page.tsx';

@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { SecretRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { KeyIcon as KeyRound, PlusIcon as Plus, TrashIcon as Trash   } from '@phosphor-icons/react';
+import { KeyIcon as KeyRound, PlusIcon as Plus, TrashIcon as Trash } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -183,7 +183,17 @@ export function SecretsSection({
                 <Td mono>{formatStamp(secret.createdAt)}</Td>
                 <Td align="right">
                   {canWrite ? (
-                    <Button type="button" aria-label={`Delete ${secret.name}`} title="Delete secret" onClick={() => { remove.reset(); setDeleteTarget(secret); }} variant="ghost" size="xs">
+                    <Button
+                      type="button"
+                      aria-label={`Delete ${secret.name}`}
+                      title="Delete secret"
+                      onClick={() => {
+                        remove.reset();
+                        setDeleteTarget(secret);
+                      }}
+                      variant="ghost"
+                      size="xs"
+                    >
                       <Trash size={13} aria-hidden />
                     </Button>
                   ) : (

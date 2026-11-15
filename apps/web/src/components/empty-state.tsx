@@ -1,4 +1,4 @@
-import { type Icon  } from '@phosphor-icons/react';
+import { type Icon } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 
 /** Empty state: says what is missing and offers the action that fills it. */

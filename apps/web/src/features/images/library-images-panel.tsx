@@ -1,7 +1,12 @@
 import type { ComputeRow, ImageKind, ImageRow } from '@netlabor/contract';
 import { IMAGE_KINDS } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { FileTextIcon as FileText, HardDriveIcon as HardDrive, ArrowsClockwiseIcon as RefreshCw, CloudArrowUpIcon as UploadCloud   } from '@phosphor-icons/react';
+import {
+  FileTextIcon as FileText,
+  HardDriveIcon as HardDrive,
+  ArrowsClockwiseIcon as RefreshCw,
+  CloudArrowUpIcon as UploadCloud,
+} from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { Badge, type BadgeTone } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
@@ -182,7 +187,12 @@ export function LibraryImagesPanel() {
             description="Upload a qcow2, IOU, or Dynamips image. The controller hashes it and replicates it on demand."
             action={
               canWrite ? (
-                <Button type="button" onClick={() => setUploadOpen(true)} variant="default" size="sm">
+                <Button
+                  type="button"
+                  onClick={() => setUploadOpen(true)}
+                  variant="default"
+                  size="sm"
+                >
                   <UploadCloud size={14} aria-hidden /> Upload image
                 </Button>
               ) : null
@@ -222,7 +232,14 @@ export function LibraryImagesPanel() {
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
                       <Badge tone={summary.tone}>{summary.label}</Badge>
-                      <Button type="button" aria-label={`Details for ${image.name}`} title="Image details, replicas, and actions" onClick={() => setDetailTarget(image)} variant="ghost" size="xs">
+                      <Button
+                        type="button"
+                        aria-label={`Details for ${image.name}`}
+                        title="Image details, replicas, and actions"
+                        onClick={() => setDetailTarget(image)}
+                        variant="ghost"
+                        size="xs"
+                      >
                         <FileText size={12} aria-hidden /> Details
                       </Button>
                     </div>
@@ -321,7 +338,13 @@ export function LibraryImagesPanel() {
           <Button type="button" onClick={() => setRenameTarget(null)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={renaming} onClick={() => void performRename()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={renaming}
+            onClick={() => void performRename()}
+            variant="default"
+            size="sm"
+          >
             {renaming ? 'Saving…' : 'Rename'}
           </Button>
         </DialogFooter>

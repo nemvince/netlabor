@@ -1,5 +1,5 @@
 import { Link, redirect } from '@tanstack/react-router';
-import { ShieldSlashIcon as ShieldOff  } from '@phosphor-icons/react';
+import { ShieldSlashIcon as ShieldOff } from '@phosphor-icons/react';
 import { EmptyState } from '../../components/empty-state.tsx';
 import { Page, PageHeader } from '../../components/page.tsx';
 import { orpc } from '../../lib/api.ts';

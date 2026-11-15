@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { DrawingRow, LinkRow, NodeRow, ProjectRow, SymbolRow } from '@netlabor/contract';
-import { FloppyDiskIcon as Save  } from '@phosphor-icons/react';
+import { FloppyDiskIcon as Save } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -478,7 +478,33 @@ export function Inspector({
                       {advancedError}
                     </p>
                   ) : null}
-                  <Button type="button" disabled={!canUpdate} onClick={() => { let parsed: unknown; try { parsed = JSON.parse(advanced); } catch { setAdvancedError('The properties are not valid JSON.'); return; } if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) { setAdvancedError('The properties must be a JSON object.'); return; } setAdvancedError(null); setProps(parsed as Record<string, unknown>); onUpdateNode( node.id, { properties: parsed as Record<string, unknown> }, 'properties', ); }} className="mt-1" variant="outline" size="xs">
+                  <Button
+                    type="button"
+                    disabled={!canUpdate}
+                    onClick={() => {
+                      let parsed: unknown;
+                      try {
+                        parsed = JSON.parse(advanced);
+                      } catch {
+                        setAdvancedError('The properties are not valid JSON.');
+                        return;
+                      }
+                      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+                        setAdvancedError('The properties must be a JSON object.');
+                        return;
+                      }
+                      setAdvancedError(null);
+                      setProps(parsed as Record<string, unknown>);
+                      onUpdateNode(
+                        node.id,
+                        { properties: parsed as Record<string, unknown> },
+                        'properties',
+                      );
+                    }}
+                    className="mt-1"
+                    variant="outline"
+                    size="xs"
+                  >
                     Save advanced JSON
                   </Button>
                 </details>
@@ -489,7 +515,13 @@ export function Inspector({
                     background: 'var(--color-panel)',
                   }}
                 >
-                  <Button type="submit" disabled={!canUpdate || form.formState.isSubmitting} className="w-full" variant="default" size="xs">
+                  <Button
+                    type="submit"
+                    disabled={!canUpdate || form.formState.isSubmitting}
+                    className="w-full"
+                    variant="default"
+                    size="xs"
+                  >
                     <Save size={12} aria-hidden /> Save changes
                   </Button>
                 </div>
@@ -502,7 +534,13 @@ export function Inspector({
                 >
                   <div className="mb-1.5 flex items-center justify-between gap-2">
                     <span className="nb-rule-label">Port settings</span>
-                    <Button type="button" disabled={!canUpdate} onClick={savePorts} variant="outline" size="xs">
+                    <Button
+                      type="button"
+                      disabled={!canUpdate}
+                      onClick={savePorts}
+                      variant="outline"
+                      size="xs"
+                    >
                       <Save size={12} aria-hidden /> Save ports
                     </Button>
                   </div>
@@ -647,7 +685,12 @@ export function Inspector({
                 Filters &amp; capture
               </Button>
               {canLinkWrite ? (
-                <Button type="button" onClick={() => onDeleteLink(link)} variant="destructive" size="xs">
+                <Button
+                  type="button"
+                  onClick={() => onDeleteLink(link)}
+                  variant="destructive"
+                  size="xs"
+                >
                   Delete link
                 </Button>
               ) : null}
@@ -683,7 +726,13 @@ export function Inspector({
             />
           ) : null}
           {can('drawing.write') && !projectLocked ? (
-            <Button type="button" onClick={() => onDeleteDrawing(drawing)} className="mt-2" variant="destructive" size="xs">
+            <Button
+              type="button"
+              onClick={() => onDeleteDrawing(drawing)}
+              className="mt-2"
+              variant="destructive"
+              size="xs"
+            >
               Delete drawing
             </Button>
           ) : null}
@@ -751,7 +800,14 @@ function DrawingTextEditor({
         value={text}
         onChange={(event) => setText(event.target.value)}
       />
-      <Button type="button" disabled={!dirty} onClick={() => onSave(text)} className="self-end" variant="default" size="xs">
+      <Button
+        type="button"
+        disabled={!dirty}
+        onClick={() => onSave(text)}
+        className="self-end"
+        variant="default"
+        size="xs"
+      >
         <Save size={12} aria-hidden /> Save text
       </Button>
     </div>

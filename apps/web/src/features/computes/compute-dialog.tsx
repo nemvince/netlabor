@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { ComputeRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { StackIcon as Boxes, ArrowsClockwiseIcon as RefreshCw   } from '@phosphor-icons/react';
+import { StackIcon as Boxes, ArrowsClockwiseIcon as RefreshCw } from '@phosphor-icons/react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -215,7 +215,12 @@ export function ComputeDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="submit" disabled={createCompute.isPending || updateCompute.isPending} variant="default" size="sm">
+          <Button
+            type="submit"
+            disabled={createCompute.isPending || updateCompute.isPending}
+            variant="default"
+            size="sm"
+          >
             {editing
               ? updateCompute.isPending
                 ? 'Saving…'
@@ -283,7 +288,13 @@ export function RotateTokenDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={rotate.isPending} onClick={() => rotate.mutate({ id: compute.id })} variant="destructive" size="sm">
+          <Button
+            type="button"
+            disabled={rotate.isPending}
+            onClick={() => rotate.mutate({ id: compute.id })}
+            variant="destructive"
+            size="sm"
+          >
             {rotate.isPending ? 'Rotating…' : 'Rotate token'}
           </Button>
         </DialogFooter>
@@ -335,7 +346,14 @@ function DockerImagesSection({ computeId, canPull }: { computeId: string; canPul
         <span className="text-[11px]" style={{ color: 'var(--color-ink-dim)' }}>
           {images.data?.length ?? 0} image(s) cached on this compute
         </span>
-        <Button type="button" aria-label="Reload Docker images" disabled={images.isFetching} onClick={() => void images.refetch()} variant="outline" size="xs">
+        <Button
+          type="button"
+          aria-label="Reload Docker images"
+          disabled={images.isFetching}
+          onClick={() => void images.refetch()}
+          variant="outline"
+          size="xs"
+        >
           <RefreshCw size={12} aria-hidden />
         </Button>
       </div>
@@ -379,7 +397,13 @@ function DockerImagesSection({ computeId, canPull }: { computeId: string; canPul
               }}
             />
           </Field>
-          <Button type="button" disabled={pulling !== null || image.trim() === ''} onClick={() => void pull()} variant="default" size="xs">
+          <Button
+            type="button"
+            disabled={pulling !== null || image.trim() === ''}
+            onClick={() => void pull()}
+            variant="default"
+            size="xs"
+          >
             <Boxes size={12} aria-hidden /> {pulling ? 'Pulling…' : 'Pull'}
           </Button>
         </div>

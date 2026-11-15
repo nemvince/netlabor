@@ -1,4 +1,4 @@
-import { CircleNotchIcon  } from '@phosphor-icons/react';
+import { CircleNotchIcon } from '@phosphor-icons/react';
 import { type ReactNode, useEffect } from 'react';
 
 /** Page frame: one max width, dense vertical rhythm, hairline header rule. */
@@ -50,9 +50,7 @@ export function Section({
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 className="text-[14px] font-semibold">{title}</h2>
-          {description ? (
-            <p className="text-[12px] text-muted-foreground">{description}</p>
-          ) : null}
+          {description ? <p className="text-[12px] text-muted-foreground">{description}</p> : null}
         </div>
         {actions ? <div className="flex items-center gap-2">{actions}</div> : null}
       </div>

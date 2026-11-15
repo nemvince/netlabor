@@ -6,7 +6,16 @@ import {
 } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { DownloadSimpleIcon as Download, FileTextIcon as FileText, HardDrivesIcon as HardDriveDownload, PencilIcon as Pencil, PlusIcon as Plus, ArrowsClockwiseIcon as RefreshCw, TrashIcon as Trash2, WrenchIcon as Wrench   } from '@phosphor-icons/react';
+import {
+  DownloadSimpleIcon as Download,
+  FileTextIcon as FileText,
+  HardDrivesIcon as HardDriveDownload,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  ArrowsClockwiseIcon as RefreshCw,
+  TrashIcon as Trash2,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
 import { type ReactNode, useCallback, useMemo, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
@@ -130,7 +139,18 @@ function OsImageEntry({
       <div className="flex shrink-0 items-center gap-2">
         <OsStateBadge state={state} progress={progress} />
         {canWrite && state !== 'ready' ? (
-          <Button type="button" disabled={busy || state === 'downloading' || row.sourceUrl === null} title={ row.sourceUrl === null ? 'This entry has no source URL; adopt an existing library image instead.' : 'Download the cloud image into the library' } onClick={onDownload} variant="outline" size="xs">
+          <Button
+            type="button"
+            disabled={busy || state === 'downloading' || row.sourceUrl === null}
+            title={
+              row.sourceUrl === null
+                ? 'This entry has no source URL; adopt an existing library image instead.'
+                : 'Download the cloud image into the library'
+            }
+            onClick={onDownload}
+            variant="outline"
+            size="xs"
+          >
             {busy || state === 'downloading' ? (
               <RefreshCw size={11} className="animate-spin" aria-hidden />
             ) : (
@@ -139,7 +159,14 @@ function OsImageEntry({
             Download
           </Button>
         ) : null}
-        <Button type="button" aria-label={`Details for ${row.name}`} title="Details, edit, adopt, delete" onClick={onOpen} variant="ghost" size="xs">
+        <Button
+          type="button"
+          aria-label={`Details for ${row.name}`}
+          title="Details, edit, adopt, delete"
+          onClick={onOpen}
+          variant="ghost"
+          size="xs"
+        >
           <FileText size={12} aria-hidden /> Details
         </Button>
       </div>
@@ -264,7 +291,13 @@ function OsImageDetailDialog({
 
       <DialogFooter>
         {canWrite ? (
-          <Button type="button" onClick={onDelete} className="mr-auto" variant="destructive" size="sm">
+          <Button
+            type="button"
+            onClick={onDelete}
+            className="mr-auto"
+            variant="destructive"
+            size="sm"
+          >
             <Trash2 size={12} aria-hidden /> Delete
           </Button>
         ) : null}
@@ -272,17 +305,35 @@ function OsImageDetailDialog({
           Close
         </Button>
         {canWrite && state !== 'ready' && row.sourceUrl !== null ? (
-          <Button type="button" disabled={state === 'downloading'} onClick={onDownload} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={state === 'downloading'}
+            onClick={onDownload}
+            variant="outline"
+            size="sm"
+          >
             <Download size={12} aria-hidden /> Download
           </Button>
         ) : null}
         {canWrite ? (
-          <Button type="button" disabled={state === 'downloading'} onClick={onAdopt} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={state === 'downloading'}
+            onClick={onAdopt}
+            variant="outline"
+            size="sm"
+          >
             Adopt
           </Button>
         ) : null}
         {canWrite ? (
-          <Button type="button" disabled={state === 'downloading'} onClick={onEdit} variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={state === 'downloading'}
+            onClick={onEdit}
+            variant="outline"
+            size="sm"
+          >
             <Pencil size={12} aria-hidden /> Edit
           </Button>
         ) : null}
@@ -369,17 +420,41 @@ function BuildEntry({
       <div className="flex shrink-0 items-center gap-2">
         <Badge tone={BUILD_STATUS_TONE[build.status]}>{build.status}</Badge>
         {active ? (
-          <Button type="button" disabled={cancelling} onClick={onCancel} variant="outline" size="xs">
+          <Button
+            type="button"
+            disabled={cancelling}
+            onClick={onCancel}
+            variant="outline"
+            size="xs"
+          >
             {cancelling ? <RefreshCw size={11} className="animate-spin" aria-hidden /> : null}
             Cancel
           </Button>
         ) : null}
         {build.status === 'completed' ? (
-          <Button type="button" disabled={!canCreateTemplates} title={ canCreateTemplates ? 'Create a device template from this image' : 'Creating a template needs template.write' } onClick={onCreateTemplate} variant="default" size="xs">
+          <Button
+            type="button"
+            disabled={!canCreateTemplates}
+            title={
+              canCreateTemplates
+                ? 'Create a device template from this image'
+                : 'Creating a template needs template.write'
+            }
+            onClick={onCreateTemplate}
+            variant="default"
+            size="xs"
+          >
             <Wrench size={11} aria-hidden /> Create template
           </Button>
         ) : null}
-        <Button type="button" aria-label={`Details for ${build.name}`} title="Build details and log" onClick={onOpen} variant="ghost" size="xs">
+        <Button
+          type="button"
+          aria-label={`Details for ${build.name}`}
+          title="Build details and log"
+          onClick={onOpen}
+          variant="ghost"
+          size="xs"
+        >
           <FileText size={12} aria-hidden /> Details
         </Button>
       </div>
@@ -475,7 +550,14 @@ function BuildDetailDialog({
             >
               {build.log ? `${logLines} lines` : 'empty'}
               {!active && build.log ? (
-                <Button type="button" aria-label="Clear the build log" title="Discard the stored log" onClick={onClearLog} variant="ghost" size="xs">
+                <Button
+                  type="button"
+                  aria-label="Clear the build log"
+                  title="Discard the stored log"
+                  onClick={onClearLog}
+                  variant="ghost"
+                  size="xs"
+                >
                   Clear log
                 </Button>
               ) : null}
@@ -520,7 +602,14 @@ function BuildDetailDialog({
 
       <DialogFooter>
         {active ? (
-          <Button type="button" disabled={cancelling} onClick={onCancel} className="mr-auto" variant="outline" size="sm">
+          <Button
+            type="button"
+            disabled={cancelling}
+            onClick={onCancel}
+            className="mr-auto"
+            variant="outline"
+            size="sm"
+          >
             {cancelling ? <RefreshCw size={11} className="animate-spin" aria-hidden /> : null}
             Cancel build
           </Button>
@@ -529,7 +618,18 @@ function BuildDetailDialog({
           Close
         </Button>
         {build.status === 'completed' ? (
-          <Button type="button" disabled={!canCreateTemplates} title={ canCreateTemplates ? 'Create a device template from this image' : 'Creating a template needs template.write' } onClick={onCreateTemplate} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={!canCreateTemplates}
+            title={
+              canCreateTemplates
+                ? 'Create a device template from this image'
+                : 'Creating a template needs template.write'
+            }
+            onClick={onCreateTemplate}
+            variant="default"
+            size="sm"
+          >
             <Wrench size={12} aria-hidden /> Create template
           </Button>
         ) : null}
@@ -709,7 +809,12 @@ export function ApplianceImagesPanel({
               ))}
             </Select>
             {canWrite ? (
-              <Button type="button" onClick={() => setCreateOsOpen(true)} variant="default" size="sm">
+              <Button
+                type="button"
+                onClick={() => setCreateOsOpen(true)}
+                variant="default"
+                size="sm"
+              >
                 <Plus size={14} aria-hidden /> New OS entry
               </Button>
             ) : (
@@ -729,7 +834,12 @@ export function ApplianceImagesPanel({
               title="OS images could not be read"
               description={messageOf(osImages.error)}
               action={
-                <Button type="button" onClick={() => void osImages.refetch()} variant="outline" size="sm">
+                <Button
+                  type="button"
+                  onClick={() => void osImages.refetch()}
+                  variant="outline"
+                  size="sm"
+                >
                   Retry
                 </Button>
               }
@@ -741,7 +851,15 @@ export function ApplianceImagesPanel({
                 title="No OS image matches"
                 description="Clear the search and family filters to see the whole repository."
                 action={
-                  <Button type="button" onClick={() => { setSearch(''); setFamily('all'); }} variant="outline" size="sm">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setSearch('');
+                      setFamily('all');
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
                     Clear filters
                   </Button>
                 }
@@ -753,7 +871,12 @@ export function ApplianceImagesPanel({
                 description="Add a cloud image by URL, or adopt an image that is already in the library. Appliance builds need one of these as their base."
                 action={
                   canWrite ? (
-                    <Button type="button" onClick={() => setCreateOsOpen(true)} variant="default" size="sm">
+                    <Button
+                      type="button"
+                      onClick={() => setCreateOsOpen(true)}
+                      variant="default"
+                      size="sm"
+                    >
                       <Plus size={14} aria-hidden /> New OS entry
                     </Button>
                   ) : null
@@ -800,7 +923,18 @@ export function ApplianceImagesPanel({
                 live
               </span>
             ) : null}
-            <Button type="button" disabled={!canWrite || readyOsImages.length === 0} title={ readyOsImages.length === 0 ? 'Download or adopt an OS image first.' : 'Build a desktop image from a downloaded base OS' } onClick={() => setBuildOpen(true)} variant="default" size="sm">
+            <Button
+              type="button"
+              disabled={!canWrite || readyOsImages.length === 0}
+              title={
+                readyOsImages.length === 0
+                  ? 'Download or adopt an OS image first.'
+                  : 'Build a desktop image from a downloaded base OS'
+              }
+              onClick={() => setBuildOpen(true)}
+              variant="default"
+              size="sm"
+            >
               <Plus size={14} aria-hidden /> New appliance build
             </Button>
           </div>
@@ -815,7 +949,12 @@ export function ApplianceImagesPanel({
               title="Appliance builds could not be read"
               description={messageOf(builds.error)}
               action={
-                <Button type="button" onClick={() => void builds.refetch()} variant="outline" size="sm">
+                <Button
+                  type="button"
+                  onClick={() => void builds.refetch()}
+                  variant="outline"
+                  size="sm"
+                >
                   Retry
                 </Button>
               }
@@ -831,7 +970,13 @@ export function ApplianceImagesPanel({
               }
               action={
                 canWrite ? (
-                  <Button type="button" disabled={readyOsImages.length === 0} onClick={() => setBuildOpen(true)} variant="default" size="sm">
+                  <Button
+                    type="button"
+                    disabled={readyOsImages.length === 0}
+                    onClick={() => setBuildOpen(true)}
+                    variant="default"
+                    size="sm"
+                  >
                     <Plus size={14} aria-hidden /> New appliance build
                   </Button>
                 ) : null

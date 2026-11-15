@@ -21,7 +21,12 @@ export default function ToastSurface({
         <Button type="button" onClick={() => toast.info(infoMessage)} variant="default" size="sm">
           Collaborator joined
         </Button>
-        <Button type="button" onClick={() => toast.error(errorMessage)} variant="destructive" size="sm">
+        <Button
+          type="button"
+          onClick={() => toast.error(errorMessage)}
+          variant="destructive"
+          size="sm"
+        >
           Conflicting save
         </Button>
       </div>

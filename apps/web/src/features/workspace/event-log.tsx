@@ -1,5 +1,5 @@
 import type { EventEnvelope } from '@netlabor/contract';
-import { EraserIcon as Eraser  } from '@phosphor-icons/react';
+import { EraserIcon as Eraser } from '@phosphor-icons/react';
 import type { SseStatus } from './use-project-events.ts';
 import { Button } from '@netlabor/ui/components/button';
 
@@ -73,7 +73,13 @@ export function EventLog({
           {status === 'live' ? 'live' : status === 'connecting' ? 'connecting' : 'reconnecting'}
           <span style={{ color: 'var(--color-ink-faint)' }}>· {events.length} events</span>
         </span>
-        <Button type="button" onClick={onClear} disabled={events.length === 0} variant="ghost" size="xs">
+        <Button
+          type="button"
+          onClick={onClear}
+          disabled={events.length === 0}
+          variant="ghost"
+          size="xs"
+        >
           <Eraser size={12} aria-hidden /> Clear
         </Button>
       </div>

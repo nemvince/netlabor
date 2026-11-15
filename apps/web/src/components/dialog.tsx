@@ -1,4 +1,4 @@
-import { XIcon  } from '@phosphor-icons/react';
+import { XIcon } from '@phosphor-icons/react';
 import type { ReactNode } from 'react';
 import {
   Dialog as UIDialog,
@@ -36,13 +36,9 @@ export function Dialog({
       >
         <header className="flex items-start justify-between gap-4 border-b border-border px-5 py-3.5">
           <div className="min-w-0">
-            <DialogTitle className="text-[15px] font-semibold tracking-tight">
-              {title}
-            </DialogTitle>
+            <DialogTitle className="text-[15px] font-semibold tracking-tight">{title}</DialogTitle>
             {description ? (
-              <DialogDescription className="mt-1 text-[12px]">
-                {description}
-              </DialogDescription>
+              <DialogDescription className="mt-1 text-[12px]">{description}</DialogDescription>
             ) : (
               <DialogDescription className="sr-only">{title}</DialogDescription>
             )}

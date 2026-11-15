@@ -1,7 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { OidcProviderRow, RoleRow } from '@netlabor/contract';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, GlobeIcon as Globe, PencilIcon as Pencil, PlusIcon as Plus, TrashIcon as Trash   } from '@phosphor-icons/react';
+import {
+  CaretDownIcon as ChevronDown,
+  CaretRightIcon as ChevronRight,
+  GlobeIcon as Globe,
+  PencilIcon as Pencil,
+  PlusIcon as Plus,
+  TrashIcon as Trash,
+} from '@phosphor-icons/react';
 import { Fragment, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -261,7 +268,12 @@ function ProviderDialog({
           style={{ borderColor: 'var(--color-rule)' }}
         >
           <span className="nb-rule-label">group mappings · claim value → app group</span>
-          <Button type="button" onClick={() => mappings.append({ key: '', value: '' })} variant="outline" size="xs">
+          <Button
+            type="button"
+            onClick={() => mappings.append({ key: '', value: '' })}
+            variant="outline"
+            size="xs"
+          >
             <Plus size={12} aria-hidden />
             Add mapping
           </Button>
@@ -289,7 +301,13 @@ function ProviderDialog({
                   spellCheck={false}
                   {...form.register(`groupMappings.${index}.value`)}
                 />
-                <Button type="button" aria-label={`Remove mapping ${index + 1}`} onClick={() => mappings.remove(index)} variant="ghost" size="xs">
+                <Button
+                  type="button"
+                  aria-label={`Remove mapping ${index + 1}`}
+                  onClick={() => mappings.remove(index)}
+                  variant="ghost"
+                  size="xs"
+                >
                   <Trash size={13} aria-hidden />
                 </Button>
               </div>
@@ -361,7 +379,12 @@ export function OidcAdminPage() {
         title="Single sign-on"
         description="OpenID Connect providers. Configure allowed redirect URIs on the provider before enabling one."
         actions={
-          <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+          <Button
+            type="button"
+            onClick={() => setDialog({ mode: 'create' })}
+            variant="default"
+            size="sm"
+          >
             <Plus size={14} aria-hidden />
             Add provider
           </Button>
@@ -379,7 +402,12 @@ export function OidcAdminPage() {
             title="No identity providers"
             description="Add an OpenID Connect provider so accounts can sign in through your identity platform."
             action={
-              <Button type="button" onClick={() => setDialog({ mode: 'create' })} variant="default" size="sm">
+              <Button
+                type="button"
+                onClick={() => setDialog({ mode: 'create' })}
+                variant="default"
+                size="sm"
+              >
                 Add provider
               </Button>
             }
@@ -402,7 +430,14 @@ export function OidcAdminPage() {
                   <Fragment key={provider.id}>
                     <Tr>
                       <Td>
-                        <Button type="button" aria-label={open ? 'Hide provider details' : 'Show provider details'} aria-expanded={open} onClick={() => toggleRow(provider.id)} variant="ghost" size="xs">
+                        <Button
+                          type="button"
+                          aria-label={open ? 'Hide provider details' : 'Show provider details'}
+                          aria-expanded={open}
+                          onClick={() => toggleRow(provider.id)}
+                          variant="ghost"
+                          size="xs"
+                        >
                           {open ? (
                             <ChevronDown size={13} aria-hidden />
                           ) : (
@@ -442,10 +477,24 @@ export function OidcAdminPage() {
                       </Td>
                       <Td align="right">
                         <span className="inline-flex items-center gap-0.5">
-                          <Button type="button" aria-label={`Edit provider ${provider.name}`} title="Edit provider" onClick={() => setDialog({ mode: 'edit', provider })} variant="ghost" size="xs">
+                          <Button
+                            type="button"
+                            aria-label={`Edit provider ${provider.name}`}
+                            title="Edit provider"
+                            onClick={() => setDialog({ mode: 'edit', provider })}
+                            variant="ghost"
+                            size="xs"
+                          >
                             <Pencil size={13} aria-hidden />
                           </Button>
-                          <Button type="button" aria-label={`Delete provider ${provider.name}`} title="Delete provider" onClick={() => setDeleteTarget(provider)} variant="ghost" size="xs">
+                          <Button
+                            type="button"
+                            aria-label={`Delete provider ${provider.name}`}
+                            title="Delete provider"
+                            onClick={() => setDeleteTarget(provider)}
+                            variant="ghost"
+                            size="xs"
+                          >
                             <Trash size={13} aria-hidden />
                           </Button>
                         </span>

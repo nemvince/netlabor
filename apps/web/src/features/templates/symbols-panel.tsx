@@ -1,6 +1,6 @@
 import type { SymbolRow } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { FileArrowUpIcon as FileUp, TrashIcon as Trash2   } from '@phosphor-icons/react';
+import { FileArrowUpIcon as FileUp, TrashIcon as Trash2 } from '@phosphor-icons/react';
 import { useMemo, useRef, useState } from 'react';
 import { Badge } from '../../components/badge.tsx';
 import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
@@ -80,7 +80,12 @@ function UploadSymbolDialog({ onOpenChange }: { onOpenChange: (open: boolean) =>
               className="sr-only"
               onChange={(event) => void chooseFile(event.target.files?.[0])}
             />
-            <Button type="button" onClick={() => fileRef.current?.click()} variant="outline" size="xs">
+            <Button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              variant="outline"
+              size="xs"
+            >
               <FileUp size={12} aria-hidden /> Choose SVG
             </Button>
           </div>
@@ -109,7 +114,13 @@ function UploadSymbolDialog({ onOpenChange }: { onOpenChange: (open: boolean) =>
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Cancel
           </Button>
-          <Button type="button" disabled={busy} onClick={() => void upload()} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={busy}
+            onClick={() => void upload()}
+            variant="default"
+            size="sm"
+          >
             {busy ? 'Uploading…' : 'Upload symbol'}
           </Button>
         </DialogFooter>
@@ -167,7 +178,13 @@ export function SymbolsPanel({ canWrite }: { canWrite: boolean }) {
           {filtered.length} of {symbols.data?.length ?? 0}
         </span>
         {canWrite ? (
-          <Button type="button" onClick={() => setUploadOpen(true)} className="ml-auto" variant="default" size="xs">
+          <Button
+            type="button"
+            onClick={() => setUploadOpen(true)}
+            className="ml-auto"
+            variant="default"
+            size="xs"
+          >
             <FileUp size={12} aria-hidden /> Upload symbol
           </Button>
         ) : null}
@@ -210,7 +227,17 @@ export function SymbolsPanel({ canWrite }: { canWrite: boolean }) {
                   {symbol.theme ?? 'any theme'}
                 </span>
                 {canWrite && !symbol.builtin ? (
-                  <Button type="button" title={`Delete ${symbol.name}`} aria-label={`Delete ${symbol.name}`} onClick={() => { setDeleteError(null); setDeleteTarget(symbol); }} variant="ghost" size="xs">
+                  <Button
+                    type="button"
+                    title={`Delete ${symbol.name}`}
+                    aria-label={`Delete ${symbol.name}`}
+                    onClick={() => {
+                      setDeleteError(null);
+                      setDeleteTarget(symbol);
+                    }}
+                    variant="ghost"
+                    size="xs"
+                  >
                     <Trash2 size={12} aria-hidden />
                   </Button>
                 ) : null}

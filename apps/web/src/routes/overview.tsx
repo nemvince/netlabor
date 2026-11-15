@@ -1,6 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { ArrowRightIcon as ArrowRight, SquaresFourIcon as LayoutTemplate, type Icon, NetworkIcon as Network, HardDrivesIcon as Server, WrenchIcon as Wrench   } from '@phosphor-icons/react';
+import {
+  ArrowRightIcon as ArrowRight,
+  SquaresFourIcon as LayoutTemplate,
+  type Icon,
+  NetworkIcon as Network,
+  HardDrivesIcon as Server,
+  WrenchIcon as Wrench,
+} from '@phosphor-icons/react';
 import { Badge } from '../components/badge.tsx';
 import { Page, PageHeader, RuleRow } from '../components/page.tsx';
 import { useMe } from '../features/auth/use-me.ts';

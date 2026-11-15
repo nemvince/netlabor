@@ -1,6 +1,16 @@
 import type { CaptureTicketOutput } from '@netlabor/contract';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { CaretDownIcon as ChevronDown, CaretRightIcon as ChevronRight, DownloadSimpleIcon as Download, FunnelIcon as Filter, GitBranchIcon as GitBranch, CircleNotchIcon as LoaderCircle, ArrowsClockwiseIcon as RefreshCw, MagnifyingGlassIcon as Search, XIcon as X   } from '@phosphor-icons/react';
+import {
+  CaretDownIcon as ChevronDown,
+  CaretRightIcon as ChevronRight,
+  DownloadSimpleIcon as Download,
+  FunnelIcon as Filter,
+  GitBranchIcon as GitBranch,
+  CircleNotchIcon as LoaderCircle,
+  ArrowsClockwiseIcon as RefreshCw,
+  MagnifyingGlassIcon as Search,
+  XIcon as X,
+} from '@phosphor-icons/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { z } from 'zod';
 import { Badge } from '../../components/badge.tsx';
@@ -569,7 +579,13 @@ function FollowDialog({
           <Button type="button" onClick={() => onOpenChange(false)} variant="outline" size="sm">
             Close
           </Button>
-          <Button type="button" disabled={pending || filter.trim() === ''} onClick={() => onRun(protocol, filter.trim())} variant="default" size="sm">
+          <Button
+            type="button"
+            disabled={pending || filter.trim() === ''}
+            onClick={() => onRun(protocol, filter.trim())}
+            variant="default"
+            size="sm"
+          >
             {pending ? 'Following…' : 'Follow'}
           </Button>
         </DialogFooter>
@@ -919,10 +935,30 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
           ))}
         </span>
         <span className="ml-auto flex items-center gap-1">
-          <Button type="button" title="Reload frames" aria-label="Reload frames" disabled={session !== 'live'} onClick={() => void refresh()} variant="ghost" size="xs">
+          <Button
+            type="button"
+            title="Reload frames"
+            aria-label="Reload frames"
+            disabled={session !== 'live'}
+            onClick={() => void refresh()}
+            variant="ghost"
+            size="xs"
+          >
             <RefreshCw size={12} aria-hidden />
           </Button>
-          <Button type="button" title="Follow stream" aria-label="Follow stream" disabled={session !== 'live'} onClick={() => { setFollowResult(null); setFollowError(null); setFollowOpen(true); }} variant="ghost" size="xs">
+          <Button
+            type="button"
+            title="Follow stream"
+            aria-label="Follow stream"
+            disabled={session !== 'live'}
+            onClick={() => {
+              setFollowResult(null);
+              setFollowError(null);
+              setFollowOpen(true);
+            }}
+            variant="ghost"
+            size="xs"
+          >
             <Search size={12} aria-hidden /> Follow
           </Button>
           <a
@@ -961,7 +997,14 @@ export function WiresharkTab({ linkId, label }: { linkId: string; label: string 
           />
         ) : null}
         {filter !== '' ? (
-          <Button type="button" aria-label="Clear display filter" title="Clear display filter" onClick={() => setFilter('')} variant="ghost" size="xs">
+          <Button
+            type="button"
+            aria-label="Clear display filter"
+            title="Clear display filter"
+            onClick={() => setFilter('')}
+            variant="ghost"
+            size="xs"
+          >
             <X size={11} aria-hidden />
           </Button>
         ) : null}
