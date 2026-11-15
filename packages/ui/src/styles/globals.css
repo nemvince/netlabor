@@ -1,0 +1,41 @@
+/*
+ * Netlabor graphite & copper instrument, expressed through shadcn/ui's
+ * semantic token names so its components pick the theme up unchanged.
+ * Source palette lives in apps/web/src/styles.css (`--color-*` natives).
+ */
+@theme {
+  --color-background: #111417;
+  --color-foreground: #f4f6f8;
+  --color-card: #1e2226;
+  --color-card-foreground: #f4f6f8;
+  --color-popover: #1e2226;
+  --color-popover-foreground: #f4f6f8;
+  --color-primary: #ef9a45;
+  --color-primary-foreground: #1a1209;
+  --color-secondary: #282d32;
+  --color-secondary-foreground: #f4f6f8;
+  --color-muted: #282d32;
+  --color-muted-foreground: #9ba5ac;
+  --color-accent: #282d32;
+  --color-accent-foreground: #f4f6f8;
+  --color-destructive: #f2705f;
+  --color-destructive-foreground: #1a1209;
+  --color-border: #454c53;
+  --color-input: #6d757d;
+  --color-ring: #ef9a45;
+  --color-chart-1: #ef9a45;
+  --color-chart-2: #5fb0f2;
+  --color-chart-3: #5fd98a;
+  --color-chart-4: #f2c94c;
+  --color-chart-5: #f2705f;
+  --color-sidebar: #1e2226;
+  --color-sidebar-foreground: #f4f6f8;
+  --color-sidebar-primary: #ef9a45;
+  --color-sidebar-primary-foreground: #1a1209;
+  --color-sidebar-accent: #282d32;
+  --color-sidebar-accent-foreground: #f4f6f8;
+  --color-sidebar-border: #454c53;
+  --color-sidebar-ring: #ef9a45;
+
+  --radius: 2px;
+}

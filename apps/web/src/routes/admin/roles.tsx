@@ -5,22 +5,22 @@ import { Eye, Pencil, Plus, ShieldCheck, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Badge } from '../../components/Badge.tsx';
-import { ConfirmDialog } from '../../components/ConfirmDialog.tsx';
-import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
-import { EmptyState } from '../../components/EmptyState.tsx';
-import { Field, Input } from '../../components/Field.tsx';
-import { Notice } from '../../components/Notice.tsx';
-import { Loading, Page, PageHeader } from '../../components/Page.tsx';
-import { PrivilegeGrid } from '../../components/PrivilegeGrid.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
+import { Badge } from '../../components/badge.tsx';
+import { ConfirmDialog } from '../../components/confirm-dialog.tsx';
+import { Dialog, DialogFooter } from '../../components/dialog.tsx';
+import { EmptyState } from '../../components/empty-state.tsx';
+import { Field, Input } from '../../components/field.tsx';
+import { Notice } from '../../components/notice.tsx';
+import { Loading, Page, PageHeader } from '../../components/page.tsx';
+import { PrivilegeGrid } from '../../components/privilege-grid.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../../components/table.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
 import { ALL_PRIVILEGES, READ_PRIVILEGES } from '../../lib/privileges.ts';
-import { queryClient } from '../../lib/queryClient.ts';
+import { queryClient } from '../../lib/query-client.ts';
 
 const roleSchema = z.object({
   name: z.string().min(1, 'enter a role name').max(64, 'use at most 64 characters'),

@@ -9,20 +9,20 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Field } from '../../components/Field.tsx';
-import { displaySettingValue, KeyValueEditor } from '../../components/KeyValueEditor.tsx';
-import { Notice } from '../../components/Notice.tsx';
-import { Loading, Page, PageHeader } from '../../components/Page.tsx';
-import { toast } from '../../components/Toast.tsx';
-import { UnitInput } from '../../components/UnitInput.tsx';
-import { SecretsSection } from '../../features/admin/SecretsSection.tsx';
+import { Field } from '../../components/field.tsx';
+import { displaySettingValue, KeyValueEditor } from '../../components/key-value-editor.tsx';
+import { Notice } from '../../components/notice.tsx';
+import { Loading, Page, PageHeader } from '../../components/page.tsx';
+import { toast } from '../../components/toast.tsx';
+import { UnitInput } from '../../components/unit-input.tsx';
+import { SecretsSection } from '../../features/admin/secrets-section.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
-import { SettingsCard, SettingsIcon } from '../../features/settings/SettingsCard.tsx';
+import { SettingsCard, SettingsIcon } from '../../features/settings/settings-card.tsx';
 import { orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { formatStamp } from '../../lib/format.ts';
-import { queryClient } from '../../lib/queryClient.ts';
+import { queryClient } from '../../lib/query-client.ts';
 import { versionLabel } from '../../lib/version.ts';
 
 const ROWS_KEY = 'ui.defaultConsoleRows';

@@ -4,12 +4,12 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Field, Input } from '../components/Field.tsx';
-import { Notice } from '../components/Notice.tsx';
+import { Field, Input } from '../components/field.tsx';
+import { Notice } from '../components/notice.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
-import { queryClient } from '../lib/queryClient.ts';
+import { queryClient } from '../lib/query-client.ts';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'enter your username').max(128),

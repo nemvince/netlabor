@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, ChevronRight, ScrollText } from 'lucide-react';
 import { Fragment, useEffect, useState } from 'react';
-import { EmptyState } from '../../components/EmptyState.tsx';
-import { Field, Input, Select } from '../../components/Field.tsx';
-import { Notice } from '../../components/Notice.tsx';
-import { Loading, Page, PageHeader } from '../../components/Page.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../../components/Table.tsx';
+import { EmptyState } from '../../components/empty-state.tsx';
+import { Field, Input, Select } from '../../components/field.tsx';
+import { Notice } from '../../components/notice.tsx';
+import { Loading, Page, PageHeader } from '../../components/page.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../../components/table.tsx';
 import { NotAllowed } from '../../features/auth/require-auth.tsx';
 import { useMe } from '../../features/auth/use-me.ts';
 import { orpc } from '../../lib/api.ts';

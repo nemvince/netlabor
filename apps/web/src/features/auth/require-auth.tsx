@@ -1,10 +1,10 @@
 import { Link, redirect } from '@tanstack/react-router';
 import { ShieldOff } from 'lucide-react';
-import { EmptyState } from '../../components/EmptyState.tsx';
-import { Page, PageHeader } from '../../components/Page.tsx';
+import { EmptyState } from '../../components/empty-state.tsx';
+import { Page, PageHeader } from '../../components/page.tsx';
 import { orpc } from '../../lib/api.ts';
 import { isUnauthorized } from '../../lib/errors.ts';
-import { queryClient } from '../../lib/queryClient.ts';
+import { queryClient } from '../../lib/query-client.ts';
 
 /**
  * Route guard for every protected route. It resolves `auth.me` through the

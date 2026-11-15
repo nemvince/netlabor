@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, LayoutTemplate, type LucideIcon, Network, Server, Wrench } from 'lucide-react';
-import { Badge } from '../components/Badge.tsx';
-import { Page, PageHeader, RuleRow } from '../components/Page.tsx';
+import { Badge } from '../components/badge.tsx';
+import { Page, PageHeader, RuleRow } from '../components/page.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';

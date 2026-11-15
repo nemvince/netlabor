@@ -1,4 +1,4 @@
-import { Page } from '../components/Page.tsx';
+import { Page } from '../components/page.tsx';
 import { messageOf } from '../lib/errors.ts';
 
 /** Router error boundary: an unreachable controller or failed guard lands here. */

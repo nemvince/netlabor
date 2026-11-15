@@ -6,20 +6,20 @@ import { KeyRound, Monitor, SlidersHorizontal, Smartphone, UserRound, Wrench } f
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Badge } from '../components/Badge.tsx';
-import { ConfirmDialog } from '../components/ConfirmDialog.tsx';
-import { Field, Input } from '../components/Field.tsx';
-import { KeyValueEditor } from '../components/KeyValueEditor.tsx';
-import { Notice } from '../components/Notice.tsx';
-import { Loading, Page, PageHeader, RuleRow } from '../components/Page.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../components/Table.tsx';
-import { toast } from '../components/Toast.tsx';
+import { Badge } from '../components/badge.tsx';
+import { ConfirmDialog } from '../components/confirm-dialog.tsx';
+import { Field, Input } from '../components/field.tsx';
+import { KeyValueEditor } from '../components/key-value-editor.tsx';
+import { Notice } from '../components/notice.tsx';
+import { Loading, Page, PageHeader, RuleRow } from '../components/page.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../components/table.tsx';
+import { toast } from '../components/toast.tsx';
 import { useMe } from '../features/auth/use-me.ts';
-import { CardRows, SettingsCard, SettingsIcon } from '../features/settings/SettingsCard.tsx';
+import { CardRows, SettingsCard, SettingsIcon } from '../features/settings/settings-card.tsx';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp, formatUserAgent, shortId } from '../lib/format.ts';
-import { queryClient } from '../lib/queryClient.ts';
+import { queryClient } from '../lib/query-client.ts';
 
 const passwordSchema = z
   .object({

@@ -16,14 +16,14 @@ import {
   Upload,
 } from 'lucide-react';
 import { useDeferredValue, useState } from 'react';
-import { Badge } from '../components/Badge.tsx';
-import { ConfirmDialog } from '../components/ConfirmDialog.tsx';
-import { EmptyState } from '../components/EmptyState.tsx';
-import { Select } from '../components/Field.tsx';
-import { Loading, Page, PageHeader } from '../components/Page.tsx';
-import { SearchInput } from '../components/SearchInput.tsx';
-import { Table, TBody, Td, THead, Th, Tr } from '../components/Table.tsx';
-import { toast } from '../components/Toast.tsx';
+import { Badge } from '../components/badge.tsx';
+import { ConfirmDialog } from '../components/confirm-dialog.tsx';
+import { EmptyState } from '../components/empty-state.tsx';
+import { Select } from '../components/field.tsx';
+import { Loading, Page, PageHeader } from '../components/page.tsx';
+import { SearchInput } from '../components/search-input.tsx';
+import { Table, TBody, Td, THead, Th, Tr } from '../components/table.tsx';
+import { toast } from '../components/toast.tsx';
 import { NotAllowed } from '../features/auth/require-auth.tsx';
 import { useMe } from '../features/auth/use-me.ts';
 import {
@@ -31,14 +31,14 @@ import {
   DuplicateProjectDialog,
   ExportNotice,
   ImportProjectDialog,
-} from '../features/projects/ProjectDialogs.tsx';
-import { ApplyManifestDialog } from '../features/projects/ApplyManifestDialog.tsx';
-import { ProjectSettingsDialog } from '../features/projects/ProjectSettingsDialog.tsx';
+} from '../features/projects/project-dialogs.tsx';
+import { ApplyManifestDialog } from '../features/projects/apply-manifest-dialog.tsx';
+import { ProjectSettingsDialog } from '../features/projects/project-settings-dialog.tsx';
 import { useProjectExport } from '../features/projects/use-project-export.ts';
 import { orpc } from '../lib/api.ts';
 import { messageOf } from '../lib/errors.ts';
 import { formatStamp } from '../lib/format.ts';
-import { queryClient } from '../lib/queryClient.ts';
+import { queryClient } from '../lib/query-client.ts';
 
 function refetchProjects() {
   void queryClient.invalidateQueries({ queryKey: orpc.projects.list.key() });
