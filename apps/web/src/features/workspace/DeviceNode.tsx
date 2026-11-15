@@ -39,6 +39,7 @@ function DeviceNodeComponent({ data, selected }: NodeProps<FlowNode>) {
       aria-label={`${node.name} · ${node.nodeType} · ${node.status}${node.isolated ? ' · isolated' : ''}`}
     >
       <div
+        data-node-hover=""
         className="relative flex items-center justify-center rounded-[6px] transition-colors"
         style={{
           width: 60,

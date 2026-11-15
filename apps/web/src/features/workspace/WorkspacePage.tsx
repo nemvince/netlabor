@@ -36,6 +36,7 @@ import { type ContextAction, NodeContextMenu } from './NodeContextMenu.tsx';
 import { Palette } from './Palette.tsx';
 import { ProjectFilesDialog } from './ProjectFilesDialog.tsx';
 import { ProjectTemplatesDialog } from './ProjectTemplatesDialog.tsx';
+import { TOOL_TABS } from '../tools/tool-tabs.ts';
 import { ProjectTopBar } from './ProjectTopBar.tsx';
 import { ProjectSettingsDialog } from '../projects/ProjectSettingsDialog.tsx';
 import { SnapshotsDialog } from './SnapshotsDialog.tsx';
@@ -206,6 +207,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
   const openVncTab = useWorkspaceStore((state) => state.openVncTab);
   const openHttpConsoleTab = useWorkspaceStore((state) => state.openHttpConsoleTab);
   const openWiresharkTab = useWorkspaceStore((state) => state.openWiresharkTab);
+  const openToolTab = useWorkspaceStore((state) => state.openToolTab);
   const closeDockTab = useWorkspaceStore((state) => state.closeDockTab);
   const allDockTabs = useWorkspaceStore((state) => state.dockTabs);
   const paletteWidth = useWorkspaceStore((state) => state.paletteWidth);
@@ -368,7 +370,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
     const byId = new Map(nodeRows.map((node) => [node.id, node]));
     const closeFor = (nodeId: string) => {
       for (const tab of state.dockTabs) {
-        if (tab.kind !== 'wireshark' && tab.nodeId === nodeId) state.closeDockTab(tab.id);
+        if ('nodeId' in tab && tab.nodeId === nodeId) state.closeDockTab(tab.id);
       }
     };
     const next = new Map<string, string>();
@@ -381,7 +383,7 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
       if (!nowRunning && (wasRunning || previous === undefined)) closeFor(node.id);
     }
     for (const tab of state.dockTabs) {
-      if (tab.kind !== 'wireshark' && !byId.has(tab.nodeId)) closeFor(tab.nodeId);
+      if ('nodeId' in tab && !byId.has(tab.nodeId)) closeFor(tab.nodeId);
     }
     nodeStatusSeen.current = next;
   }, [nodes.data, nodeRows]);
@@ -1251,6 +1253,13 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenFiles={() => setFilesOpen(true)}
         onOpenTemplates={() => setTemplatesOpen(true)}
+        onOpenNetworkTool={(tool) =>
+          openToolTab(
+            projectId,
+            tool,
+            TOOL_TABS.find((entry) => entry.id === tool)?.label ?? 'Network tools',
+          )
+        }
         onExport={() => void runExport(projectId)}
         onDuplicate={() => setDuplicateOpen(true)}
         paletteOpen={paletteOpen}

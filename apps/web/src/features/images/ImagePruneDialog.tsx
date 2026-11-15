@@ -104,7 +104,7 @@ export function ImagePruneDialog({
         if (!open && !busy) onOpenChange(false);
       }}
       title="Prune image replicas"
-      description="Only replicas not referenced by a node or template are candidates."
+      description="Only replicas not referenced by a node or template are candidates. The library copy stays on the controller and remains downloadable."
       width={760}
     >
       <div className="flex flex-col gap-3">

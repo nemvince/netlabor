@@ -37,7 +37,7 @@ function replicaSummary(
   if (states.length === 0) return { label: 'no replicas', tone: 'neutral' };
   const present = states.filter((state) => state === 'present').length;
   return {
-    label: `${present}/${states.length} present`,
+    label: `${present}/${states.length} on computes`,
     tone: present === states.length ? 'up' : 'warn',
   };
 }

@@ -90,6 +90,10 @@ export function ImageDetailDialog({
               {replicaRows.length} compute(s)
             </span>
           </div>
+          <p className="mb-1.5 text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+            Compute replicas are caches. The library keeps its own copy on the controller, so
+            Download and Sync still work for images with no replica left.
+          </p>
           {replicaRows.length === 0 ? (
             <p
               className="rounded-[3px] border border-dashed px-3 py-4 text-[11px]"

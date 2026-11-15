@@ -20,15 +20,8 @@ import {
   splitSubnets,
   type VlsmRequirement,
 } from './ipv4.ts';
-
-type ToolTab = 'splitter' | 'vlsm' | 'calculator' | 'overlap';
-
-const TABS: { id: ToolTab; label: string }[] = [
-  { id: 'splitter', label: 'Subnet splitter' },
-  { id: 'vlsm', label: 'VLSM planner' },
-  { id: 'calculator', label: 'IP calculator' },
-  { id: 'overlap', label: 'Overlap check' },
-];
+import { NetworksTool, RememberNetworkButton } from './NetworkBook.tsx';
+import { TOOL_TABS, type ToolTab } from './tool-tabs.ts';
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -208,6 +201,7 @@ function SubnetSplitter() {
               <Th>Broadcast</Th>
               <Th>Host range</Th>
               <Th align="right">Usable</Th>
+              <Th align="right">Remember</Th>
             </THead>
             <TBody>
               {result.value.subnets.map((row) => (
@@ -221,6 +215,9 @@ function SubnetSplitter() {
                   <Td mono>{hostRange(row)}</Td>
                   <Td mono align="right">
                     {row.usable.toLocaleString()}
+                  </Td>
+                  <Td align="right">
+                    <RememberNetworkButton cidr={networkLabel(row.network, row.prefix)} />
                   </Td>
                 </Tr>
               ))}
@@ -374,6 +371,7 @@ function VlsmPlanner() {
               <Th>Subnet</Th>
               <Th>Host range</Th>
               <Th align="right">Usable</Th>
+              <Th align="right">Remember</Th>
             </THead>
             <TBody>
               {plan.allocations.map((row) => (
@@ -392,6 +390,16 @@ function VlsmPlanner() {
                   </Td>
                   <Td mono align="right">
                     {row.fits ? row.usable.toLocaleString() : '—'}
+                  </Td>
+                  <Td align="right">
+                    {row.fits ? (
+                      <RememberNetworkButton
+                        cidr={networkLabel(row.network, row.prefix)}
+                        name={row.name || undefined}
+                      />
+                    ) : (
+                      '—'
+                    )}
                   </Td>
                 </Tr>
               ))}
@@ -454,10 +462,13 @@ function IpCalculator() {
       narrow
       actions={
         network ? (
-          <CopyButton
-            value={rows.map(([key, value]) => `${key}: ${value}`).join('\n')}
-            label="Copy values"
-          />
+          <span className="flex items-center gap-1">
+            <CopyButton
+              value={rows.map(([key, value]) => `${key}: ${value}`).join('\n')}
+              label="Copy values"
+            />
+            <RememberNetworkButton cidr={networkLabel(network.network, network.prefix)} />
+          </span>
         ) : undefined
       }
     >
@@ -604,10 +615,19 @@ function OverlapCheck() {
   );
 }
 
+/** One network tool, embedded by the standalone page and by workspace dock panes. */
+export function ToolPanel({ tool }: { tool: ToolTab }) {
+  if (tool === 'vlsm') return <VlsmPlanner />;
+  if (tool === 'calculator') return <IpCalculator />;
+  if (tool === 'overlap') return <OverlapCheck />;
+  if (tool === 'networks') return <NetworksTool />;
+  return <SubnetSplitter />;
+}
+
 export function ToolsPage() {
   const search = useSearch({ strict: false }) as { tab?: string };
   const navigate = useNavigate();
-  const view: ToolTab = TABS.some((entry) => entry.id === search.tab)
+  const view: ToolTab = TOOL_TABS.some((entry) => entry.id === search.tab)
     ? (search.tab as ToolTab)
     : 'splitter';
 
@@ -621,7 +641,7 @@ export function ToolsPage() {
         <TabBar
           label="Network tools"
           value={view}
-          items={TABS}
+          items={TOOL_TABS}
           onChange={(id) =>
             void navigate({
               to: '/tools',
@@ -642,6 +662,9 @@ export function ToolsPage() {
       </div>
       <div className={view === 'overlap' ? undefined : 'hidden'}>
         <OverlapCheck />
+      </div>
+      <div className={view === 'networks' ? undefined : 'hidden'}>
+        <NetworksTool />
       </div>
     </Page>
   );

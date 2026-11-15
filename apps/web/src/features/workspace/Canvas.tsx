@@ -224,6 +224,7 @@ export function Canvas({
     y: number;
   } | null>(null);
   const hoverTimer = useRef<number | undefined>(undefined);
+  const hoverPendingId = useRef<string | null>(null);
 
   useEffect(() => () => window.clearTimeout(hoverTimer.current), []);
 
@@ -336,6 +337,7 @@ export function Canvas({
         onNodeDrag={(_, node) => onNodeDragMove(node.id, node.position.x, node.position.y)}
         onNodeDragStart={() => {
           window.clearTimeout(hoverTimer.current);
+          hoverPendingId.current = null;
           setHoveredNode(null);
         }}
         onNodeDragStop={(_, node) => {
@@ -355,19 +357,34 @@ export function Canvas({
           event.preventDefault();
           onNodeContextMenu(row, event.clientX, event.clientY);
         }}
-        onNodeMouseEnter={(_, node) => {
+        // The info card follows the device glyph, not the node's layout box,
+        // which also covers the caption and padding around it.
+        onNodeMouseMove={(event, node) => {
           if (node.type !== 'device') return;
-          window.clearTimeout(hoverTimer.current);
+          const target = event.target as Element | null;
+          const overGlyph = target?.closest?.('[data-node-hover]') != null;
+          if (!overGlyph) {
+            if (hoverPendingId.current !== null || hoveredNode !== null) {
+              window.clearTimeout(hoverTimer.current);
+              hoverPendingId.current = null;
+              setHoveredNode(null);
+            }
+            return;
+          }
+          if (hoveredNode?.id === node.id || hoverPendingId.current === node.id) return;
           const anchor = flowToScreenPosition({
             x: node.position.x + (node.measured?.width ?? NODE_WIDTH) / 2,
             y: node.position.y + (node.measured?.height ?? NODE_HEIGHT),
           });
+          hoverPendingId.current = node.id;
           hoverTimer.current = window.setTimeout(() => {
+            hoverPendingId.current = null;
             setHoveredNode({ id: node.id, x: anchor.x, y: anchor.y });
           }, 450);
         }}
         onNodeMouseLeave={() => {
           window.clearTimeout(hoverTimer.current);
+          hoverPendingId.current = null;
           setHoveredNode(null);
         }}
         onEdgeClick={(_, edge) => onLinkOpen(edge.id)}

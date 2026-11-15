@@ -18,11 +18,13 @@ import {
   Settings2,
   Square,
   Unlock,
+  Wrench,
   Zap,
 } from 'lucide-react';
 import { DropdownMenu } from 'radix-ui';
 import type { ReactNode } from 'react';
 import { Badge } from '../../components/Badge.tsx';
+import { TOOL_TABS, type ToolTab } from '../tools/tool-tabs.ts';
 
 const MENU_CLASS = 'z-50 min-w-52 rounded-[3px] border p-1';
 const MENU_STYLE = {
@@ -74,6 +76,7 @@ export function ProjectTopBar({
   onOpenSettings,
   onOpenFiles,
   onOpenTemplates,
+  onOpenNetworkTool,
   onExport,
   onDuplicate,
   paletteOpen,
@@ -104,6 +107,7 @@ export function ProjectTopBar({
   onOpenSettings: () => void;
   onOpenFiles: () => void;
   onOpenTemplates: () => void;
+  onOpenNetworkTool: (tool: ToolTab) => void;
   onExport: () => void;
   onDuplicate: () => void;
   paletteOpen: boolean;
@@ -328,6 +332,25 @@ export function ProjectTopBar({
               <MenuItem icon={<Copy size={13} />} onSelect={onOpenSnapshots}>
                 Snapshots…
               </MenuItem>
+              <DropdownMenu.Separator
+                className="my-1 h-px"
+                style={{ background: 'var(--color-rule)' }}
+              />
+              <DropdownMenu.Label
+                className="px-2 py-1 text-[10px] uppercase tracking-wide"
+                style={{ color: 'var(--color-ink-faint)' }}
+              >
+                Network tools
+              </DropdownMenu.Label>
+              {TOOL_TABS.map((tool) => (
+                <MenuItem
+                  key={tool.id}
+                  icon={<Wrench size={13} />}
+                  onSelect={() => onOpenNetworkTool(tool.id)}
+                >
+                  {tool.label}
+                </MenuItem>
+              ))}
               {canExport ? (
                 <MenuItem
                   icon={<Download size={13} />}

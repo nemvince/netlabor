@@ -9,6 +9,7 @@ import {
   ScrollText,
   SquareTerminal,
   Waves,
+  Wrench,
   X,
 } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -23,6 +24,9 @@ const VncTab = lazy(() => import('./VncTab.tsx').then((m) => ({ default: m.VncTa
 const WiresharkTab = lazy(() =>
   import('./WiresharkTab.tsx').then((m) => ({ default: m.WiresharkTab })),
 );
+const ToolPanel = lazy(() =>
+  import('../tools/ToolsPage.tsx').then((m) => ({ default: m.ToolPanel })),
+);
 
 const SPLITS = [1, 2, 4] as const;
 
@@ -30,6 +34,7 @@ function TabIcon({ kind }: { kind: DockTabSpec['kind'] }) {
   if (kind === 'vnc') return <Monitor size={11} aria-hidden />;
   if (kind === 'wireshark') return <Waves size={11} aria-hidden />;
   if (kind === 'http') return <Globe size={11} aria-hidden />;
+  if (kind === 'tool') return <Wrench size={11} aria-hidden />;
   return <SquareTerminal size={11} aria-hidden />;
 }
 
@@ -82,7 +87,7 @@ export function BottomDock({
   // Wireshark and split consoles need a tall dock; other surfaces stay compact
   // so the inspector and canvas keep their working height.
   const effectiveHeight = dockOpen
-    ? activeTab?.kind === 'wireshark' || splitView
+    ? activeTab?.kind === 'wireshark' || activeTab?.kind === 'tool' || splitView
       ? Math.max(dockHeight, 460)
       : Math.min(dockHeight, 240)
     : 29;
@@ -289,6 +294,12 @@ export function BottomDock({
                       style={{ background: '#ffffff' }}
                       allow="clipboard-read; clipboard-write"
                     />
+                  ) : tab.kind === 'tool' ? (
+                    <div className="h-full overflow-y-auto px-3 pb-3">
+                      <Suspense fallback={null}>
+                        <ToolPanel tool={tab.toolId} />
+                      </Suspense>
+                    </div>
                   ) : (
                     <Suspense fallback={null}>
                       <ConsoleTab nodeId={tab.nodeId} label={tab.title} />

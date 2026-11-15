@@ -1,6 +1,7 @@
 import type { DrawingRow, LinkRow, NodeCreateInput, NodeRow } from '@netlabor/contract';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { ToolTab } from '../tools/tool-tabs.ts';
 import type { DrawingCreateInput, LinkCreateInput, NodeUpdateInput } from './schema-types.ts';
 
 export interface ProjectStatusSnapshot {
@@ -27,12 +28,15 @@ export type DockTabSpec =
   | { id: string; projectId: string; kind: 'console'; nodeId: string; title: string }
   | { id: string; projectId: string; kind: 'vnc'; nodeId: string; title: string }
   | { id: string; projectId: string; kind: 'http'; nodeId: string; title: string }
-  | { id: string; projectId: string; kind: 'wireshark'; linkId: string; title: string };
+  | { id: string; projectId: string; kind: 'wireshark'; linkId: string; title: string }
+  | { id: string; projectId: string; kind: 'tool'; toolId: ToolTab; title: string };
 
 export type DockTabKind = DockTabSpec['kind'];
 
 export function dockTabResource(tab: DockTabSpec): string {
-  return tab.kind === 'wireshark' ? tab.linkId : tab.nodeId;
+  if (tab.kind === 'wireshark') return tab.linkId;
+  if (tab.kind === 'tool') return tab.toolId;
+  return tab.nodeId;
 }
 
 export type HistoryAction =
@@ -62,6 +66,7 @@ interface WorkspaceState {
   openVncTab: (projectId: string, nodeId: string, title: string) => void;
   openHttpConsoleTab: (projectId: string, nodeId: string, title: string) => void;
   openWiresharkTab: (projectId: string, linkId: string, title: string) => void;
+  openToolTab: (projectId: string, toolId: ToolTab, title: string) => void;
   closeDockTab: (id: string) => void;
   activeDockTab: string;
   setActiveDockTab: (id: string) => void;
@@ -152,6 +157,8 @@ export const useWorkspaceStore = create<WorkspaceState>()(
             linkId,
             title,
           }),
+        openToolTab: (projectId, toolId, title) =>
+          openTab({ id: `tool:${projectId}:${toolId}`, projectId, kind: 'tool', toolId, title }),
         closeDockTab: (id) =>
           set((state) => {
             const dockTabs = state.dockTabs.filter((tab) => tab.id !== id);
