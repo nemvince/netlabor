@@ -6,6 +6,7 @@ import {
   DropdownMenuPortal,
   DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -302,21 +303,23 @@ export function ProjectTopBar({
                 className="my-1 h-px"
                 style={{ background: 'var(--color-rule)' }}
               />
-              <DropdownMenuLabel
-                className="px-2 py-1 text-[10px] uppercase tracking-wide"
-                style={{ color: 'var(--color-ink-faint)' }}
-              >
-                Network tools
-              </DropdownMenuLabel>
-              {TOOL_TABS.map((tool) => (
-                <MenuItem
-                  key={tool.id}
-                  icon={<Wrench size={13} />}
-                  onSelect={() => onOpenNetworkTool(tool.id)}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel
+                  className="px-2 py-1 text-[10px] uppercase tracking-wide"
+                  style={{ color: 'var(--color-ink-faint)' }}
                 >
-                  {tool.label}
-                </MenuItem>
-              ))}
+                  Network tools
+                </DropdownMenuLabel>
+                {TOOL_TABS.map((tool) => (
+                  <MenuItem
+                    key={tool.id}
+                    icon={<Wrench size={13} />}
+                    onSelect={() => onOpenNetworkTool(tool.id)}
+                  >
+                    {tool.label}
+                  </MenuItem>
+                ))}
+              </DropdownMenuGroup>
               {canExport ? (
                 <MenuItem
                   icon={<Download size={13} />}
