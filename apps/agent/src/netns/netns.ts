@@ -136,6 +136,9 @@ export async function installNftRules(underlayInterface: string): Promise<void> 
   const rules = [
     `ct state established,related accept`,
     `iifname "nt*" accept`,
+    // Traffic that never touches a project veth is not ours to police: libvirt's
+    // virbr*, docker, and any other host bridge must keep forwarding.
+    `iifname != "nbp*" oifname != "nbp*" accept`,
     `iifname "${underlayInterface}" oifname "nbp*" ip daddr 10.99.0.0/16 udp dport 50000-59999 accept`,
     `iifname "nbp*" oifname "${underlayInterface}" ip saddr 10.99.0.0/16 udp sport 50000-59999 accept`,
     `iifname "nbp*" oifname "nbp*" drop`,

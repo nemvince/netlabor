@@ -36,7 +36,8 @@ exits. Agents reconcile from their reported state, so a controller restart does 
 - One Linux network namespace per project: `nb-<first10hex(projectId)>`.
 - Uplink veth `nbp<short>`/`nbp<short>p` with `169.254.<slot>.1/30` on the host,
   `169.254.<slot>.2/30` plus `10.99.<idx>.<slot>/32` inside the namespace.
-- nftables `inet netlabor` drop policy with explicit underlay allowances.
+- nftables `inet netlabor` drop policy scoped to project veths (`nbp*`); traffic that touches no
+  project interface, such as libvirt's `virbr0`, keeps forwarding.
 - ubridge runs inside the namespace and owns TAP/bridge/capture/marker work.
 - Interface names derive from `sha256(owner:adapter:port)` so reconciliation recreates the same
   names.

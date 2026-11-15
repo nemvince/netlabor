@@ -28,17 +28,8 @@ ip addr replace "$ADDRESS" dev "$BRIDGE"
 ip link set "$BRIDGE" up
 sysctl -w net.ipv4.ip_forward=1 >/dev/null
 
-# Allow NAT-node veth traffic through Netlabor's isolation table. NAT nodes use
-# host veths named nt<hash>h; the rule is repeated by the agent on startup.
-if nft list table inet netlabor >/dev/null 2>&1; then
-  if ! nft list chain inet netlabor forward 2>/dev/null | grep -q 'nt\*'; then
-    nft add rule inet netlabor forward iifname 'nt*' accept
-  fi
-  # Forwarded guest traffic leaves the bridge itself, not the nt* veths.
-  if ! nft list chain inet netlabor forward 2>/dev/null | grep -q "iifname \"$BRIDGE\""; then
-    nft add rule inet netlabor forward iifname "$BRIDGE" accept
-  fi
-fi
+# No nft rules here: the agent owns inet netlabor and rebuilds it on startup and
+# on every project realize, so anything added here would be flushed.
 
 UPLINK_ACCEPT="-i $BRIDGE -o $UPLINK"
 REPLY_ACCEPT="-i $UPLINK -o $BRIDGE"

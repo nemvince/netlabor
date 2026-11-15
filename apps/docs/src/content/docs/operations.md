@@ -89,10 +89,12 @@ curl -fsSL https://raw.githubusercontent.com/nemvince/netlabor/main/scripts/inst
 `--with-nat` installs `/usr/local/sbin/netlabor-nat-bridge` and the
 `netlabor-nat-bridge.service` unit, which re-creates the bridge on every boot. The script creates
 `nb-nat` (`10.10.99.1/24`), enables forwarding, starts dnsmasq (`10.10.99.100–199`, DNS
-`1.1.1.1`/`9.9.9.9`), adds masquerade rules on the default uplink, and allows `nt*` NAT veth traffic
-through the isolation table. Override the name, address, uplink, or DHCP range with
+`1.1.1.1`/`9.9.9.9`), and adds masquerade rules on the default uplink. NAT-node veths (`nt*`) are
+allowed by the isolation table. Override the name, address, uplink, or DHCP range with
 `NB_NAT_BRIDGE`, `NB_NAT_ADDRESS`, `NB_NAT_UPLINK`, and `NB_NAT_DHCP_RANGE`; the agent reads the
-bridge name from `NB_NAT_BRIDGE` and refuses to start NAT nodes without it. From a checkout,
+bridge name from `NB_NAT_BRIDGE` and refuses to start NAT nodes without it. The bridge script adds
+no nftables rules; the agent owns `inet netlabor` and rebuilds it on boot and on every project
+realize. From a checkout,
 `sudo scripts/provision-nat-bridge.sh` does the same thing. A NAT node has one port: connect it to
 the segment that should reach the internet.
 

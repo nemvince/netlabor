@@ -22,6 +22,7 @@ import { registerVpcsAdapter } from './emulators/vpcs.ts';
 import { AgentEvents } from './events.ts';
 import { MarkerWatcher } from './markers/watcher.ts';
 import { renderAgentMetrics } from './metrics.ts';
+import { installNftRules } from './netns/netns.ts';
 import { createAgentRouter, startupCleanup } from './router.ts';
 import { ProjectRegistry } from './state.ts';
 import { blobFile } from './storage/images.ts';
@@ -78,6 +79,14 @@ process.on('exit', () => {
 });
 
 await startupCleanup(config, logger);
+
+// Rebuild the isolation table on every boot so an upgrade repairs rules left by
+// an older agent instead of waiting for the next project realize.
+await installNftRules(config.underlayInterface).catch((error: unknown) => {
+  logger.warn('nftables rules not installed', {
+    err: error instanceof Error ? error.message : String(error),
+  });
+});
 
 registerVpcsAdapter();
 registerBuiltinAdapters();
