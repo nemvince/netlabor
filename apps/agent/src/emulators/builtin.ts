@@ -334,7 +334,10 @@ const natAdapter: NodeAdapter = {
       throw new AppError(
         'CAPABILITY_UNSUPPORTED',
         `NAT bridge ${ctx.config.natBridge} is missing; provision it on the compute or set NB_NAT_BRIDGE`,
-        { details: 'scripts/provision-nat-bridge.sh creates a DHCP/NAT bridge for local labs.' },
+        {
+          details:
+            'Re-run the installer with --with-nat, or run /usr/local/sbin/netlabor-nat-bridge on the compute.',
+        },
       );
     }
     const interfaces: string[] = [];

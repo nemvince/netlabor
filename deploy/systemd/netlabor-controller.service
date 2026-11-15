@@ -3,6 +3,7 @@ Description=Netlabor controller (API, UI, database owner)
 Documentation=https://github.com/nemvince/netlabor
 After=network-online.target postgresql.service
 Wants=network-online.target
+RequiresMountsFor=/var/lib/netlabor
 
 [Service]
 Type=simple
@@ -12,7 +13,8 @@ EnvironmentFile=/etc/netlabor/controller.env
 ExecStart=/opt/netlabor/netlabor-controller
 Restart=always
 RestartSec=3
-StateDirectory=netlabor
+# No StateDirectory=: the agent shares /var/lib/netlabor, and systemd would
+# recursively chown the whole tree (staging included) to the wrong user.
 WorkingDirectory=/opt/netlabor
 NoNewPrivileges=true
 PrivateTmp=true

@@ -313,36 +313,39 @@ install_controller() {
 
 # --- agent -----------------------------------------------------------------
 
-provision_nat_bridge() {
+install_nat_bridge() {
   [[ $SKIP_DEPS -eq 0 ]] && apt_install iptables dnsmasq >/dev/null || true
-  local uplink
-  uplink=$(ip route show default | awk '{print $5; exit}')
-  [[ -n "$uplink" ]] || die "no default uplink for the NAT bridge"
-  say "Provisioning the NAT bridge on $uplink"
-  ip link show nb-nat >/dev/null 2>&1 || ip link add nb-nat type bridge
-  ip addr replace 10.10.99.1/24 dev nb-nat
-  ip link set nb-nat up
-  sysctl -w net.ipv4.ip_forward=1 >/dev/null
-  if nft list table inet netlabor >/dev/null 2>&1; then
-    nft list chain inet netlabor forward 2>/dev/null | grep -q 'nt\*' ||
-      nft add rule inet netlabor forward iifname 'nt*' accept
-    nft list chain inet netlabor forward 2>/dev/null | grep -q 'iifname "nb-nat"' ||
-      nft add rule inet netlabor forward iifname "nb-nat" accept
+  local script=/usr/local/sbin/netlabor-nat-bridge
+  install -d -m 0755 /usr/local/sbin
+  if [[ -f scripts/provision-nat-bridge.sh ]]; then
+    install -m 0755 scripts/provision-nat-bridge.sh "$script"
+  else
+    fetch "https://raw.githubusercontent.com/$REPO/${TAG:-main}/scripts/provision-nat-bridge.sh" "$script"
+    chmod 0755 "$script"
   fi
-  iptables -C FORWARD -i nb-nat -o "$uplink" -j ACCEPT 2>/dev/null ||
-    iptables -A FORWARD -i nb-nat -o "$uplink" -j ACCEPT
-  iptables -C FORWARD -i "$uplink" -o nb-nat -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT 2>/dev/null ||
-    iptables -A FORWARD -i "$uplink" -o nb-nat -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-  iptables -t nat -C POSTROUTING -s 10.10.99.0/24 -o "$uplink" -j MASQUERADE 2>/dev/null ||
-    iptables -t nat -A POSTROUTING -s 10.10.99.0/24 -o "$uplink" -j MASQUERADE
-  mkdir -p /run/netlabor
-  [[ -f /run/netlabor/nat-dnsmasq.pid ]] &&
-    kill "$(cat /run/netlabor/nat-dnsmasq.pid)" 2>/dev/null || true
-  dnsmasq --conf-file=/dev/null --interface=nb-nat --bind-interfaces --dhcp-authoritative \
-    --dhcp-range=10.10.99.100,10.10.99.199,12h --dhcp-option=3,10.10.99.1 \
-    --dhcp-option=6,1.1.1.1,9.9.9.9 --no-resolv --server=1.1.1.1 --server=9.9.9.9 \
-    --pid-file=/run/netlabor/nat-dnsmasq.pid
-  say "NAT bridge nb-nat ready: 10.10.99.1/24 via $uplink"
+  cat >/etc/systemd/system/netlabor-nat-bridge.service <<'UNIT'
+[Unit]
+Description=Netlabor NAT bridge (DHCP and masquerade for NAT nodes)
+Documentation=https://github.com/nemvince/netlabor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/netlabor-nat-bridge
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  say "Installing the NAT bridge service"
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl daemon-reload
+    systemctl enable netlabor-nat-bridge >/dev/null 2>&1 || true
+    systemctl restart netlabor-nat-bridge || die "the NAT bridge service failed (journalctl -u netlabor-nat-bridge)"
+  else
+    "$script" || die "the NAT bridge script failed"
+  fi
 }
 
 # --- compute registration --------------------------------------------------
@@ -427,7 +430,9 @@ install_agent() {
       --shell /usr/sbin/nologin netlabor-emu 2>/dev/null || true
   id -u netlabor-emu >/dev/null 2>&1 || die "could not create the netlabor-emu account"
 
-  install -d -m 0755 "$PREFIX" "$ENV_DIR" /var/lib/netlabor /var/lib/netlabor/images
+  # mkdir -p keeps the owner the controller install set on the shared tree.
+  install -d -m 0755 "$PREFIX" "$ENV_DIR"
+  mkdir -p /var/lib/netlabor/images
   install -d -m 0700 /run/netlabor
   install -m 0755 "$binary" "$PREFIX/netlabor-agent"
 
@@ -499,7 +504,7 @@ ENV
     fi
   fi
 
-  if [[ $WITH_NAT -eq 1 ]]; then provision_nat_bridge; fi
+  if [[ $WITH_NAT -eq 1 ]]; then install_nat_bridge; fi
 }
 
 # --- units (kept in sync with deploy/systemd/) -----------------------------
@@ -512,6 +517,7 @@ Description=Netlabor controller (API, UI, database owner)
 Documentation=https://github.com/nemvince/netlabor
 After=network-online.target postgresql.service
 Wants=network-online.target
+RequiresMountsFor=/var/lib/netlabor
 
 [Service]
 Type=simple
@@ -521,7 +527,8 @@ EnvironmentFile=/etc/netlabor/controller.env
 ExecStart=/opt/netlabor/netlabor-controller
 Restart=always
 RestartSec=3
-StateDirectory=netlabor
+# No StateDirectory=: the agent shares /var/lib/netlabor, and systemd would
+# recursively chown the whole tree (staging included) to the wrong user.
 WorkingDirectory=/opt/netlabor
 NoNewPrivileges=true
 PrivateTmp=true
@@ -552,7 +559,8 @@ EnvironmentFile=/etc/netlabor/agent.env
 ExecStart=/opt/netlabor/netlabor-agent
 Restart=always
 RestartSec=3
-StateDirectory=netlabor
+# No StateDirectory=: /var/lib/netlabor is shared with the controller, whose
+# staging tree must keep its own owner. The installer creates the directories.
 RuntimeDirectory=netlabor
 RuntimeDirectoryMode=0700
 WorkingDirectory=/opt/netlabor

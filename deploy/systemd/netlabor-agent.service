@@ -16,7 +16,8 @@ EnvironmentFile=/etc/netlabor/agent.env
 ExecStart=/opt/netlabor/netlabor-agent
 Restart=always
 RestartSec=3
-StateDirectory=netlabor
+# No StateDirectory=: /var/lib/netlabor is shared with the controller, whose
+# staging tree must keep its own owner. The installer creates the directories.
 RuntimeDirectory=netlabor
 RuntimeDirectoryMode=0700
 WorkingDirectory=/opt/netlabor

@@ -359,6 +359,32 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
   const nodeRows = nodes.data ?? [];
   const linkRows = links.data ?? [];
   const drawingRows = drawings.data ?? [];
+  const nodeStatusSeen = useRef(new Map<string, string>());
+  // Console panes belong to a live node: drop them when the node is deleted or
+  // transitions out of a running state.
+  useEffect(() => {
+    if (!nodes.data) return;
+    const state = useWorkspaceStore.getState();
+    const byId = new Map(nodeRows.map((node) => [node.id, node]));
+    const closeFor = (nodeId: string) => {
+      for (const tab of state.dockTabs) {
+        if (tab.kind !== 'wireshark' && tab.nodeId === nodeId) state.closeDockTab(tab.id);
+      }
+    };
+    const next = new Map<string, string>();
+    for (const node of nodeRows) {
+      next.set(node.id, node.status);
+      const previous = nodeStatusSeen.current.get(node.id);
+      const wasRunning = previous === 'started' || previous === 'suspended';
+      const nowRunning = node.status === 'started' || node.status === 'suspended';
+      // previous === undefined: a restored tab from before this page load.
+      if (!nowRunning && (wasRunning || previous === undefined)) closeFor(node.id);
+    }
+    for (const tab of state.dockTabs) {
+      if (tab.kind !== 'wireshark' && !byId.has(tab.nodeId)) closeFor(tab.nodeId);
+    }
+    nodeStatusSeen.current = next;
+  }, [nodes.data, nodeRows]);
   const selectedNode = nodeRows.find((node) => selection.nodes[0] === node.id) ?? null;
   const selectedLink = linkRows.find((link) => selection.links[0] === link.id) ?? null;
   const selectedDrawing =
@@ -1101,7 +1127,10 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
         void run(() => client.links.update({ id: link.id, suspend: false }), 'Link resumed.');
         break;
       case 'capture-start':
-        void run(() => client.links.capture.start({ linkId: link.id }), 'Capture started.');
+        void run(async () => {
+          await client.links.capture.start({ linkId: link.id });
+          openWireshark(link.id, `Wireshark ${link.nodeAName} ↔ ${link.nodeBName}`);
+        }, 'Capture started.');
         break;
       case 'capture-stop':
         void run(() => client.links.capture.stop({ linkId: link.id }), 'Capture stopped.');

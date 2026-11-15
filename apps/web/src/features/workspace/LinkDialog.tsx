@@ -1,12 +1,24 @@
 import type { EventEnvelope, LinkFilters } from '@netlabor/contract';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Pause, Play, Radio, RotateCcw, Square, Waves } from 'lucide-react';
+import {
+  Download,
+  MapPin,
+  Palette,
+  Pause,
+  Play,
+  Radio,
+  RotateCcw,
+  SlidersHorizontal,
+  Square,
+  Waves,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Badge } from '../../components/Badge.tsx';
 import { Dialog, DialogFooter } from '../../components/Dialog.tsx';
 import { Field, Input, Textarea } from '../../components/Field.tsx';
 import { Notice } from '../../components/Notice.tsx';
 import { Loading } from '../../components/Page.tsx';
+import { TabBar, type TabItem } from '../../components/TabBar.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { formatBytes } from '../../lib/bytes.ts';
 import { messageOf } from '../../lib/errors.ts';
@@ -32,6 +44,15 @@ const LINK_COLORS = [
   { name: 'Violet', value: '#c98ade' },
   { name: 'Teal', value: '#4ec9c4' },
   { name: 'Neutral', value: '#ccd3d8' },
+];
+
+type LinkTab = 'filters' | 'capture' | 'markers' | 'appearance';
+
+const LINK_TABS: TabItem<LinkTab>[] = [
+  { id: 'filters', label: 'Filters', icon: SlidersHorizontal },
+  { id: 'capture', label: 'Capture', icon: Radio },
+  { id: 'markers', label: 'Markers', icon: MapPin },
+  { id: 'appearance', label: 'Appearance', icon: Palette },
 ];
 
 const EMPTY_DRAFT: FilterDraft = {
@@ -112,6 +133,7 @@ export function LinkDialog({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [tab, setTab] = useState<LinkTab>('filters');
 
   useEffect(() => {
     if (!link.data) return;
@@ -202,8 +224,13 @@ export function LinkDialog({
     try {
       if (action === 'start') await client.links.capture.start({ linkId: linkData.id });
       else await client.links.capture.stop({ linkId: linkData.id });
-      setNotice(action === 'start' ? 'Capture started.' : 'Capture stopped.');
       invalidateLink();
+      if (action === 'start') {
+        onOpenWireshark(linkData.id, `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`);
+        onClose();
+        return;
+      }
+      setNotice('Capture stopped.');
     } catch (captureError) {
       setError(messageOf(captureError));
     } finally {
@@ -310,266 +337,279 @@ export function LinkDialog({
           {error ? <Notice tone="error">{error}</Notice> : null}
           {notice ? <Notice tone="success">{notice}</Notice> : null}
 
-          <div
-            className="rounded-[3px] border p-2"
-            style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-sunken)' }}
-          >
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="nb-rule-label">Appearance</span>
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                disabled={busy !== null}
-                onClick={() => void saveAppearance()}
-              >
-                {busy === 'style' ? 'Saving…' : 'Save appearance'}
-              </button>
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                title="Default status colour"
-                aria-label="Use default link colour"
-                onClick={() => setStyleColor('')}
-              >
-                Auto
-              </button>
-              {LINK_COLORS.map((preset) => (
-                <button
-                  key={preset.value}
-                  type="button"
-                  aria-label={`Use ${preset.name} for this link`}
-                  title={preset.name}
-                  onClick={() => setStyleColor(preset.value)}
-                  style={{
-                    width: 22,
-                    height: 22,
-                    padding: 0,
-                    borderRadius: 2,
-                    border:
-                      styleColor === preset.value
-                        ? '2px solid var(--color-ink)'
-                        : '1px solid var(--color-rule-strong)',
-                    background: preset.value,
-                  }}
-                />
-              ))}
-              <input
-                type="color"
-                aria-label="Custom link colour"
-                value={styleColor === '' ? '#ef9a45' : styleColor}
-                onChange={(event) => setStyleColor(event.target.value)}
-                style={{ width: 26, height: 22, padding: 0, background: 'transparent' }}
-              />
-              <div className="min-w-40 flex-1">
-                <Input
-                  aria-label="Link label"
-                  className="py-1 text-[11px]"
-                  placeholder="Label on the canvas"
-                  maxLength={64}
-                  value={styleLabel}
-                  onChange={(event) => setStyleLabel(event.target.value)}
-                />
-              </div>
-            </div>
-          </div>
+          <TabBar label="Link settings" value={tab} items={LINK_TABS} onChange={setTab} />
 
-          <div
-            className="rounded-[3px] border p-2"
-            style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-sunken)' }}
-          >
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className="nb-rule-label" title="Empty fields clear that impairment on apply.">
-                Traffic filters
-              </span>
-              <div className="flex gap-1">
+          {tab === 'appearance' ? (
+            <div
+              className="rounded-[3px] border p-2"
+              style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-sunken)' }}
+            >
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <span className="nb-rule-label">Appearance</span>
                 <button
                   type="button"
                   className="nb-button"
                   data-size="sm"
                   disabled={busy !== null}
-                  onClick={() => void clearFilters()}
+                  onClick={() => void saveAppearance()}
                 >
-                  Clear
+                  {busy === 'style' ? 'Saving…' : 'Save appearance'}
                 </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button
+                  type="button"
+                  className="nb-button"
+                  data-size="sm"
+                  title="Default status colour"
+                  aria-label="Use default link colour"
+                  onClick={() => setStyleColor('')}
+                >
+                  Auto
+                </button>
+                {LINK_COLORS.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    aria-label={`Use ${preset.name} for this link`}
+                    title={preset.name}
+                    onClick={() => setStyleColor(preset.value)}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      padding: 0,
+                      borderRadius: 2,
+                      border:
+                        styleColor === preset.value
+                          ? '2px solid var(--color-ink)'
+                          : '1px solid var(--color-rule-strong)',
+                      background: preset.value,
+                    }}
+                  />
+                ))}
+                <input
+                  type="color"
+                  aria-label="Custom link colour"
+                  value={styleColor === '' ? '#ef9a45' : styleColor}
+                  onChange={(event) => setStyleColor(event.target.value)}
+                  style={{ width: 26, height: 22, padding: 0, background: 'transparent' }}
+                />
+                <div className="min-w-40 flex-1">
+                  <Input
+                    aria-label="Link label"
+                    className="py-1 text-[11px]"
+                    placeholder="Label on the canvas"
+                    maxLength={64}
+                    value={styleLabel}
+                    onChange={(event) => setStyleLabel(event.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {tab === 'filters' ? (
+            <div
+              className="rounded-[3px] border p-2"
+              style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-sunken)' }}
+            >
+              <div className="mb-1.5 flex items-center justify-between gap-2">
+                <span
+                  className="nb-rule-label"
+                  title="Empty fields clear that impairment on apply."
+                >
+                  Traffic filters
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    className="nb-button"
+                    data-size="sm"
+                    disabled={busy !== null}
+                    onClick={() => void clearFilters()}
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    className="nb-button"
+                    data-size="sm"
+                    data-variant="primary"
+                    disabled={busy !== null}
+                    onClick={() => void saveFilters()}
+                  >
+                    {busy === 'filters' ? 'Applying…' : 'Apply'}
+                  </button>
+                </div>
+              </div>
+              {linkData.dataplane?.mode === 'relay' ? (
+                <p className="mb-1.5 text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+                  {shortcutNote}
+                </p>
+              ) : null}
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <Field label="Delay (ms)" htmlFor="link-delay">
+                  <Input
+                    id="link-delay"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={draft.delayMs}
+                    onChange={(event) => update('delayMs', event.target.value)}
+                  />
+                </Field>
+                <Field label="Jitter (ms)" htmlFor="link-jitter">
+                  <Input
+                    id="link-jitter"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={draft.jitterMs}
+                    onChange={(event) => update('jitterMs', event.target.value)}
+                  />
+                </Field>
+                <Field label="Loss (%)" htmlFor="link-loss">
+                  <Input
+                    id="link-loss"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={draft.lossPct}
+                    onChange={(event) => update('lossPct', event.target.value)}
+                  />
+                </Field>
+                <Field label="Corrupt (%)" htmlFor="link-corrupt">
+                  <Input
+                    id="link-corrupt"
+                    inputMode="decimal"
+                    placeholder="0"
+                    value={draft.corruptPct}
+                    onChange={(event) => update('corruptPct', event.target.value)}
+                  />
+                </Field>
+                <Field label="Frequency drop" htmlFor="link-frequency" hint="-1 drops every packet">
+                  <Input
+                    id="link-frequency"
+                    inputMode="numeric"
+                    placeholder="0"
+                    value={draft.frequencyDrop}
+                    onChange={(event) => update('frequencyDrop', event.target.value)}
+                  />
+                </Field>
+                <Field label="Bandwidth (kbit/s)" htmlFor="link-rate" hint="Kernel dataplane only">
+                  <Input
+                    id="link-rate"
+                    inputMode="numeric"
+                    placeholder="unlimited"
+                    value={draft.rateKbps}
+                    onChange={(event) => update('rateKbps', event.target.value)}
+                  />
+                </Field>
+              </div>
+              <div className="mt-2">
+                <Field
+                  label="BPF filter"
+                  htmlFor="link-bpf"
+                  hint="Validated by tcpdump on the compute."
+                >
+                  <Textarea
+                    id="link-bpf"
+                    rows={2}
+                    className="tabular text-[11px]"
+                    placeholder="icmp or tcp port 80"
+                    value={draft.bpf}
+                    onChange={(event) => update('bpf', event.target.value)}
+                  />
+                </Field>
+              </div>
+            </div>
+          ) : null}
+
+          {tab === 'capture' ? (
+            <div
+              className="rounded-[3px] border p-2"
+              style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-sunken)' }}
+            >
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+                <span className="nb-rule-label">Capture</span>
+                {linkData.capture ? (
+                  <Badge tone={linkData.capture.active ? 'down' : 'neutral'}>
+                    {linkData.capture.active ? 'active' : 'stopped'} ·{' '}
+                    {formatBytes(linkData.capture.sizeBytes)} · {linkData.capture.dlt}
+                  </Badge>
+                ) : (
+                  <span className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
+                    no capture
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1">
                 <button
                   type="button"
                   className="nb-button"
                   data-size="sm"
                   data-variant="primary"
                   disabled={busy !== null}
-                  onClick={() => void saveFilters()}
+                  onClick={() => void capture('start')}
                 >
-                  {busy === 'filters' ? 'Applying…' : 'Apply'}
+                  <Radio size={12} aria-hidden /> Start capture
                 </button>
+                <button
+                  type="button"
+                  className="nb-button"
+                  data-size="sm"
+                  disabled={busy !== null || !linkData.capture}
+                  onClick={() => void capture('stop')}
+                >
+                  <Square size={12} aria-hidden /> Stop capture
+                </button>
+                {linkData.capture ? (
+                  <>
+                    <a
+                      className="nb-button"
+                      data-size="sm"
+                      href={`/api/links/${linkData.id}/capture.pcap`}
+                      download
+                      aria-disabled={linkData.capture.sizeBytes === 0}
+                      style={{
+                        textDecoration: 'none',
+                        opacity: linkData.capture.sizeBytes === 0 ? 0.5 : 1,
+                      }}
+                    >
+                      <Download size={12} aria-hidden /> Download pcap
+                    </a>
+                    <button
+                      type="button"
+                      className="nb-button"
+                      data-size="sm"
+                      onClick={() => {
+                        onOpenWireshark(
+                          linkData.id,
+                          `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`,
+                        );
+                        onClose();
+                      }}
+                    >
+                      <Waves size={12} aria-hidden /> Open Wireshark
+                    </button>
+                  </>
+                ) : null}
               </div>
-            </div>
-            {linkData.dataplane?.mode === 'relay' ? (
-              <p className="mb-1.5 text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
-                {shortcutNote}
-              </p>
-            ) : null}
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <Field label="Delay (ms)" htmlFor="link-delay">
-                <Input
-                  id="link-delay"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={draft.delayMs}
-                  onChange={(event) => update('delayMs', event.target.value)}
-                />
-              </Field>
-              <Field label="Jitter (ms)" htmlFor="link-jitter">
-                <Input
-                  id="link-jitter"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={draft.jitterMs}
-                  onChange={(event) => update('jitterMs', event.target.value)}
-                />
-              </Field>
-              <Field label="Loss (%)" htmlFor="link-loss">
-                <Input
-                  id="link-loss"
-                  inputMode="decimal"
-                  placeholder="0"
-                  value={draft.lossPct}
-                  onChange={(event) => update('lossPct', event.target.value)}
-                />
-              </Field>
-              <Field label="Corrupt (%)" htmlFor="link-corrupt">
-                <Input
-                  id="link-corrupt"
-                  inputMode="decimal"
-                  placeholder="0"
-                  value={draft.corruptPct}
-                  onChange={(event) => update('corruptPct', event.target.value)}
-                />
-              </Field>
-              <Field label="Frequency drop" htmlFor="link-frequency" hint="-1 drops every packet">
-                <Input
-                  id="link-frequency"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={draft.frequencyDrop}
-                  onChange={(event) => update('frequencyDrop', event.target.value)}
-                />
-              </Field>
-              <Field label="Bandwidth (kbit/s)" htmlFor="link-rate" hint="Kernel dataplane only">
-                <Input
-                  id="link-rate"
-                  inputMode="numeric"
-                  placeholder="unlimited"
-                  value={draft.rateKbps}
-                  onChange={(event) => update('rateKbps', event.target.value)}
-                />
-              </Field>
-            </div>
-            <div className="mt-2">
-              <Field
-                label="BPF filter"
-                htmlFor="link-bpf"
-                hint="Validated by tcpdump on the compute."
-              >
-                <Textarea
-                  id="link-bpf"
-                  rows={2}
-                  className="tabular text-[11px]"
-                  placeholder="icmp or tcp port 80"
-                  value={draft.bpf}
-                  onChange={(event) => update('bpf', event.target.value)}
-                />
-              </Field>
-            </div>
-          </div>
-
-          <div
-            className="rounded-[3px] border p-2"
-            style={{ borderColor: 'var(--color-rule)', background: 'var(--color-panel-sunken)' }}
-          >
-            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-              <span className="nb-rule-label">Capture</span>
               {linkData.capture ? (
-                <Badge tone={linkData.capture.active ? 'down' : 'neutral'}>
-                  {linkData.capture.active ? 'active' : 'stopped'} ·{' '}
-                  {formatBytes(linkData.capture.sizeBytes)} · {linkData.capture.dlt}
-                </Badge>
-              ) : (
-                <span className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
-                  no capture
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1">
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                data-variant="primary"
-                disabled={busy !== null}
-                onClick={() => void capture('start')}
-              >
-                <Radio size={12} aria-hidden /> Start capture
-              </button>
-              <button
-                type="button"
-                className="nb-button"
-                data-size="sm"
-                disabled={busy !== null || !linkData.capture}
-                onClick={() => void capture('stop')}
-              >
-                <Square size={12} aria-hidden /> Stop capture
-              </button>
-              {linkData.capture ? (
-                <>
-                  <a
-                    className="nb-button"
-                    data-size="sm"
-                    href={`/api/links/${linkData.id}/capture.pcap`}
-                    download
-                    aria-disabled={linkData.capture.sizeBytes === 0}
-                    style={{
-                      textDecoration: 'none',
-                      opacity: linkData.capture.sizeBytes === 0 ? 0.5 : 1,
-                    }}
-                  >
-                    <Download size={12} aria-hidden /> Download pcap
-                  </a>
-                  <button
-                    type="button"
-                    className="nb-button"
-                    data-size="sm"
-                    onClick={() => {
-                      onOpenWireshark(
-                        linkData.id,
-                        `Wireshark ${linkData.nodeAName} ↔ ${linkData.nodeBName}`,
-                      );
-                      onClose();
-                    }}
-                  >
-                    <Waves size={12} aria-hidden /> Open Wireshark
-                  </button>
-                </>
+                <p
+                  className="tabular mt-1 text-[10px] break-all"
+                  style={{ color: 'var(--color-ink-faint)' }}
+                >
+                  {linkData.capture.path}
+                </p>
               ) : null}
             </div>
-            {linkData.capture ? (
-              <p
-                className="tabular mt-1 text-[10px] break-all"
-                style={{ color: 'var(--color-ink-faint)' }}
-              >
-                {linkData.capture.path}
-              </p>
-            ) : null}
-          </div>
+          ) : null}
 
-          <LinkMarkersPanel
-            linkId={linkData.id}
-            events={events}
-            onMarkersChanged={() => onMarkersChanged?.()}
-          />
+          {tab === 'markers' ? (
+            <LinkMarkersPanel
+              linkId={linkData.id}
+              events={events}
+              onMarkersChanged={() => onMarkersChanged?.()}
+            />
+          ) : null}
 
           <DialogFooter>
             <button type="button" className="nb-button" onClick={onClose}>

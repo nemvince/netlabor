@@ -1,0 +1,13 @@
+[Unit]
+Description=Netlabor NAT bridge (DHCP and masquerade for NAT nodes)
+Documentation=https://github.com/nemvince/netlabor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/netlabor-nat-bridge
+
+[Install]
+WantedBy=multi-user.target

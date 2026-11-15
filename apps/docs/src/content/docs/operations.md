@@ -79,16 +79,22 @@ stale namespaces at startup; a controller restart does not stop a running lab.
 
 ## NAT bridge
 
-Netlabor does not run DHCP or NAT. Provision a bridge once:
+Netlabor does not run DHCP or NAT. Provision a bridge once on the compute:
 
 ```bash
-sudo NB_NAT_BRIDGE=nb-nat NB_NAT_ADDRESS=10.10.99.1/24 scripts/provision-nat-bridge.sh
+curl -fsSL https://raw.githubusercontent.com/nemvince/netlabor/main/scripts/install.sh |
+  sudo bash -s -- --agent --with-nat
 ```
 
-The script creates the bridge, enables forwarding, starts dnsmasq (`10.10.99.100–199`, DNS
+`--with-nat` installs `/usr/local/sbin/netlabor-nat-bridge` and the
+`netlabor-nat-bridge.service` unit, which re-creates the bridge on every boot. The script creates
+`nb-nat` (`10.10.99.1/24`), enables forwarding, starts dnsmasq (`10.10.99.100–199`, DNS
 `1.1.1.1`/`9.9.9.9`), adds masquerade rules on the default uplink, and allows `nt*` NAT veth traffic
-through the isolation table. A NAT node has one port: connect it to the segment that should reach
-the internet.
+through the isolation table. Override the name, address, uplink, or DHCP range with
+`NB_NAT_BRIDGE`, `NB_NAT_ADDRESS`, `NB_NAT_UPLINK`, and `NB_NAT_DHCP_RANGE`; the agent reads the
+bridge name from `NB_NAT_BRIDGE` and refuses to start NAT nodes without it. From a checkout,
+`sudo scripts/provision-nat-bridge.sh` does the same thing. A NAT node has one port: connect it to
+the segment that should reach the internet.
 
 ## Backup and restore
 
