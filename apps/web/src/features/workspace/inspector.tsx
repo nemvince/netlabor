@@ -21,14 +21,12 @@ import {
 import { DynamipsIdlepcPanel } from './dynamips-idlepc-panel.tsx';
 import { ProjectStatsPanel } from './inspector-stats.tsx';
 
-import { NodeConsolePanel } from './node-console-panel.tsx';
 import { NodeFilesPanel } from './node-files-panel.tsx';
 import { QemuDisksPanel } from './qemu-disks-panel.tsx';
 import type { NodeUpdateInput } from './schema-types.ts';
 import { Button } from '@netlabor/ui/components/button';
 
-type NodeTab = 'properties' | 'ports' | 'files' | 'console';
-type NodeAction = 'start' | 'stop' | 'suspend' | 'reload';
+type NodeTab = 'properties' | 'ports' | 'files';
 
 const nodeSchema = z.object({
   name: z.string().min(1, 'enter a node name').max(128, 'use at most 128 characters'),
@@ -48,8 +46,6 @@ interface InspectorProps {
   drawing: DrawingRow | null;
   symbols: SymbolRow[];
   onUpdateNode: (id: string, patch: NodeUpdateInput, label: string) => void;
-  onNodeAction: (node: NodeRow, action: NodeAction) => void;
-  onOpenConsole: (node: NodeRow) => void;
   onOpenLink: (linkId: string) => void;
   onDeleteLink: (link: LinkRow) => void;
   onDeleteDrawing: (drawing: DrawingRow) => void;
@@ -64,8 +60,6 @@ export function Inspector({
   drawing,
   symbols,
   onUpdateNode,
-  onNodeAction,
-  onOpenConsole,
   onOpenLink,
   onDeleteLink,
   onDeleteDrawing,
@@ -136,8 +130,6 @@ export function Inspector({
 
   const projectLocked = project.locked;
   const canUpdate = can('node.update') && !projectLocked;
-  const canControl = can('node.control') && !projectLocked;
-  const canConsole = can('node.console');
   const canFiles = can('node.files');
   const canLinkWrite = can('link.write') && !projectLocked;
   const portsKind: PropertyField['portsKind'] =
@@ -288,7 +280,6 @@ export function Inspector({
                 ['properties', 'Properties'],
                 ['ports', 'Ports'],
                 ['files', 'Files'],
-                ['console', 'Console'],
               ] as const
             ).map(([value, label]) => (
               <button
@@ -624,15 +615,7 @@ export function Inspector({
               ) : (
                 <Notice tone="warn">Reading node files requires the node.files privilege.</Notice>
               )
-            ) : (
-              <NodeConsolePanel
-                node={node}
-                canConsole={canConsole}
-                canControl={canControl}
-                onOpenConsole={() => onOpenConsole(node)}
-                onAction={(action) => onNodeAction(node, action)}
-              />
-            )}
+            ) : null}
           </div>
         </>
       ) : link ? (
@@ -765,7 +748,7 @@ export function Inspector({
               )}
             </div>
             <p className="text-[10px]" style={{ color: 'var(--color-ink-faint)' }}>
-              Select a node to edit its properties, ports, files, and console.
+              Select a node to edit its properties, ports, and files.
             </p>
           </div>
         </div>

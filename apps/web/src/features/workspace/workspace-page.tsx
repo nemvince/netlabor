@@ -1429,8 +1429,6 @@ function WorkspaceBody({ projectId, project }: { projectId: string; project: Pro
                   drawing={selectedDrawing}
                   symbols={symbols.data ?? []}
                   onUpdateNode={(id, patch, label) => void updateNode(id, patch, label)}
-                  onNodeAction={(node, action) => void nodeAction(node, action)}
-                  onOpenConsole={consoleFor}
                   onOpenLink={(linkId) => setLinkDialogId(linkId)}
                   onDeleteLink={(link) =>
                     setDeleteTarget({ nodes: [], links: [link], drawings: [] })
