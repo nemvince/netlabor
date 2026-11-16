@@ -286,7 +286,8 @@ install_controller() {
     useradd --system --home /var/lib/netlabor --shell /usr/sbin/nologin netlabor-controller
   # The controller installs its own updates, so its service group writes the prefix.
   install -d -m 0775 -o root -g netlabor-controller "$PREFIX"
-  install -d -m 0750 -o netlabor-controller -g netlabor-controller /var/lib/netlabor
+  # 0711: the emulator account only traverses this tree; it never lists it.
+  install -d -m 0711 -o netlabor-controller -g netlabor-controller /var/lib/netlabor
   install -d -m 0755 -o netlabor-controller -g netlabor-controller /var/lib/netlabor/staging
   # Upgrades can leave staging files and subdirectories owned by root or by a
   # previous service user, which fail the next download with EACCES.

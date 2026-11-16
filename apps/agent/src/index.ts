@@ -37,7 +37,10 @@ const startedAt = new Date().toISOString();
 const capabilities = await probeCapabilities(config);
 logger.info('agent capabilities', { ...capabilities });
 
-await mkdir(config.stateDir, { recursive: true, mode: 0o755 });
+await mkdir(config.stateDir, { recursive: true, mode: 0o711 });
+// 0711: emulators traverse the state tree for their node dirs and images, but
+// never list it. Older installs left it 0750, which fails QEMU's pidfile.
+await chmod(config.stateDir, 0o711);
 // 0711: emulators traverse the run dir for their sockets; they never list it.
 await mkdir(config.runDir, { recursive: true, mode: 0o711 });
 await chmod(config.runDir, 0o711);
