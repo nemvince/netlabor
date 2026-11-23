@@ -15,7 +15,7 @@ import {
   readNodeSpec,
   registerAdapter,
 } from '../dataplane/node.ts';
-import { ubridgeClientFor } from '../dataplane/project.ts';
+import { nodeDir, ubridgeClientFor } from '../dataplane/project.ts';
 import { startNodeProcess, stopProcess } from '../process.ts';
 import type { ProjectRegistry } from '../state.ts';
 import { chownForEmulator, kvmGid, kvmGroupWritable } from '../sys.ts';
@@ -492,7 +492,7 @@ export function qmpPath(config: AgentConfig, nodeId: string): string {
 }
 
 function diskPath(config: AgentConfig, projectId: string, nodeId: string): string {
-  return path.join(config.stateDir, 'projects', projectId, 'nodes', nodeId);
+  return nodeDir(config, projectId, nodeId);
 }
 
 export async function qemuNodeSpec(config: AgentConfig, projectId: string, nodeId: string) {

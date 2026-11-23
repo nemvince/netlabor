@@ -37,7 +37,7 @@ export async function userRoleNames(db: SQL, userId: string): Promise<string[]> 
 export async function buildMe(context: Context) {
   const user = context.auth.user;
   if (!user) throw new AppError('UNAUTHORIZED', 'authentication required');
-  const [roles, grants, preferences] = await Promise.all([
+  const [roles, grants, preferences, account] = await Promise.all([
     userRoleNames(context.db, user.id),
     context.db.unsafe<{ project_id: string; name: string }[]>(
       `SELECT gr.project_id, r.name
@@ -48,6 +48,10 @@ export async function buildMe(context: Context) {
       [user.id],
     ),
     getPreferences(context.db, user.id),
+    context.db.unsafe<{ email: string | null; created_at: Date }[]>(
+      'SELECT email, created_at FROM users WHERE id = $1',
+      [user.id],
+    ),
   ]);
   const privileges = new Set<Privilege>(context.auth.globalPrivileges);
   for (const scoped of context.auth.projectPrivileges.values()) {
@@ -56,10 +60,10 @@ export async function buildMe(context: Context) {
   return {
     id: user.id,
     username: user.username,
-    email: null,
+    email: account[0]?.email ?? null,
     displayName: user.displayName,
     isActive: user.isActive,
-    createdAt: new Date(0).toISOString(),
+    createdAt: (account[0]?.created_at ?? new Date()).toISOString(),
     roles,
     privileges: [...privileges].sort(),
     projectGrants: grants.map((grant) => ({ projectId: grant.project_id, role: grant.name })),
@@ -195,6 +199,7 @@ export function authRoutes(os: Implementer) {
       create: os.auth.apiKeys.create.handler(async ({ input, context }) => {
         const user = context.auth.user;
         if (!user) throw new AppError('UNAUTHORIZED', 'authentication required');
+        if (context.auth.pending) throw new AppError('FORBIDDEN', 'account is awaiting approval');
         // A key can never exceed its owner's current privileges.
         const excessive = input.scopes.filter((scope) => !context.auth.globalPrivileges.has(scope));
         if (!context.auth.isAdmin && excessive.length > 0) {

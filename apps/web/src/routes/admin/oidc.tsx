@@ -178,7 +178,7 @@ function ProviderDialog({
           <Field
             label="Issuer URL"
             htmlFor="oidc-issuer"
-            hint="The provider's discovery base URL."
+            hint="The provider's discovery base URL. For Entra use https://login.microsoftonline.com/<tenant-id>/v2.0."
             error={form.formState.errors.issuer?.message}
           >
             <Input
@@ -231,7 +231,7 @@ function ProviderDialog({
             hint={
               roles.length === 0
                 ? 'Listing roles requires user.read.'
-                : 'Applied to accounts created by this provider.'
+                : 'Applied to new accounts. Leave unset to put them in the no-privilege pending role until an admin changes it.'
             }
           >
             <Select id="oidc-default-role" {...form.register('defaultRoleId')}>
@@ -586,8 +586,8 @@ export function OidcAdminPage() {
             signature.
           </li>
           <li>
-            Claim groups map through the table above and grant app groups; a new account needs a
-            default role or an existing identity.
+            Claim groups map through the table above and grant app groups. New accounts get the
+            default role, or the no-privilege <code>pending</code> role when none is set.
           </li>
         </ol>
       </Section>

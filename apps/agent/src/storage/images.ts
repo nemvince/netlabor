@@ -9,6 +9,9 @@ import type { AgentConfig } from '../config.ts';
 const SHA256_PATTERN = /^[0-9a-f]{64}$/;
 const PARTIAL_PREFIX = '.partial-';
 
+/** Hashes already computed by this agent, keyed by path; NFS reads are expensive. */
+const verifiedFiles = new Map<string, { size: number; mtimeMs: number; sha256: string }>();
+
 export interface EnsureImageInput {
   sha256: string;
   filename: string;
@@ -47,13 +50,19 @@ async function hashFile(filePath: string): Promise<string> {
 async function hashIfPresent(
   filePath: string,
 ): Promise<{ exists: boolean; sha256: string; size: number }> {
-  let size: number;
+  let info;
   try {
-    size = (await stat(filePath)).size;
+    info = await stat(filePath);
   } catch {
     return { exists: false, sha256: '', size: 0 };
   }
-  return { exists: true, sha256: await hashFile(filePath), size };
+  const cached = verifiedFiles.get(filePath);
+  if (cached && cached.size === info.size && cached.mtimeMs === info.mtimeMs) {
+    return { exists: true, sha256: cached.sha256, size: info.size };
+  }
+  const sha256 = await hashFile(filePath);
+  verifiedFiles.set(filePath, { size: info.size, mtimeMs: info.mtimeMs, sha256 });
+  return { exists: true, sha256, size: info.size };
 }
 
 function nfsRoot(config: AgentConfig): string {
@@ -125,6 +134,8 @@ async function download(
     });
   }
   await rename(temp, target);
+  const info = await stat(target);
+  verifiedFiles.set(target, { size: info.size, mtimeMs: info.mtimeMs, sha256 });
   return target;
 }
 

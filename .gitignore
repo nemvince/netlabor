@@ -8,6 +8,8 @@ coverage
 .dev/
 dist
 .DS_Store
+# Local appliance bundles and vendor images; seeded with `bun run import:appliances`
+appliances/
 # Dynamips writes instance logs and JIT caches into its working directory
 e2e/assets/*
 !e2e/assets/.gitkeep

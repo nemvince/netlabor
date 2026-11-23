@@ -510,6 +510,7 @@ export async function applyProject(
   /* Nodes ----------------------------------------------------------------- */
   const nodeResults: ProjectApplyResult['nodes'] = [];
   const nodesByName = new Map<string, NodeRow>();
+  const allowHostOptions = hasPrivilege(auth, 'compute.write', null);
 
   for (const resolved of resolvedNodes) {
     const nodeInput = resolved.input;
@@ -520,36 +521,46 @@ export async function applyProject(
     if (resolved.existing) {
       node = resolved.existing;
       if (resolved.fieldsChanged) {
-        node = await updateNode(deps, userId, {
-          id: node.id,
-          ...(nodeInput.x !== undefined ? { x: nodeInput.x } : {}),
-          ...(nodeInput.y !== undefined ? { y: nodeInput.y } : {}),
-          ...(nodeInput.z !== undefined ? { z: nodeInput.z } : {}),
-          ...(nodeInput.layer !== undefined ? { layer: nodeInput.layer } : {}),
-          ...(nodeInput.symbol !== undefined ? { symbol: nodeInput.symbol } : {}),
-          ...(nodeInput.locked !== undefined ? { locked: nodeInput.locked } : {}),
-          ...(nodeInput.consoleAutoStart !== undefined
-            ? { consoleAutoStart: nodeInput.consoleAutoStart }
-            : {}),
-          ...(nodeInput.properties !== undefined ? { properties: nodeInput.properties } : {}),
-        });
+        node = await updateNode(
+          deps,
+          userId,
+          {
+            id: node.id,
+            ...(nodeInput.x !== undefined ? { x: nodeInput.x } : {}),
+            ...(nodeInput.y !== undefined ? { y: nodeInput.y } : {}),
+            ...(nodeInput.z !== undefined ? { z: nodeInput.z } : {}),
+            ...(nodeInput.layer !== undefined ? { layer: nodeInput.layer } : {}),
+            ...(nodeInput.symbol !== undefined ? { symbol: nodeInput.symbol } : {}),
+            ...(nodeInput.locked !== undefined ? { locked: nodeInput.locked } : {}),
+            ...(nodeInput.consoleAutoStart !== undefined
+              ? { consoleAutoStart: nodeInput.consoleAutoStart }
+              : {}),
+            ...(nodeInput.properties !== undefined ? { properties: nodeInput.properties } : {}),
+          },
+          allowHostOptions,
+        );
         updated = true;
       }
     } else {
-      node = await createNode(deps, userId, {
-        projectId,
-        ...(resolved.templateId
-          ? { templateId: resolved.templateId }
-          : { nodeType: resolved.nodeType }),
-        ...(nodeInput.computeId ? { computeId: nodeInput.computeId } : {}),
-        name: nodeInput.name,
-        x: nodeInput.x ?? 0,
-        y: nodeInput.y ?? 0,
-        z: nodeInput.z ?? 0,
-        layer: nodeInput.layer ?? 'default',
-        ...(nodeInput.symbol !== undefined ? { symbol: nodeInput.symbol } : {}),
-        ...(nodeInput.properties !== undefined ? { properties: nodeInput.properties } : {}),
-      });
+      node = await createNode(
+        deps,
+        userId,
+        {
+          projectId,
+          ...(resolved.templateId
+            ? { templateId: resolved.templateId }
+            : { nodeType: resolved.nodeType }),
+          ...(nodeInput.computeId ? { computeId: nodeInput.computeId } : {}),
+          name: nodeInput.name,
+          x: nodeInput.x ?? 0,
+          y: nodeInput.y ?? 0,
+          z: nodeInput.z ?? 0,
+          layer: nodeInput.layer ?? 'default',
+          ...(nodeInput.symbol !== undefined ? { symbol: nodeInput.symbol } : {}),
+          ...(nodeInput.properties !== undefined ? { properties: nodeInput.properties } : {}),
+        },
+        allowHostOptions,
+      );
       created = true;
       if (nodeInput.locked === true || nodeInput.consoleAutoStart !== undefined) {
         node = await updateNode(deps, userId, {

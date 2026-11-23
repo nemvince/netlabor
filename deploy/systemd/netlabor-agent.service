@@ -7,6 +7,8 @@ Documentation=https://github.com/nemvince/netlabor
 After=network-online.target docker.service
 Wants=network-online.target
 RequiresMountsFor=/var/lib/netlabor
+# NFS image store: add the shared mount to RequiresMountsFor (the installer
+# writes this drop-in for you).
 
 [Service]
 Type=simple

@@ -13,6 +13,8 @@ import {
   migration_0007_share_links,
   migration_0008_os_families,
   migration_0009_auth_lookup_indexes,
+  migration_0010_group_owners,
+  migration_0011_group_sso_source,
 } from './migrations.generated.ts';
 
 export interface Migration {
@@ -30,4 +32,6 @@ export const MIGRATIONS: Migration[] = [
   { version: '0007_share_links.sql', sql: migration_0007_share_links },
   { version: '0008_os_families.sql', sql: migration_0008_os_families },
   { version: '0009_auth_lookup_indexes.sql', sql: migration_0009_auth_lookup_indexes },
+  { version: '0010_group_owners.sql', sql: migration_0010_group_owners },
+  { version: '0011_group_sso_source.sql', sql: migration_0011_group_sso_source },
 ];

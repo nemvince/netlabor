@@ -2,8 +2,10 @@
 
 import { AppError, WEB_PROXY_STATUSES, type WebProxyOutput } from '@netlabor/contract';
 import { issueTicket } from '@netlabor/shared';
+import { hasPrivilege } from '../auth/principal.ts';
 import type { Context } from '../context.ts';
 import type { AppDeps, Implementer } from '../implementer.ts';
+import { clientKey, LIMITS, limiter } from '../limits.ts';
 import {
   createNode,
   deleteNode,
@@ -25,7 +27,12 @@ export function nodeRoutes(os: Implementer) {
         const user = context.auth.user;
         if (!user) throw new AppError('UNAUTHORIZED', 'authentication required');
         try {
-          return await createNode(context, user.id, input);
+          return await createNode(
+            context,
+            user.id,
+            input,
+            hasPrivilege(context.auth, 'compute.write', null),
+          );
         } catch (error) {
           context.logger.error('nodes.create failed', { err: error });
           throw error;
@@ -34,20 +41,25 @@ export function nodeRoutes(os: Implementer) {
       update: os.nodes.update.handler(async ({ input, context }) => {
         const user = context.auth.user;
         if (!user) throw new AppError('UNAUTHORIZED', 'authentication required');
-        return updateNode(context, user.id, {
-          id: input.id,
-          ...(input.name ? { name: input.name } : {}),
-          ...(input.x !== undefined ? { x: input.x } : {}),
-          ...(input.y !== undefined ? { y: input.y } : {}),
-          ...(input.z !== undefined ? { z: input.z } : {}),
-          ...(input.layer !== undefined ? { layer: input.layer } : {}),
-          ...(input.locked !== undefined ? { locked: input.locked } : {}),
-          ...(input.symbol !== undefined ? { symbol: input.symbol } : {}),
-          ...(input.properties !== undefined ? { properties: input.properties } : {}),
-          ...(input.consoleAutoStart !== undefined
-            ? { consoleAutoStart: input.consoleAutoStart }
-            : {}),
-        });
+        return updateNode(
+          context,
+          user.id,
+          {
+            id: input.id,
+            ...(input.name ? { name: input.name } : {}),
+            ...(input.x !== undefined ? { x: input.x } : {}),
+            ...(input.y !== undefined ? { y: input.y } : {}),
+            ...(input.z !== undefined ? { z: input.z } : {}),
+            ...(input.layer !== undefined ? { layer: input.layer } : {}),
+            ...(input.locked !== undefined ? { locked: input.locked } : {}),
+            ...(input.symbol !== undefined ? { symbol: input.symbol } : {}),
+            ...(input.properties !== undefined ? { properties: input.properties } : {}),
+            ...(input.consoleAutoStart !== undefined
+              ? { consoleAutoStart: input.consoleAutoStart }
+              : {}),
+          },
+          hasPrivilege(context.auth, 'compute.write', null),
+        );
       }),
       delete: os.nodes.delete.handler(async ({ input, context }) => {
         const user = context.auth.user;
@@ -86,6 +98,7 @@ export function nodeRoutes(os: Implementer) {
         return setNodePower(context, user.id, input.id, 'reload');
       }),
       consoleTicket: os.nodes.consoleTicket.handler(async ({ input, context }) => {
+        limiter.consume(clientKey('ticket', context.request.ip), LIMITS.ticket);
         const node = await getNode(context.db, input.id);
         if (node.consolePort === null || node.consoleType === 'none') {
           throw new AppError('BAD_REQUEST', 'node has no console');

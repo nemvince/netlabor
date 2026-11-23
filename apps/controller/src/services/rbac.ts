@@ -1,7 +1,7 @@
 /** Roles, groups, project grants, audit rows, and settings. */
 
 import type { AuditRow, GrantRow, GroupRow, RoleRow, SettingsPatch } from '@netlabor/contract';
-import { AppError, GLOBAL_ROLE_NAMES } from '@netlabor/contract';
+import { AppError, GLOBAL_ROLE_NAMES, PROJECT_ROLE_NAMES } from '@netlabor/contract';
 import { parseJsonColumn } from '@netlabor/db';
 import { newId } from '@netlabor/shared';
 import type { SQL } from 'bun';
@@ -143,21 +143,26 @@ export async function listGroups(db: SQL): Promise<GroupRow[]> {
       id: string;
       name: string;
       description: string | null;
+      owner_id: string | null;
+      owner_name: string | null;
       created_at: Date;
       member_count: string;
       roles: { id: string; name: string }[] | null;
     }[]
   >(
-    `SELECT g.id, g.name, g.description, g.created_at,
+    `SELECT g.id, g.name, g.description, g.owner_id, o.username AS owner_name, g.created_at,
             (SELECT count(*) FROM group_members gm WHERE gm.group_id = g.id)::text AS member_count,
             COALESCE((SELECT json_agg(json_build_object('id', r.id, 'name', r.name) ORDER BY r.name)
                         FROM group_roles gr JOIN roles r ON r.id = gr.role_id WHERE gr.group_id = g.id), '[]'::json) AS roles
-       FROM groups g ORDER BY g.name ASC`,
+       FROM groups g LEFT JOIN users o ON o.id = g.owner_id
+      ORDER BY g.name ASC`,
   );
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
     description: row.description,
+    ownerId: row.owner_id,
+    ownerName: row.owner_name,
     createdAt: row.created_at.toISOString(),
     memberCount: Number(row.member_count),
     roles: row.roles ?? [],
@@ -171,8 +176,29 @@ async function getGroup(db: SQL, id: string): Promise<GroupRow> {
   return group;
 }
 
+/** Who is changing a group: its owner, or an administrator. */
+export interface GroupActor {
+  userId: string;
+  canManageAll: boolean;
+  canAssignRoles: boolean;
+}
+
+async function assertGroupOwner(db: SQL, id: string, actor: GroupActor): Promise<void> {
+  if (actor.canManageAll) return;
+  const rows = await db.unsafe<{ owner_id: string | null }[]>(
+    'SELECT owner_id FROM groups WHERE id = $1',
+    [id],
+  );
+  const group = rows[0];
+  if (!group) throw new AppError('NOT_FOUND', 'group not found');
+  if (group.owner_id !== actor.userId) {
+    throw new AppError('FORBIDDEN', 'only the group owner can change it');
+  }
+}
+
 export async function upsertGroup(
   db: SQL,
+  actor: GroupActor,
   input: {
     id?: string;
     name: string;
@@ -182,6 +208,10 @@ export async function upsertGroup(
   },
 ): Promise<GroupRow> {
   const id = input.id ?? newId();
+  if (input.roleIds !== undefined && !actor.canAssignRoles) {
+    throw new AppError('FORBIDDEN', 'only administrators can assign roles to a group');
+  }
+  if (input.id) await assertGroupOwner(db, id, actor);
   const duplicate = await db.unsafe<{ id: string }[]>(
     'SELECT id FROM groups WHERE name = $1 AND id <> $2',
     [input.name, id],
@@ -197,20 +227,28 @@ export async function upsertGroup(
       );
       if (!rows[0]) throw new AppError('NOT_FOUND', 'group not found');
     } else {
-      await sql.unsafe('INSERT INTO groups (id, name, description) VALUES ($1, $2, $3)', [
-        id,
-        input.name,
-        input.description ?? null,
-      ]);
+      await sql.unsafe(
+        'INSERT INTO groups (id, name, description, owner_id) VALUES ($1, $2, $3, $4)',
+        [id, input.name, input.description ?? null, actor.userId],
+      );
     }
     if (input.memberIds) {
+      // A new group always contains its creator, so they see their own grants.
+      const memberIds = input.id
+        ? input.memberIds
+        : [...new Set([actor.userId, ...input.memberIds])];
       await sql.unsafe('DELETE FROM group_members WHERE group_id = $1', [id]);
-      for (const userId of input.memberIds) {
+      for (const userId of memberIds) {
         await sql.unsafe(
           'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
           [id, userId],
         );
       }
+    } else if (!input.id) {
+      await sql.unsafe('INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)', [
+        id,
+        actor.userId,
+      ]);
     }
     if (input.roleIds) {
       await sql.unsafe('DELETE FROM group_roles WHERE group_id = $1', [id]);
@@ -225,7 +263,28 @@ export async function upsertGroup(
   return getGroup(db, id);
 }
 
-export async function deleteGroup(db: SQL, id: string): Promise<void> {
+export async function listGroupMembers(
+  db: SQL,
+  actor: GroupActor,
+  id: string,
+): Promise<Array<{ id: string; username: string; displayName: string | null }>> {
+  await assertGroupOwner(db, id, actor);
+  const rows = await db.unsafe<{ id: string; username: string; display_name: string | null }[]>(
+    `SELECT u.id, u.username, u.display_name
+       FROM group_members gm JOIN users u ON u.id = gm.user_id
+      WHERE gm.group_id = $1
+      ORDER BY u.display_name NULLS LAST, u.username ASC`,
+    [id],
+  );
+  return rows.map((row) => ({
+    id: row.id,
+    username: row.username,
+    displayName: row.display_name,
+  }));
+}
+
+export async function deleteGroup(db: SQL, actor: GroupActor, id: string): Promise<void> {
+  await assertGroupOwner(db, id, actor);
   const rows = await db.unsafe<{ id: string }[]>('DELETE FROM groups WHERE id = $1 RETURNING id', [
     id,
   ]);
@@ -280,6 +339,10 @@ export async function createGrant(
     input.roleId,
   ]);
   if (!roles[0]) throw new AppError('NOT_FOUND', 'role not found');
+  // A project grant must never leak a global role (notably admin or pending).
+  if (!PROJECT_ROLE_NAMES.includes(roles[0].name as (typeof PROJECT_ROLE_NAMES)[number])) {
+    throw new AppError('BAD_REQUEST', `role ${roles[0].name} cannot be granted on a project`);
+  }
   const id = newId();
   const rows = await db.unsafe<{ id: string }[]>(
     `INSERT INTO project_grants (id, project_id, subject_type, subject_id, role_id)

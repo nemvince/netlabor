@@ -100,7 +100,7 @@ export async function collectStats(
     readMemInfo(),
     readLoad(),
     readUptime(),
-    readDiskUsage(config.stateDir),
+    readDiskUsage(config.projectDir),
     countProcesses(),
   ]);
   const tracked = registry

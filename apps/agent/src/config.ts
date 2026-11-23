@@ -1,5 +1,6 @@
 /** Agent configuration, validated from the environment at startup. */
 
+import path from 'node:path';
 import { type LogLevel, parseLogLevel } from '@netlabor/shared';
 
 /** Baked in by `bun run build`; undeclared when running from source. */
@@ -11,6 +12,8 @@ export interface AgentConfig {
   listen: { hostname: string; port: number };
   token: string;
   stateDir: string;
+  /** Project and per-node working files; put this on local disk when images are shared. */
+  projectDir: string;
   runDir: string;
   underlayIndex: number;
   underlayHost: string;
@@ -64,11 +67,13 @@ export function loadAgentConfig(overrides?: Partial<AgentConfig>): AgentConfig {
   if (storageDriver === 'nfs' && !nfsImageDir) {
     throw new Error('NB_NFS_IMAGE_DIR is required when NB_STORAGE_DRIVER=nfs');
   }
+  const stateDir = env('NB_STATE_DIR') ?? '/var/lib/netlabor';
 
   return {
     listen: parseListen(env('NB_AGENT_LISTEN') ?? '0.0.0.0:8081'),
     token: required('NB_AGENT_TOKEN'),
-    stateDir: env('NB_STATE_DIR') ?? '/var/lib/netlabor',
+    stateDir,
+    projectDir: env('NB_PROJECT_DIR') ?? path.join(stateDir, 'projects'),
     runDir: env('NB_RUN_DIR') ?? '/run/netlabor',
     underlayIndex,
     underlayHost: required('NB_UNDERLAY_HOST'),

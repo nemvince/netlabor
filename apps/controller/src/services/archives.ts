@@ -3,12 +3,14 @@
 import { createHash } from 'node:crypto';
 import { rm } from 'node:fs/promises';
 import path from 'node:path';
+import { gunzipSync } from 'node:zlib';
 import {
   AppError,
   type DrawingSnapshot,
   type LinkSnapshot,
   type MarkerSnapshot,
   type NodeSnapshot,
+  NodeType,
   type ProjectManifest,
 } from '@netlabor/contract';
 import { parseJsonColumn } from '@netlabor/db';
@@ -16,8 +18,10 @@ import { newId } from '@netlabor/shared';
 import tar from 'tar-stream';
 import type { AppDeps } from '../implementer.ts';
 import type { JobService } from './jobs.ts';
+import { stripHostLevelProperties } from './host-options.ts';
 import { ensureProjectLinkDataplanes, listLinks } from './links.ts';
 import { buildAgentSpec, getNode, listNodes } from './nodes.ts';
+import { validateTemplateProperties } from './templates.ts';
 
 async function agentArchive(
   deps: AppDeps,
@@ -250,7 +254,7 @@ export async function untarGzip(archive: Uint8Array): Promise<Map<string, Uint8A
   const files = new Map<string, Uint8Array>();
   let buffer: Buffer;
   try {
-    buffer = Buffer.from(Bun.gunzipSync(Buffer.from(archive)));
+    buffer = gunzipSync(Buffer.from(archive));
   } catch {
     throw new AppError('BAD_REQUEST', 'archive is not gzip');
   }
@@ -430,7 +434,7 @@ export async function applyManifest(
   deps: AppDeps,
   projectId: string,
   manifest: ProjectManifest,
-  options: { reuseIds: boolean },
+  options: { reuseIds: boolean; allowHostOptions?: boolean },
 ): Promise<void> {
   const idMap = new Map<string, string>();
   const mapId = (id: string): string => {
@@ -450,6 +454,12 @@ export async function applyManifest(
     for (const node of manifest.nodes) {
       const nodeId = mapId(node.id);
       const computeId = manifest.nodeComputes[node.id] ?? node.computeId;
+      const properties =
+        options.allowHostOptions === false
+          ? stripHostLevelProperties(node.properties)
+          : node.properties;
+      const nodeType = NodeType.parse(node.nodeType);
+      const validated = validateTemplateProperties(nodeType, properties);
       await sql.unsafe(
         `INSERT INTO nodes (id, project_id, compute_id, name, symbol, node_type, template_id, x, y, z, layer,
                             locked, isolated, console_port, console_type, console_auto_start, properties, status)
@@ -460,7 +470,7 @@ export async function applyManifest(
           computeId,
           node.name,
           node.symbol,
-          node.nodeType,
+          nodeType,
           node.templateId,
           node.x,
           node.y,
@@ -471,7 +481,7 @@ export async function applyManifest(
           node.consolePort,
           node.consoleType,
           node.consoleAutoStart,
-          node.properties,
+          validated,
         ],
       );
     }
@@ -579,16 +589,19 @@ export async function exportProject(
 export async function importProject(
   deps: AppDeps,
   jobs: JobService,
-  input: { uploadId: string; name: string | null; userId: string },
+  input: { uploadId: string; name: string | null; userId: string; allowHostOptions?: boolean },
 ): Promise<string> {
   const job = await jobs.create('project.import', {});
   void (async () => {
     try {
       const upload = await deps.db.unsafe<
-        { path?: string; sha256: string | null; filename: string }[]
-      >('SELECT filename, sha256 FROM uploads WHERE id = $1', [input.uploadId]);
+        { path?: string; sha256: string | null; filename: string; user_id: string | null }[]
+      >('SELECT filename, sha256, user_id FROM uploads WHERE id = $1', [input.uploadId]);
       const record = upload[0];
       if (!record) throw new AppError('NOT_FOUND', 'upload not found');
+      if (record.user_id && record.user_id !== input.userId) {
+        throw new AppError('FORBIDDEN', 'this upload belongs to another user');
+      }
       const uploadPath = path.join(deps.config.stagingDir, `${input.uploadId}.part`);
       const bundle = new Uint8Array(await Bun.file(uploadPath).arrayBuffer());
       const files = await untarGzip(bundle);
@@ -616,7 +629,10 @@ export async function importProject(
           manifest.project.scene ?? {},
         ],
       );
-      await applyManifest(deps, projectId, manifest, { reuseIds: false });
+      await applyManifest(deps, projectId, manifest, {
+        reuseIds: false,
+        allowHostOptions: input.allowHostOptions === true,
+      });
       for (const [name, data] of files) {
         if (!name.startsWith('computes/')) continue;
         const computeId = name.slice('computes/'.length).replace(/\.tar\.gz$/, '');

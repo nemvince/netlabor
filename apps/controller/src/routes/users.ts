@@ -1,6 +1,8 @@
 /** User, group, role, and grant administration routes. */
 
 import { AppError } from '@netlabor/contract';
+import { hasPrivilege } from '../auth/principal.ts';
+import type { Context } from '../context.ts';
 import type { Implementer } from '../implementer.ts';
 import {
   createGrant,
@@ -9,6 +11,7 @@ import {
   deleteGroup,
   deleteRole,
   listGrants,
+  listGroupMembers,
   listGroups,
   listRoles,
   setRolePrivileges,
@@ -20,9 +23,22 @@ import {
   deleteUser,
   getUser,
   listUsers,
+  lookupUsers,
   setUserPassword,
   updateUser,
 } from '../services/users.ts';
+
+function groupActor(context: Context): {
+  userId: string;
+  canManageAll: boolean;
+  canAssignRoles: boolean;
+} {
+  const userId = context.auth.user?.id;
+  if (!userId) throw new AppError('UNAUTHORIZED', 'authentication required');
+  if (context.auth.pending) throw new AppError('FORBIDDEN', 'account is awaiting approval');
+  const canManage = hasPrivilege(context.auth, 'user.write', null);
+  return { userId, canManageAll: canManage, canAssignRoles: canManage };
+}
 
 export function userRoutes(os: Implementer) {
   return {
@@ -64,12 +80,13 @@ export function userRoutes(os: Implementer) {
         await setUserPassword(context.db, input.id, input.password);
         return { ok: true as const };
       }),
+      lookup: os.users.lookup.handler(async ({ input, context }) => lookupUsers(context.db, input)),
     },
 
     groups: {
       list: os.groups.list.handler(async ({ context }) => listGroups(context.db)),
       create: os.groups.create.handler(async ({ input, context }) =>
-        upsertGroup(context.db, {
+        upsertGroup(context.db, groupActor(context), {
           name: input.name,
           ...(input.description !== undefined ? { description: input.description } : {}),
           ...(input.memberIds ? { memberIds: input.memberIds } : {}),
@@ -77,7 +94,7 @@ export function userRoutes(os: Implementer) {
         }),
       ),
       update: os.groups.update.handler(async ({ input, context }) =>
-        upsertGroup(context.db, {
+        upsertGroup(context.db, groupActor(context), {
           id: input.id,
           name: input.name,
           ...(input.description !== undefined ? { description: input.description } : {}),
@@ -86,9 +103,12 @@ export function userRoutes(os: Implementer) {
         }),
       ),
       delete: os.groups.delete.handler(async ({ input, context }) => {
-        await deleteGroup(context.db, input.id);
+        await deleteGroup(context.db, groupActor(context), input.id);
         return { ok: true as const };
       }),
+      members: os.groups.members.handler(async ({ input, context }) =>
+        listGroupMembers(context.db, groupActor(context), input.id),
+      ),
     },
 
     roles: {

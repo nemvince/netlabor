@@ -20,6 +20,7 @@ import { parseJsonColumn } from '@netlabor/db';
 import { newId } from '@netlabor/shared';
 import type { SQL } from 'bun';
 import type { z } from 'zod';
+import { stripHostLevelProperties } from './host-options.ts';
 
 interface TemplateRecord {
   id: string;
@@ -183,6 +184,7 @@ export async function createTemplate(
   db: SQL,
   userId: string | null,
   input: TemplateWriteInput,
+  allowHostOptions = true,
 ): Promise<TemplateRow> {
   const id = input.id ?? newId();
   const projectId = input.projectId ?? null;
@@ -191,7 +193,8 @@ export async function createTemplate(
   ]);
   if (existing[0]) throw new AppError('CONFLICT', 'a template with this id already exists');
   await assertTemplateNameFree(db, input.name, projectId);
-  const properties = validateTemplateProperties(input.nodeType, input.properties);
+  const source = allowHostOptions ? input.properties : stripHostLevelProperties(input.properties);
+  const properties = validateTemplateProperties(input.nodeType, source);
   await db.unsafe(
     `INSERT INTO templates (id, name, node_type, category, symbol, default_name_format, compute_id,
                             pool_id, properties, required_images, faults, project_id, builtin,
@@ -220,13 +223,17 @@ export async function createTemplate(
 export async function updateTemplate(
   db: SQL,
   input: TemplateWriteInput & { id: string },
+  allowHostOptions = true,
 ): Promise<TemplateRow> {
   const existing = await getTemplate(db, input.id);
   // An omitted projectId keeps the current scope; an explicit null promotes the
   // template to the global library.
   const projectId = input.projectId === undefined ? existing.projectId : input.projectId;
   await assertTemplateNameFree(db, input.name, projectId, input.id);
-  const properties = validateTemplateProperties(input.nodeType, input.properties);
+  const source = allowHostOptions
+    ? input.properties
+    : { ...existing.properties, ...stripHostLevelProperties(input.properties) };
+  const properties = validateTemplateProperties(input.nodeType, source);
   await db.unsafe(
     `UPDATE templates SET
        name = $2, node_type = $3, category = $4, symbol = $5, default_name_format = $6,

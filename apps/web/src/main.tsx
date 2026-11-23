@@ -30,6 +30,7 @@ import './styles.css';
  */
 const OverviewPage = lazyRouteComponent(() => import('./routes/overview.tsx'), 'OverviewPage');
 const ProjectsPage = lazyRouteComponent(() => import('./routes/projects.tsx'), 'ProjectsPage');
+const GroupsPage = lazyRouteComponent(() => import('./routes/groups.tsx'), 'GroupsPage');
 const ComputesPage = lazyRouteComponent(() => import('./routes/computes.tsx'), 'ComputesPage');
 const LibraryPage = lazyRouteComponent(
   () => import('./features/library/library-page.tsx'),
@@ -179,6 +180,12 @@ const projectsRoute = createRoute({
   component: ProjectsPage,
 });
 
+const groupsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/groups',
+  component: GroupsPage,
+});
+
 const computesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/computes',
@@ -270,6 +277,7 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     indexRoute,
     projectsRoute,
+    groupsRoute,
     computesRoute,
     libraryRoute,
     toolsRoute,

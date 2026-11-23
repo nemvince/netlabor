@@ -1,7 +1,7 @@
 /** Image library: artifact validation, blob staging, replicas, sync, and prune. */
 
-import type { Stats } from 'node:fs';
-import { copyFile, mkdir, open, rename, rm, stat } from 'node:fs/promises';
+import { constants, type Stats } from 'node:fs';
+import { access, chmod, copyFile, mkdir, open, rename, rm, stat } from 'node:fs/promises';
 import path from 'node:path';
 import {
   AppError,
@@ -231,6 +231,30 @@ function nfsRoot(deps: AppDeps): string {
   return root;
 }
 
+/**
+ * Fail before serving traffic when the shared image directory is absent or not
+ * writable, instead of writing images into an unmounted local mountpoint.
+ */
+export async function ensureImageStore(deps: AppDeps): Promise<void> {
+  if (deps.config.storageDriver !== 'nfs') return;
+  const root = nfsRoot(deps);
+  const info = await stat(root).catch(() => null);
+  if (!info?.isDirectory()) {
+    throw new Error(
+      `NFS image directory ${root} is not mounted or is not a directory; ` +
+        `mount it before starting the controller`,
+    );
+  }
+  try {
+    await access(root, constants.W_OK);
+  } catch {
+    throw new Error(
+      `NFS image directory ${root} is not writable by the controller user; ` +
+        `check the export and ownership`,
+    );
+  }
+}
+
 export function stagedBlobPath(deps: AppDeps, sha256: string, filename: string): string {
   if (deps.config.storageDriver === 'nfs') {
     return path.join(nfsRoot(deps), sha256, filename);
@@ -272,6 +296,8 @@ export async function stageBlob(
     const target = path.join(directory, filename);
     const temp = path.join(directory, `.tmp-${process.pid}-${Date.now()}`);
     await copyFile(partPath, temp);
+    // Uploads start 0600; computes and the emulator account must be able to read.
+    await chmod(temp, 0o644);
     await syncToDisk(temp);
     await rename(temp, target);
     return target;
@@ -281,6 +307,7 @@ export async function stageBlob(
   await mkdir(path.dirname(target), { recursive: true, mode: 0o755 });
   const temp = `${target}.tmp-${process.pid}-${Date.now()}`;
   await copyFile(partPath, temp);
+  await chmod(temp, 0o644);
   await syncToDisk(temp);
   await rename(temp, target);
   return target;
@@ -691,16 +718,20 @@ export async function deleteImage(deps: AppDeps, userId: string | null, id: stri
     }
   }
 
-  for (const replica of image.replicas) {
-    await deps.agents
-      .call(replica.computeId, (agent) => agent.image.delete({ sha256: image.sha256 }))
-      .catch((error: unknown) => {
-        deps.logger.warn('failed to delete an image replica', {
-          imageId: id,
-          computeId: replica.computeId,
-          err: error instanceof Error ? error.message : String(error),
+  // One shared NFS copy: the controller removes it once. Asking every agent to
+  // delete it would race and requires write access the compute often lacks.
+  if (deps.config.storageDriver !== 'nfs') {
+    for (const replica of image.replicas) {
+      await deps.agents
+        .call(replica.computeId, (agent) => agent.image.delete({ sha256: image.sha256 }))
+        .catch((error: unknown) => {
+          deps.logger.warn('failed to delete an image replica', {
+            imageId: id,
+            computeId: replica.computeId,
+            err: error instanceof Error ? error.message : String(error),
+          });
         });
-      });
+    }
   }
 
   await deps.db.unsafe('DELETE FROM images WHERE id = $1', [id]);
@@ -850,6 +881,25 @@ async function runPrune(
   const removed: Array<{ imageId: string; computeId: string }> = [];
   const failures: string[] = [];
   for (const candidate of candidates) {
+    if (deps.config.storageDriver === 'nfs') {
+      try {
+        await rm(path.join(nfsRoot(deps), candidate.image.sha256), {
+          recursive: true,
+          force: true,
+        });
+        await deps.db.unsafe('DELETE FROM image_replicas WHERE image_id = $1', [
+          candidate.image.id,
+        ]);
+        for (const replica of candidate.replicas) {
+          removed.push({ imageId: candidate.image.id, computeId: replica.compute_id });
+        }
+      } catch (error) {
+        failures.push(
+          `${candidate.image.name}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      continue;
+    }
     for (const replica of candidate.replicas) {
       try {
         await deps.agents.call(replica.compute_id, (agent) =>

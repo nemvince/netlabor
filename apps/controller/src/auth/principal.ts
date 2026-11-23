@@ -159,6 +159,7 @@ export async function resolveAuth(db: SQL, credentials: Credentials): Promise<Au
       globalPrivileges: privileges,
       projectPrivileges,
       isAdmin: roles.includes('admin'),
+      pending: roles.includes('pending'),
       sessionId: null,
       apiKey: {
         id: key.id,
@@ -195,6 +196,7 @@ export async function resolveAuth(db: SQL, credentials: Credentials): Promise<Au
       globalPrivileges: privileges,
       projectPrivileges,
       isAdmin: roles.includes('admin'),
+      pending: roles.includes('pending'),
       sessionId: row.session_id,
       apiKey: null,
     };
@@ -221,7 +223,7 @@ export function hasPrivilege(
   privilege: Privilege,
   projectId: string | null,
 ): boolean {
-  if (!auth.user) return false;
+  if (!auth.user || auth.pending) return false;
   if (auth.apiKey && !auth.apiKey.scopes.has(privilege)) return false;
   if (
     auth.apiKey &&

@@ -52,12 +52,17 @@ The controller listens on `127.0.0.1:8080`, the agent on `127.0.0.1:8081`, and t
 `http://127.0.0.1:5173`. Vite proxies `/rpc`, `/api`, `/auth`, `/ws`, and `/healthz` to the
 controller and rewrites the proxy origin so the controller's same-origin mutation check passes.
 
+For a production head-node-plus-workers deployment, follow the
+[4-node cluster install](/deployment) guide instead; it covers the NFS export, local node disks,
+WireGuard underlay, and agent registration.
+
 For a packaged install:
 
 1. One script installs either or both roles from a release, no clone needed:
    `curl -fsSL https://raw.githubusercontent.com/nemvince/netlabor/main/scripts/install.sh | sudo bash`.
    It is interactive, or scriptable with `--controller`, `--agent`, `--all`, `--yes`,
-   `--skip-deps`, `--public-url`, `--admin-password`, `--token`, `--with-docker`, `--with-nat`.
+   `--skip-deps`, `--public-url`, `--admin-password`, `--token`, `--with-docker`, `--with-nat`,
+   `--storage-driver`, `--nfs-image-dir`, `--project-dir`, and `--template-dir`.
    On Debian 13 it installs the host dependencies: the controller gets PostgreSQL plus a database
    and role, the agent gets QEMU, vpcs, tshark, nftables, xorriso, and a source-built ubridge.
    `bun run build` builds the same binaries locally in `dist/` for

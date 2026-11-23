@@ -166,11 +166,26 @@ export const GroupRow = z.object({
   id: Id,
   name: z.string(),
   description: z.string().nullable(),
+  ownerId: Id.nullable(),
+  ownerName: z.string().nullable(),
   createdAt: Timestamp,
   memberCount: z.number().int(),
   roles: z.array(z.object({ id: Id, name: z.string() })),
 });
 export type GroupRow = z.infer<typeof GroupRow>;
+
+/** Minimal user directory used by self-service groups and project grants. */
+export const DirectoryUser = z.object({
+  id: Id,
+  username: z.string(),
+  displayName: z.string().nullable(),
+});
+export type DirectoryUser = z.infer<typeof DirectoryUser>;
+
+export const DirectoryQuery = z.object({
+  search: z.string().max(128).optional(),
+  limit: z.number().int().min(1).max(500).default(50),
+});
 
 export const GroupUpsertInput = z.object({
   id: Id.optional(),

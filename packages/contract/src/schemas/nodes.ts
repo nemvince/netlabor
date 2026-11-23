@@ -1,6 +1,7 @@
 /** Nodes: rows, per-emulator property schemas, and node operations. */
 
 import { z } from 'zod';
+import { OsFamily } from './appliances.ts';
 import { ConsoleType, Id, LaneType, NodePort, NodeStatus, NodeType, Timestamp } from './common.ts';
 
 const PortLabelProps = {
@@ -69,6 +70,8 @@ export const QemuProperties = z.object({
   options: z.array(z.string()).default([]),
   linkedClone: z.boolean().default(true),
   cloudInitEnabled: z.boolean().default(false),
+  /** Base distribution, selected when the image catalog built the template. */
+  osFamily: OsFamily.optional(),
   cloudInitVariant: z.enum(['server', 'desktop']).default('server'),
   cloudInitUser: z.string().optional(),
   cloudInitPassword: z.string().optional(),

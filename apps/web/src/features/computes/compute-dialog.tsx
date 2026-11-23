@@ -199,7 +199,7 @@ export function ComputeDialog({
         <Field
           label="Underlay host"
           htmlFor="compute-host"
-          hint="Routable address on 10.99.0.0/16 used for cross-compute links."
+          hint="Address other computes reach this host on, for example its WireGuard address."
           error={form.formState.errors.underlayHost?.message}
         >
           <Input id="compute-host" placeholder="10.0.0.2" {...form.register('underlayHost')} />

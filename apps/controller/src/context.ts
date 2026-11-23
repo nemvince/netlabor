@@ -27,6 +27,8 @@ export interface AuthInfo {
   projectPrivileges: Map<string, Set<Privilege>>;
   /** True when the user holds the `admin` role globally. */
   isAdmin: boolean;
+  /** Auto-created SSO account that no administrator has approved yet. */
+  pending: boolean;
   sessionId: string | null;
   apiKey: { id: string; scopes: Set<Privilege>; projectIds: string[] } | null;
 }
@@ -65,18 +67,35 @@ export function anonymousAuth(): AuthInfo {
     globalPrivileges: new Set(),
     projectPrivileges: new Map(),
     isAdmin: false,
+    pending: false,
     sessionId: null,
     apiKey: null,
   };
 }
 
-export function requestMeta(request: Request): RequestMeta {
+/**
+ * Client address for rate limits and audit rows. Forwarded headers are
+ * forgeable, so they are only consulted when the operator declares a proxy.
+ */
+export function clientAddress(
+  request: Request,
+  remoteAddress: string | null,
+  trustProxy: boolean,
+): string | null {
+  if (trustProxy) {
+    return (
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      request.headers.get('x-real-ip')?.trim() ??
+      remoteAddress
+    );
+  }
+  return remoteAddress;
+}
+
+export function requestMeta(request: Request, ip: string | null = null): RequestMeta {
   const url = new URL(request.url);
   return {
-    ip:
-      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      request.headers.get('x-real-ip') ??
-      null,
+    ip,
     userAgent: request.headers.get('user-agent'),
     host: request.headers.get('host') ?? url.host,
     origin: request.headers.get('origin'),
@@ -98,9 +117,13 @@ export interface ContextDeps {
 }
 
 /** Build the context for one HTTP request, resolving authentication first. */
-export async function createRequestContext(deps: ContextDeps, request: Request): Promise<Context> {
+export async function createRequestContext(
+  deps: ContextDeps,
+  request: Request,
+  ip: string | null = null,
+): Promise<Context> {
   const auth = await resolveAuth(deps.db, extractCredentials(request));
-  const meta = requestMeta(request);
+  const meta = requestMeta(request, ip);
   return {
     db: deps.db,
     config: deps.config,

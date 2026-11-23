@@ -1,8 +1,8 @@
 /** Agent entrypoint: authenticated oRPC over Bun.serve. */
 
 import { timingSafeEqual } from 'node:crypto';
-import { rmSync } from 'node:fs';
-import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { constants, rmSync } from 'node:fs';
+import { access, chmod, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { AppError } from '@netlabor/contract';
 import { createLogger } from '@netlabor/shared';
@@ -41,6 +41,10 @@ await mkdir(config.stateDir, { recursive: true, mode: 0o711 });
 // 0711: emulators traverse the state tree for their node dirs and images, but
 // never list it. Older installs left it 0750, which fails QEMU's pidfile.
 await chmod(config.stateDir, 0o711);
+// Node working directories may live on a separate local disk; keep the base
+// traversable for the emulator account even when it sits outside the state dir.
+await mkdir(config.projectDir, { recursive: true, mode: 0o711 });
+await chmod(config.projectDir, 0o711);
 // 0711: emulators traverse the run dir for their sockets; they never list it.
 await mkdir(config.runDir, { recursive: true, mode: 0o711 });
 await chmod(config.runDir, 0o711);
@@ -51,6 +55,23 @@ await chownForEmulator(
   config.emulatorGid,
 );
 await mkdir(config.imageDir, { recursive: true, mode: 0o755 });
+
+// A shared store must already be mounted; creating the mountpoint locally
+// would look healthy while every node reads an empty local directory.
+if (config.storageDriver === 'nfs') {
+  const root = config.nfsImageDir as string;
+  const info = await stat(root).catch(() => null);
+  if (!info?.isDirectory()) {
+    logger.error('NFS image directory is not mounted', { root });
+    process.exit(1);
+  }
+  try {
+    await access(root, constants.R_OK | constants.X_OK);
+  } catch {
+    logger.error('NFS image directory is not readable by the agent', { root });
+    process.exit(1);
+  }
+}
 
 // One agent owns a run dir. A second one would tear down the first one's
 // namespaces and emulators during startup cleanup.

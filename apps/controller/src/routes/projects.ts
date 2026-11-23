@@ -3,6 +3,7 @@
 import type { ProjectManifest } from '@netlabor/contract';
 import { AppError } from '@netlabor/contract';
 import { newId } from '@netlabor/shared';
+import { hasPrivilege } from '../auth/principal.ts';
 import type { SQL } from 'bun';
 import type { AppDeps, Implementer } from '../implementer.ts';
 import { applyProject } from '../services/apply.ts';
@@ -106,6 +107,7 @@ export function projectRoutes(os: Implementer, deps: AppDeps, jobs: JobService) 
           uploadId: input.uploadId,
           name: input.name ?? null,
           userId: user.id,
+          allowHostOptions: hasPrivilege(context.auth, 'compute.write', null),
         });
         return jobs.get(jobId);
       }),

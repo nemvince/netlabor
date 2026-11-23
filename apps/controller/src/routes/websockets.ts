@@ -76,6 +76,7 @@ export async function handleWebSocketUpgrade(
   request: Request,
   server: Server<WsData>,
   handlers: WsHandlers,
+  ip: string | null = null,
 ): Promise<boolean> {
   const url = new URL(request.url);
   const collabMatch = /^\/ws\/collab\/([0-9a-fA-F-]{36})$/.exec(url.pathname);
@@ -84,7 +85,7 @@ export async function handleWebSocketUpgrade(
     const origin = request.headers.get('origin');
     const expected = new URL(handlers.config.publicUrl).origin;
     if (!origin || origin !== expected) return false;
-    const context = await createRequestContext(handlers.deps, request);
+    const context = await createRequestContext(handlers.deps, request, ip);
     const user = context.auth.user;
     if (!user || !hasPrivilege(context.auth, 'project.read', collabMatch[1])) return false;
     const upgraded = server.upgrade(request, {
@@ -129,11 +130,28 @@ export async function handleWebSocketUpgrade(
     return false;
   }
 
+  // The ticket is short-lived but not proof of identity: bind it to the
+  // session that presents it and re-check the resource's current scope.
+  let projectId: string | null = null;
+  try {
+    const context = await createRequestContext(handlers.deps, request, ip);
+    const user = context.auth.user;
+    if (!user || payload.sub !== user.id) return false;
+    projectId =
+      kind === 'wireshark'
+        ? (await getLink(handlers.deps.db, resourceId)).projectId
+        : (await getNode(handlers.deps.db, resourceId)).projectId;
+    const privilege = kind === 'wireshark' ? 'link.capture' : 'node.console';
+    if (!projectId || !hasPrivilege(context.auth, privilege, projectId)) return false;
+  } catch {
+    return false;
+  }
+
   const upgraded = server.upgrade(request, {
     data: {
       kind,
       resourceId,
-      projectId: payload.projectId ?? null,
+      projectId,
       telnet: false,
       upstream: { socket: null, closed: false },
     },

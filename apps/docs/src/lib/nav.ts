@@ -112,6 +112,11 @@ export const nav: NavGroup[] = [
         summary: 'Users, groups, roles, grants, audit, OIDC, settings, API keys.',
       },
       {
+        href: '/deployment',
+        label: '4-node cluster install',
+        summary: 'Head node, three workers, NFS images, local disks, and the underlay.',
+      },
+      {
         href: '/operations',
         label: 'Operations',
         summary: 'Environment, computes, NAT, backups, upgrades, troubleshooting.',

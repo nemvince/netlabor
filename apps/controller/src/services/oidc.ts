@@ -63,12 +63,30 @@ async function loadProvider(db: SQL, id: string): Promise<ProviderRecord> {
   return record;
 }
 
+/**
+ * Entra's `common`, `organizations`, and `consumers` issuers accept any tenant.
+ * A school deployment must name its tenant id so tokens from other tenants
+ * cannot reach this controller.
+ */
+export function assertSingleTenantIssuer(issuer: string): void {
+  const url = new URL(issuer);
+  if (url.hostname !== 'login.microsoftonline.com') return;
+  const tenant = url.pathname.split('/').filter(Boolean)[0] ?? '';
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenant)) {
+    throw new AppError(
+      'BAD_REQUEST',
+      'use the tenant issuer https://login.microsoftonline.com/<tenant-id>/v2.0, not common or organizations',
+    );
+  }
+}
+
 export async function createProvider(
   db: SQL,
   config: ControllerConfig,
   input: OidcProviderInput,
 ): Promise<OidcProviderRow> {
   if (!input.clientSecret) throw new AppError('BAD_REQUEST', 'clientSecret is required');
+  assertSingleTenantIssuer(input.issuer);
   const secret = encryptSecret(input.clientSecret, config.secretKey);
   const id = newId();
   const rows = await db.unsafe<ProviderRecord[]>(
@@ -102,6 +120,7 @@ export async function updateProvider(
   config: ControllerConfig,
   input: OidcProviderInput & { id: string },
 ): Promise<OidcProviderRow> {
+  assertSingleTenantIssuer(input.issuer);
   const existing = await loadProvider(db, input.id);
   const secret = input.clientSecret ? encryptSecret(input.clientSecret, config.secretKey) : null;
   const rows = await db.unsafe<ProviderRecord[]>(
@@ -207,15 +226,21 @@ export async function startLogin(
   config: ControllerConfig,
   providerId: string,
 ): Promise<{ redirectUrl: string; cookie: string }> {
-  const { configuration, redirectUri } = await clientConfiguration(db, config, providerId);
+  const { provider, configuration, redirectUri } = await clientConfiguration(
+    db,
+    config,
+    providerId,
+  );
   const verifier = client.randomPKCECodeVerifier();
   const challenge = await client.calculatePKCECodeChallenge(verifier);
   const state = client.randomState();
   const nonce = client.randomNonce();
 
+  const scopes = provider.scopes ?? [];
+  const scope = [...new Set(['openid', ...scopes])].join(' ');
   const authorizationUrl = client.buildAuthorizationUrl(configuration, {
     redirect_uri: redirectUri,
-    scope: 'openid profile email',
+    scope,
     state,
     nonce,
     code_challenge: challenge,
@@ -265,7 +290,15 @@ export async function handleCallback(
   const claims = tokens.claims();
   if (!claims) throw new AppError('UNAUTHORIZED', 'OIDC provider returned no ID token claims');
   const subject = claims.sub;
-  const email = typeof claims.email === 'string' ? claims.email : null;
+  // Entra often omits `email` and puts the UPN in `preferred_username`.
+  const email =
+    typeof claims.email === 'string'
+      ? claims.email
+      : typeof claims.preferred_username === 'string'
+        ? claims.preferred_username
+        : typeof claims.upn === 'string'
+          ? claims.upn
+          : null;
 
   const identity = await db.unsafe<{ user_id: string }[]>(
     'SELECT user_id FROM user_identities WHERE provider_id = $1 AND subject = $2',
@@ -278,6 +311,8 @@ export async function handleCallback(
       throw new AppError('FORBIDDEN', 'no account is linked to this identity');
     userId = await provisionUser(db, provider, subject, email, claims, config);
   }
+  // Group membership follows the IdP on every sign-in, not just at creation.
+  await applyGroupMappings(db, provider, userId, claims);
 
   const users = await db.unsafe<{ is_active: boolean }[]>(
     'SELECT is_active FROM users WHERE id = $1',
@@ -291,6 +326,12 @@ export async function handleCallback(
     sessionCookie: sessionCookie(session.token, config, session.expiresAt),
     redirectTo: '/projects',
   };
+}
+
+/** The no-privilege role an auto-created account holds until an admin acts. */
+async function pendingRoleId(db: SQL): Promise<string | null> {
+  const rows = await db.unsafe<{ id: string }[]>("SELECT id FROM roles WHERE name = 'pending'");
+  return rows[0]?.id ?? null;
 }
 
 async function provisionUser(
@@ -326,22 +367,35 @@ async function provisionUser(
     await sql.unsafe(
       `INSERT INTO users (id, username, email, display_name, password_hash, is_active)
        VALUES ($1, $2, $3, $4, NULL, true)`,
-      [userId, username, email, typeof claims.name === 'string' ? claims.name : null],
+      [
+        userId,
+        username,
+        email,
+        typeof claims.name === 'string'
+          ? claims.name
+          : typeof claims.preferred_username === 'string'
+            ? claims.preferred_username
+            : null,
+      ],
     );
     await sql.unsafe(
       'INSERT INTO user_identities (user_id, provider_id, subject, email) VALUES ($1, $2, $3, $4)',
       [userId, provider.id, subject, email],
     );
-    if (provider.default_role_id) {
+    const roleId = provider.default_role_id ?? (await pendingRoleId(sql));
+    if (roleId) {
       await sql.unsafe(
         'INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [userId, provider.default_role_id],
+        [userId, roleId],
       );
     }
   });
 
-  await applyGroupMappings(db, provider, userId, claims);
   return userId;
+}
+
+function startsWithMapping(description: string | null, providerName: string): boolean {
+  return description?.startsWith(`mapped from ${providerName}:`) === true;
 }
 
 async function applyGroupMappings(
@@ -350,6 +404,8 @@ async function applyGroupMappings(
   userId: string,
   claims: Record<string, unknown>,
 ): Promise<void> {
+  // Without the claim, the IdP said nothing about groups: keep memberships.
+  if (!Object.hasOwn(claims, provider.group_claim)) return;
   const claimValue = claims[provider.group_claim];
   const claimGroups = Array.isArray(claimValue)
     ? claimValue.filter((value): value is string => typeof value === 'string')
@@ -357,20 +413,57 @@ async function applyGroupMappings(
       ? [claimValue]
       : [];
   const mappings = parseJsonColumn<Record<string, string>>(provider.group_mappings, {});
+  const desired = new Set<string>();
   for (const claimGroup of claimGroups) {
     const appGroupName = mappings[claimGroup];
     if (!appGroupName) continue;
-    const existing = await db.unsafe<{ id: string }[]>('SELECT id FROM groups WHERE name = $1', [
+    const existing = await db.unsafe<
+      {
+        id: string;
+        description: string | null;
+        owner_id: string | null;
+        sso_provider_id: string | null;
+      }[]
+    >('SELECT id, description, owner_id, sso_provider_id FROM groups WHERE name = $1', [
       appGroupName,
     ]);
-    const groupId = existing[0]?.id ?? newId();
-    if (!existing[0]) {
-      await db.unsafe('INSERT INTO groups (id, name, description) VALUES ($1, $2, $3)', [
-        groupId,
-        appGroupName,
-        `mapped from ${provider.name}:${claimGroup}`,
+    const group = existing[0];
+    if (!group) {
+      const groupId = newId();
+      await db.unsafe(
+        'INSERT INTO groups (id, name, description, sso_provider_id) VALUES ($1, $2, $3, $4)',
+        [groupId, appGroupName, `mapped from ${provider.name}:${claimGroup}`, provider.id],
+      );
+      desired.add(groupId);
+      continue;
+    }
+    // Never pull a user into a self-service group that merely reserved this
+    // name. Only this IdP's groups, or a legacy mapping, receive members.
+    const legacy =
+      group.sso_provider_id === null &&
+      group.owner_id === null &&
+      startsWithMapping(group.description, provider.name);
+    if (legacy) {
+      await db.unsafe('UPDATE groups SET sso_provider_id = $2 WHERE id = $1', [
+        group.id,
+        provider.id,
       ]);
     }
+    if (legacy || group.sso_provider_id === provider.id) desired.add(group.id);
+  }
+
+  // A user removed from an IdP group must lose the mapped app group too,
+  // otherwise stale grants survive every later sign-in.
+  await db.unsafe(
+    `DELETE FROM group_members gm
+      USING groups g
+      WHERE gm.user_id = $1
+        AND g.id = gm.group_id
+        AND g.sso_provider_id = $2
+        AND NOT (g.id = ANY($3::uuid[]))`,
+    [userId, provider.id, [...desired]],
+  );
+  for (const groupId of desired) {
     await db.unsafe(
       'INSERT INTO group_members (group_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
       [groupId, userId],

@@ -1,5 +1,6 @@
 /** Template, base-config, and catalog routes. */
 
+import { hasPrivilege } from '../auth/principal.ts';
 import type { Implementer } from '../implementer.ts';
 import {
   catalogTemplates,
@@ -25,10 +26,19 @@ export function templateRoutes(os: Implementer) {
         getTemplate(context.db, input.id),
       ),
       create: os.templates.create.handler(async ({ input, context }) =>
-        createTemplate(context.db, context.auth.user?.id ?? null, input),
+        createTemplate(
+          context.db,
+          context.auth.user?.id ?? null,
+          input,
+          hasPrivilege(context.auth, 'compute.write', null),
+        ),
       ),
       update: os.templates.update.handler(async ({ input, context }) =>
-        updateTemplate(context.db, { ...input, id: input.id }),
+        updateTemplate(
+          context.db,
+          { ...input, id: input.id },
+          hasPrivilege(context.auth, 'compute.write', null),
+        ),
       ),
       delete: os.templates.delete.handler(async ({ input, context }) => {
         await deleteTemplate(context.db, input.id);

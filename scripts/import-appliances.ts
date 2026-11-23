@@ -55,11 +55,15 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 
 const LOCAL_DB = process.env.NB_DATABASE_URL ?? 'postgres://nya@127.0.0.1:5432/netlabor';
-const IMAGE_ROOT = process.env.NB_IMAGE_DIR ?? '/var/lib/netlabor/images';
+// Write where the agents read: the shared NFS directory in a clustered install.
+const IMAGE_ROOT =
+  process.env.NB_STORAGE_DRIVER === 'nfs'
+    ? (process.env.NB_NFS_IMAGE_DIR ?? '/srv/netlabor/images')
+    : (process.env.NB_IMAGE_DIR ?? '/var/lib/netlabor/images');
 const CACHE_PATH = path.join(IMAGE_ROOT, '.gns3a-import-cache.json');
 
 function parseArgs(argv: string[]): ImportOptions {
-  let dir = '../railink/appliances';
+  let dir = process.env.NB_TEMPLATE_DIR ?? 'appliances';
   let dryRun = false;
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index];

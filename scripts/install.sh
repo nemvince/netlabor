@@ -20,6 +20,11 @@ DEPS_SET=0
 BINARY_DIR=""
 WITH_DOCKER=0
 WITH_NAT=0
+STORAGE_DRIVER=""
+NFS_IMAGE_DIR=""
+STORAGE_SET=0
+PROJECT_DIR=""
+TEMPLATE_DIR=""
 
 PUBLIC_URL=""
 ADMIN_USER="admin"
@@ -74,6 +79,14 @@ Agent (fresh installs only):
   --with-docker           install Docker Engine for container nodes
   --with-nat              provision the host NAT bridge for NAT nodes
 
+Images (controller and agent installs; re-run to change an existing install):
+  --storage-driver local|nfs   keep images per compute, or share one NFS directory
+  --nfs-image-dir <dir>        shared image directory, e.g. /srv/netlabor/images
+                               (required with --storage-driver nfs; mounted on agents)
+  --project-dir <dir>          per-compute node working directories (default
+                               /var/lib/netlabor/projects; put it on local disk)
+  --template-dir <dir>         appliance bundle directory for import:appliances
+
 General:
   --skip-deps             do not install or configure host dependencies
   --with-deps             install host dependencies even when updating
@@ -113,6 +126,10 @@ while [[ $# -gt 0 ]]; do
     --underlay-interface) UNDERLAY_INTERFACE="${2:?--underlay-interface needs a value}" && shift ;;
     --with-docker) WITH_DOCKER=1 ;;
     --with-nat) WITH_NAT=1 ;;
+    --storage-driver) STORAGE_DRIVER="${2:?--storage-driver needs a value}" && STORAGE_SET=1 && shift ;;
+    --nfs-image-dir) NFS_IMAGE_DIR="${2:?--nfs-image-dir needs a value}"; STORAGE_SET=1; [[ -n "$STORAGE_DRIVER" ]] || STORAGE_DRIVER=nfs; shift ;;
+    --project-dir) PROJECT_DIR="${2:?--project-dir needs a value}" && shift ;;
+    --template-dir) TEMPLATE_DIR="${2:?--template-dir needs a value}" && shift ;;
     --skip-deps) SKIP_DEPS=1 && DEPS_SET=1 ;;
     --with-deps) SKIP_DEPS=0 && DEPS_SET=1 ;;
     --yes) ASSUME_YES=1 ;;
@@ -156,6 +173,20 @@ confirm() { # confirm <prompt> <default: y|n>
   [[ "${__answer:-${2:-y}}" =~ ^([yY]|[yY][eE][sS])$ ]]
 }
 
+env_get() { # env_get <file> <key>
+  [[ -f "$1" ]] || return 0
+  sed -n "s/^$2=//p" "$1" | tail -n 1
+}
+
+set_env() { # set_env <file> <key> <value>
+  local tmp
+  tmp=$(mktemp)
+  grep -v "^$2=" "$1" >"$tmp" || true
+  printf '%s=%s\n' "$2" "$3" >>"$tmp"
+  cat "$tmp" >"$1"
+  rm -f "$tmp"
+}
+
 EXISTING_CONTROLLER=0
 [[ -f "$ENV_DIR/controller.env" || -x "$PREFIX/netlabor-controller" ]] && EXISTING_CONTROLLER=1
 EXISTING_AGENT=0
@@ -185,6 +216,24 @@ if [[ $INSTALL_CONTROLLER -eq 1 && $EXISTING_CONTROLLER -eq 1 ]] || [[ $INSTALL_
 fi
 # An update replaces binaries only; host dependencies are skipped unless asked for.
 if [[ $DEPS_SET -eq 0 && $UPDATE -eq 1 ]]; then SKIP_DEPS=1; fi
+
+# Keep an existing image-store setting when re-running without the flags.
+if [[ -z "$STORAGE_DRIVER" ]]; then
+  STORAGE_DRIVER=$(env_get "$ENV_DIR/controller.env" NB_STORAGE_DRIVER)
+  [[ -n "$STORAGE_DRIVER" ]] || STORAGE_DRIVER=$(env_get "$ENV_DIR/agent.env" NB_STORAGE_DRIVER)
+fi
+if [[ -z "$NFS_IMAGE_DIR" ]]; then
+  NFS_IMAGE_DIR=$(env_get "$ENV_DIR/controller.env" NB_NFS_IMAGE_DIR)
+  [[ -n "$NFS_IMAGE_DIR" ]] || NFS_IMAGE_DIR=$(env_get "$ENV_DIR/agent.env" NB_NFS_IMAGE_DIR)
+fi
+STORAGE_DRIVER=${STORAGE_DRIVER:-local}
+[[ "$STORAGE_DRIVER" == local || "$STORAGE_DRIVER" == nfs ]] ||
+  die "--storage-driver must be local or nfs"
+if [[ "$STORAGE_DRIVER" == nfs && -z "$NFS_IMAGE_DIR" ]]; then
+  die "--nfs-image-dir is required with --storage-driver nfs"
+fi
+[[ -n "$PROJECT_DIR" ]] || PROJECT_DIR=$(env_get "$ENV_DIR/agent.env" NB_PROJECT_DIR)
+[[ -n "$TEMPLATE_DIR" ]] || TEMPLATE_DIR=$(env_get "$ENV_DIR/controller.env" NB_TEMPLATE_DIR)
 
 case "$(uname -m)" in
   x86_64 | amd64) ARCH=x64 ;;
@@ -252,6 +301,29 @@ apt_install() {
 
 # --- controller ------------------------------------------------------------
 
+# ProtectSystem=strict hides a mounted image directory from the controller
+# unless the path is added to ReadWritePaths; the unit is generic, so the
+# deployment-specific paths go in a drop-in.
+write_nfs_override() { # write_nfs_override <controller|agent>
+  local unit=$1 dir="/etc/systemd/system/netlabor-$1.service.d"
+  local -a paths=()
+  [[ "$STORAGE_DRIVER" == nfs && -n "$NFS_IMAGE_DIR" ]] && paths+=("$NFS_IMAGE_DIR")
+  [[ "$unit" == agent && -n "$PROJECT_DIR" && "$PROJECT_DIR" != /var/lib/netlabor/projects ]] &&
+    paths+=("$PROJECT_DIR")
+  if [[ ${#paths[@]} -eq 0 ]]; then
+    rm -f "$dir/nfs.conf"
+    return 0
+  fi
+  install -d -m 0755 "$dir"
+  cat >"$dir/nfs.conf" <<EOF
+[Unit]
+RequiresMountsFor=${paths[*]}
+
+[Service]
+ReadWritePaths=${paths[*]}
+EOF
+}
+
 install_controller() {
   local binary="$TMP/netlabor-controller"
   local fresh=0
@@ -280,6 +352,15 @@ install_controller() {
     [[ -n "$ADMIN_PASSWORD" ]] || ask_secret ADMIN_PASSWORD "First administrator password (empty = run the setup wizard)"
     ask ADMIN_USER "First administrator user" "$ADMIN_USER"
     ask LISTEN "Listen address" "$LISTEN"
+    if [[ $STORAGE_SET -eq 0 ]]; then
+      ask STORAGE_DRIVER "Image storage (local or nfs)" "$STORAGE_DRIVER"
+    fi
+    [[ "$STORAGE_DRIVER" == local || "$STORAGE_DRIVER" == nfs ]] ||
+      die "--storage-driver must be local or nfs"
+    if [[ "$STORAGE_DRIVER" == nfs ]]; then
+      [[ -n "$NFS_IMAGE_DIR" ]] || ask NFS_IMAGE_DIR "Shared NFS image directory" "/srv/netlabor/images"
+      [[ -n "$NFS_IMAGE_DIR" ]] || die "--nfs-image-dir is required with --storage-driver nfs"
+    fi
   fi
 
   id -u netlabor-controller >/dev/null 2>&1 ||
@@ -296,6 +377,11 @@ install_controller() {
 
   if [[ $fresh -eq 0 ]]; then
     say "Keeping $ENV_DIR/controller.env"
+    if [[ $STORAGE_SET -eq 1 ]]; then
+      set_env "$ENV_DIR/controller.env" NB_STORAGE_DRIVER "$STORAGE_DRIVER"
+      set_env "$ENV_DIR/controller.env" NB_NFS_IMAGE_DIR "$NFS_IMAGE_DIR"
+    fi
+    [[ -n "$TEMPLATE_DIR" ]] && set_env "$ENV_DIR/controller.env" NB_TEMPLATE_DIR "$TEMPLATE_DIR"
   else
     umask 077
     {
@@ -306,10 +392,21 @@ install_controller() {
       echo "NB_ADMIN_USER=$ADMIN_USER"
       echo "NB_ADMIN_PASSWORD=$ADMIN_PASSWORD"
       echo "NB_LOG_LEVEL=info"
+      echo "NB_STORAGE_DRIVER=$STORAGE_DRIVER"
+      if [[ "$STORAGE_DRIVER" == nfs ]]; then
+        echo "NB_NFS_IMAGE_DIR=$NFS_IMAGE_DIR"
+      fi
       if [[ -n "$WEB_ROOT" ]]; then echo "NB_WEB_ROOT=$WEB_ROOT"; fi
+      if [[ -n "$TEMPLATE_DIR" ]]; then echo "NB_TEMPLATE_DIR=$TEMPLATE_DIR"; fi
     } >"$ENV_DIR/controller.env"
     say "Wrote $ENV_DIR/controller.env"
   fi
+  if [[ "$STORAGE_DRIVER" == nfs ]]; then
+    # The head node owns the export directory; workers only mount it.
+    install -d -m 0755 "$NFS_IMAGE_DIR"
+    chown netlabor-controller:netlabor-controller "$NFS_IMAGE_DIR" 2>/dev/null || true
+  fi
+  write_nfs_override controller
 }
 
 # --- agent -----------------------------------------------------------------
@@ -439,6 +536,11 @@ install_agent() {
 
   if [[ $fresh -eq 0 ]]; then
     say "Keeping $ENV_DIR/agent.env"
+    if [[ $STORAGE_SET -eq 1 ]]; then
+      set_env "$ENV_DIR/agent.env" NB_STORAGE_DRIVER "$STORAGE_DRIVER"
+      set_env "$ENV_DIR/agent.env" NB_NFS_IMAGE_DIR "$NFS_IMAGE_DIR"
+    fi
+    [[ -n "$PROJECT_DIR" ]] && set_env "$ENV_DIR/agent.env" NB_PROJECT_DIR "$PROJECT_DIR"
   else
     local base="" agent_url="$AGENT_URL"
     [[ -n "$agent_url" ]] || agent_url="http://$(hostname -f 2>/dev/null || hostname):8081"
@@ -484,6 +586,17 @@ install_agent() {
       ask UNDERLAY_INDEX "Underlay address index" "$UNDERLAY_INDEX"
     fi
     ask UNDERLAY_INTERFACE "Underlay interface" "$UNDERLAY_INTERFACE"
+    if [[ $STORAGE_SET -eq 0 && $INSTALL_CONTROLLER -eq 0 ]]; then
+      ask STORAGE_DRIVER "Image storage (local or nfs)" "$STORAGE_DRIVER"
+    fi
+    [[ "$STORAGE_DRIVER" == local || "$STORAGE_DRIVER" == nfs ]] ||
+      die "--storage-driver must be local or nfs"
+    if [[ "$STORAGE_DRIVER" == nfs ]]; then
+      [[ -n "$NFS_IMAGE_DIR" ]] || ask NFS_IMAGE_DIR "Mounted NFS image directory" "/srv/netlabor/images"
+      [[ -n "$NFS_IMAGE_DIR" ]] || die "--nfs-image-dir is required with --storage-driver nfs"
+      mountpoint -q "$NFS_IMAGE_DIR" 2>/dev/null ||
+        echo "warning: $NFS_IMAGE_DIR is not a mountpoint; the agent will refuse to start" >&2
+    fi
     umask 077
     cat >"$ENV_DIR/agent.env" <<ENV
 NB_AGENT_TOKEN=${TOKEN:-replace-with-compute-token}
@@ -491,15 +604,21 @@ NB_UNDERLAY_INDEX=$UNDERLAY_INDEX
 NB_UNDERLAY_HOST=$UNDERLAY_HOST
 NB_AGENT_LISTEN=0.0.0.0:8081
 NB_STATE_DIR=/var/lib/netlabor
+NB_PROJECT_DIR=${PROJECT_DIR:-/var/lib/netlabor/projects}
 NB_RUN_DIR=/run/netlabor
 NB_UBRIDGE_PATH=$(command -v ubridge 2>/dev/null || echo /usr/local/bin/ubridge)
 NB_UNDERLAY_INTERFACE=$UNDERLAY_INTERFACE
 NB_EMULATOR_UID=$(id -u netlabor-emu)
 NB_EMULATOR_GID=$(id -g netlabor-emu)
 NB_NAT_BRIDGE=nb-nat
+NB_STORAGE_DRIVER=$STORAGE_DRIVER
 NB_LOG_LEVEL=info
 ENV
+    if [[ "$STORAGE_DRIVER" == nfs ]]; then
+      echo "NB_NFS_IMAGE_DIR=$NFS_IMAGE_DIR" >>"$ENV_DIR/agent.env"
+    fi
     say "Wrote $ENV_DIR/agent.env"
+    write_nfs_override agent
     if [[ -n "$REG_TOKEN" ]] && command -v systemctl >/dev/null 2>&1; then
       systemctl enable --now netlabor-agent >/dev/null 2>&1 && say "Started netlabor-agent"
     fi
@@ -595,6 +714,8 @@ write_units
 command -v systemctl >/dev/null 2>&1 && systemctl daemon-reload || true
 [[ $INSTALL_CONTROLLER -eq 1 ]] && install_controller
 [[ $INSTALL_AGENT -eq 1 ]] && install_agent
+# install_* may add the NFS drop-in after the first daemon-reload.
+command -v systemctl >/dev/null 2>&1 && systemctl daemon-reload || true
 [[ $INSTALL_CONTROLLER -eq 1 ]] && restart_if_running netlabor-controller
 [[ $INSTALL_AGENT -eq 1 ]] && restart_if_running netlabor-agent
 

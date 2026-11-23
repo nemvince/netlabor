@@ -39,15 +39,19 @@ modules; `xorriso` for cloud-init; optional emulators (`qemu-system-x86_64`, `dy
 
 Controller: `NB_DATABASE_URL`, `NB_LISTEN` (default `0.0.0.0:8080`), `NB_PUBLIC_URL`,
 `NB_SECRET_KEY`, `NB_WEB_ROOT` (serve the UI from a directory instead of the copy embedded in the
-binary), `NB_STAGING_DIR`, `NB_STORAGE_DRIVER` (`local`/`nfs`),
+binary), `NB_STAGING_DIR`, `NB_TEMPLATE_DIR` (appliance source directory for
+`import:appliances`), `NB_STORAGE_DRIVER` (`local`/`nfs`),
 `NB_NFS_IMAGE_DIR`, `NB_SESSION_TTL_HOURS`, `NB_AUTO_CLOSE_IDLE_MINUTES` (default 10),
 `NB_ADMIN_USER`, `NB_ADMIN_PASSWORD`, `NB_LOG_LEVEL`, `NB_LOG_PRETTY`, `NB_MAX_UPLOAD_BYTES`,
-`NB_MAX_NODES_PER_PROJECT` (default 500), `NB_ALLOW_INSECURE_AGENT`,
-`NB_TLS_CERT`/`NB_TLS_KEY`, `NB_DISABLE_RATE_LIMITS` (tests only), `NB_ALLOW_INSECURE_OIDC`
-(http issuers outside loopback).
+`NB_MAX_NODES_PER_PROJECT` (default 500), `NB_ALLOW_INSECURE_AGENT`, `NB_TRUST_PROXY`
+(read the client address from `X-Forwarded-For`; only set behind a proxy you control),
+`NB_ISSUE_URL` (where the account menu's **Report a problem** link goes; set it to `off` or
+`none` to hide it), `NB_TLS_CERT`/`NB_TLS_KEY`, `NB_DISABLE_RATE_LIMITS` (tests only),
+`NB_ALLOW_INSECURE_OIDC` (http issuers outside loopback).
 
 Agent: `NB_AGENT_LISTEN` (default `0.0.0.0:8081`), `NB_AGENT_TOKEN`, `NB_STATE_DIR` (default
-`/var/lib/netlabor`), `NB_RUN_DIR`, `NB_UNDERLAY_INDEX`, `NB_UNDERLAY_HOST`, `NB_UNDERLAY_CIDR`,
+`/var/lib/netlabor`), `NB_PROJECT_DIR` (project and node working files; default
+`$NB_STATE_DIR/projects`), `NB_RUN_DIR`, `NB_UNDERLAY_INDEX`, `NB_UNDERLAY_HOST`, `NB_UNDERLAY_CIDR`,
 `NB_UNDERLAY_INTERFACE`, `NB_UBRIDGE_PATH`, `NB_NAT_BRIDGE`, `NB_CLOUD_INTERFACES`,
 `NB_EMULATOR_UID`/`NB_EMULATOR_GID`, `NB_DOCKER_SOCKET`, `NB_DOCKER_AUTO_PULL`,
 `NB_STORAGE_DRIVER`, `NB_IMAGE_DIR`, `NB_NFS_IMAGE_DIR`, `NB_MAX_SHARKD_SESSIONS`,
@@ -97,6 +101,109 @@ no nftables rules; the agent owns `inet netlabor` and rebuilds it on boot and on
 realize. From a checkout,
 `sudo scripts/provision-nat-bridge.sh` does the same thing. A NAT node has one port: connect it to
 the segment that should reach the internet.
+
+## Shared image storage (NFS)
+
+The full head-node-plus-workers walkthrough is in the [4-node cluster install](/deployment) guide.
+The rules below are the storage-specific details.
+
+`NB_STORAGE_DRIVER=local` keeps one copy of each image per compute. Set
+`NB_STORAGE_DRIVER=nfs` on the controller and on every agent to keep one copy in
+`NB_NFS_IMAGE_DIR` on a head node and share it with the other computes.
+
+1. Export the directory from the head node. Only the controller writes; the
+   agents and the emulator account need read and traverse access:
+
+   ```ini
+   # /etc/exports
+   /srv/netlabor/images 10.0.0.0/24(rw,sync,root_squash,no_subtree_check)
+   ```
+
+   Create it with mode `0755`, owned by the controller user
+   (`netlabor-controller`), and make sure every parent is world-traversable
+   (`0711` or `0755`). `bun scripts/install.sh --controller --storage-driver nfs
+--nfs-image-dir /srv/netlabor/images` does the ownership part; run the export
+   itself once by hand.
+
+2. Mount the same directory on each worker at the same path, for example in
+   `/etc/fstab`:
+
+   ```fstab
+   head:/srv/netlabor/images /srv/netlabor/images nfs ro,nosuid,nodev,_netdev 0 0
+   ```
+
+   Agents only read it, so `ro` is enough. Add the mount to systemd with
+   `x-systemd.required-by=netlabor-agent.service` or rely on the installer's
+   `RequiresMountsFor` drop-in, which makes the unit refuse to start until the
+   path is mounted.
+
+3. Set the same `NB_STORAGE_DRIVER=nfs` and `NB_NFS_IMAGE_DIR` in every
+   `/etc/netlabor/agent.env`. The installer does this with
+   `--agent --storage-driver nfs --nfs-image-dir <dir>`; re-run it on each host
+   with those flags, then `systemctl restart netlabor-agent`.
+4. Upload the images once through the library. The controller stages them
+   straight into the shared directory and verifies every read by sha256, so all
+   computes see a new image without `image.sync`.
+
+The controller and every agent fail at startup when the directory is missing or
+unreadable, rather than silently using an unmounted local mountpoint. In NFS
+mode **Images → Prune** removes the one shared copy from the controller;
+replicas are bookkeeping rows, not separate files. Deleting files on a compute
+by hand breaks every other compute, so use the UI.
+
+Weak NFS permissions are the usual failure: the emulator account cannot read a
+`0700` directory, and `root_squash` means root on a worker cannot read or delete
+files owned by `netlabor-controller`. Keep the tree `0755`/`0644`.
+
+Appliance builds write new image files into the active image root. With the
+recommended read-only worker mounts they cannot build; either build on the head
+node (with a writable local export) or mount the export writable on the builder
+and export it with `all_squash` mapped to the controller uid, so the files stay
+owned by the account that later prunes them.
+
+Only the template images belong on the shared export. Node disks, logs, and
+captures stay on each compute and should sit on fast local storage: set
+`NB_PROJECT_DIR` per agent (for example `/mnt/local/netlabor/projects`) and add
+`--project-dir /mnt/local/netlabor/projects` when running the installer so the
+systemd unit waits for that mount. The controller's `NB_TEMPLATE_DIR` is only the
+input directory for `import:appliances`; it is never served or mounted.
+
+## Accounts and approval
+
+New accounts created by OIDC/Entra start in the built-in `pending` role, which
+holds no privileges and shows an "awaiting approval" page. An administrator
+assigns a real role from **Settings → Users** (or changes the provider's default
+role to skip the wait). Project grants use only the project roles; the grant
+endpoint refuses global roles such as `admin` or `pending`.
+
+`editor` projects can create, edit, and operate their own nodes but cannot export
+a project archive; `project.export` belongs to owners and administrators. Import
+still requires the global `project.write` privilege.
+
+Users can create their own groups from **Groups**, invite classmates, and project
+owners can grant those groups a project role. Group owners cannot assign global
+roles to a group; only administrators can. IdP-mapped groups are tracked by
+provider, so a student cannot reserve an SSO group name to receive mapped
+members; if a mapping hits a self-service group of that name, the mapping is
+skipped until the name is freed.
+
+## Microsoft Entra ID
+
+Register an application in the tenant, add the redirect URI
+`https://<controller>/auth/oidc/<provider-id>/callback`, and create a client
+secret. In Netlabor use the tenant issuer, never `common` or `organizations`:
+
+```
+https://login.microsoftonline.com/<tenant-id>/v2.0
+```
+
+The controller rejects the multi-tenant aliases. Request `openid profile email`
+and, if you want group mapping, enable the `groups` claim (optional claim or app
+manifest `groupMembershipClaims`). Map Entra group **object ids** to app group
+names; the controller also accepts `preferred_username` as the account's email
+because Entra often omits `email`. Very large group sets can use the
+`_claim_names` overage form, which is not expanded; map a smaller claim or use a
+custom claim in that case.
 
 ## Backup and restore
 

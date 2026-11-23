@@ -118,8 +118,10 @@ export async function startUpload(
   return { uploadId: id, chunkSize: UPLOAD_CHUNK_SIZE, receivedBytes: 0 };
 }
 
-export async function uploadStatus(db: SQL, id: string): Promise<UploadStatus> {
-  return toStatus(await getRecord(db, id));
+export async function uploadStatus(db: SQL, auth: UploadAuth, id: string): Promise<UploadStatus> {
+  const record = await getRecord(db, id);
+  assertOwner(record, auth.userId, auth.isAdmin);
+  return toStatus(record);
 }
 
 export async function writeUploadChunk(

@@ -105,6 +105,14 @@ async function replaceRoles(db: SQL, userId: string, roleIds: string[]): Promise
   }
 }
 
+/** `pending` is a waiting room, not a role to combine with real ones. */
+async function exclusivePendingRole(db: SQL, roleIds: string[]): Promise<string[]> {
+  if (roleIds.length < 2) return roleIds;
+  const rows = await db.unsafe<{ id: string }[]>("SELECT id FROM roles WHERE name = 'pending'");
+  const pending = rows[0]?.id;
+  return pending ? roleIds.filter((id) => id !== pending) : roleIds;
+}
+
 async function replaceGroups(db: SQL, userId: string, groupIds: string[]): Promise<void> {
   await db.unsafe('DELETE FROM group_members WHERE user_id = $1', [userId]);
   for (const groupId of groupIds) {
@@ -137,6 +145,7 @@ export async function createUser(
 
   const id = newId();
   const passwordHash = await Bun.password.hash(input.password, { algorithm: 'argon2id' });
+  const roleIds = await exclusivePendingRole(db, input.roleIds);
   await db.begin(async (tx) => {
     const sql = tx as SQL;
     await sql.unsafe(
@@ -144,7 +153,7 @@ export async function createUser(
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [id, username, input.email ?? null, input.displayName ?? null, passwordHash, input.isActive],
     );
-    await replaceRoles(sql, id, input.roleIds);
+    await replaceRoles(sql, id, roleIds);
     await replaceGroups(sql, id, input.groupIds);
   });
   return getUser(db, id);
@@ -165,6 +174,8 @@ export async function updateUser(
     input.id,
   ]);
   if (!existing[0]) throw new AppError('NOT_FOUND', 'user not found');
+  const roleIds =
+    input.roleIds === undefined ? undefined : await exclusivePendingRole(db, input.roleIds);
 
   await db.begin(async (tx) => {
     const sql = tx as SQL;
@@ -187,7 +198,7 @@ export async function updateUser(
       ]);
       if (!input.isActive) await sql.unsafe('DELETE FROM sessions WHERE user_id = $1', [input.id]);
     }
-    if (input.roleIds !== undefined) await replaceRoles(sql, input.id, input.roleIds);
+    if (roleIds !== undefined) await replaceRoles(sql, input.id, roleIds);
     if (input.groupIds !== undefined) await replaceGroups(sql, input.id, input.groupIds);
   });
   return getUser(db, input.id);
@@ -205,6 +216,26 @@ export async function deleteUser(db: SQL, id: string): Promise<void> {
     id,
   ]);
   if (!rows[0]) throw new AppError('NOT_FOUND', 'user not found');
+}
+
+/** Active accounts only; this is the directory other users can invite from. */
+export async function lookupUsers(
+  db: SQL,
+  input: { search?: string; limit: number },
+): Promise<Array<{ id: string; username: string; displayName: string | null }>> {
+  const rows = await db.unsafe<{ id: string; username: string; display_name: string | null }[]>(
+    `SELECT id, username, display_name FROM users
+      WHERE is_active = true
+        AND ($1::text IS NULL OR username ILIKE '%' || $1 || '%' OR display_name ILIKE '%' || $1 || '%')
+      ORDER BY display_name NULLS LAST, username ASC
+      LIMIT $2`,
+    [input.search ?? null, input.limit],
+  );
+  return rows.map((row) => ({
+    id: row.id,
+    username: row.username,
+    displayName: row.display_name,
+  }));
 }
 
 export async function setUserPassword(db: SQL, id: string, password: string): Promise<void> {

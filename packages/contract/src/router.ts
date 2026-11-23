@@ -171,27 +171,30 @@ const users = {
   setPassword: proc('Set a user password', authz({ mode: 'any', privilege: 'user.write' }))
     .input(auth.SetPasswordInput)
     .output(Ok),
+  /** Signed-in users need names to invite classmates to a group or project. */
+  lookup: proc('Search active users for invitations', SESSION)
+    .input(auth.DirectoryQuery)
+    .output(z.array(auth.DirectoryUser)),
 };
 
 const groups = {
-  list: proc('List groups', authz({ mode: 'any', privilege: 'user.read' }))
-    .input(noInput)
-    .output(z.array(auth.GroupRow)),
-  create: proc('Create a group', authz({ mode: 'any', privilege: 'user.write' }))
+  list: proc('List groups', SESSION).input(noInput).output(z.array(auth.GroupRow)),
+  create: proc('Create a group you own', SESSION)
     .input(auth.GroupUpsertInput)
     .output(auth.GroupRow),
-  update: proc('Update a group and its members', authz({ mode: 'any', privilege: 'user.write' }))
+  update: proc('Update a group you own', SESSION)
     .input(auth.GroupUpsertInput.extend({ id: Id }))
     .output(auth.GroupRow),
-  delete: proc('Delete a group', authz({ mode: 'any', privilege: 'user.write' }))
+  delete: proc('Delete a group you own', SESSION)
     .input(z.object({ id: Id }))
     .output(Ok),
+  members: proc('List the members of a group', SESSION)
+    .input(z.object({ id: Id }))
+    .output(z.array(auth.DirectoryUser)),
 };
 
 const roles = {
-  list: proc('List roles with privileges', authz({ mode: 'any', privilege: 'user.read' }))
-    .input(noInput)
-    .output(z.array(auth.RoleRow)),
+  list: proc('List roles with privileges', SESSION).input(noInput).output(z.array(auth.RoleRow)),
   create: proc('Create a role', authz({ mode: 'any', privilege: 'user.write' }))
     .input(auth.RoleInput)
     .output(auth.RoleRow),
@@ -439,7 +442,10 @@ const templates = {
   )
     .input(misc.TemplateListInput)
     .output(z.array(misc.TemplateRow)),
-  get: proc('Read one device template', authz({ mode: 'any', privilege: 'template.read' }))
+  get: proc(
+    'Read one device template',
+    authz({ mode: 'any', privilege: 'template.read', project: 'template' }),
+  )
     .input(z.object({ id: Id }))
     .output(misc.TemplateRow),
   create: proc(
@@ -469,22 +475,25 @@ const templates = {
   baseConfigs: {
     list: proc(
       'List base configuration files of a template',
-      authz({ mode: 'any', privilege: 'template.read' }),
+      authz({ mode: 'any', privilege: 'template.read', project: 'input.templateId' }),
     )
       .input(misc.BaseConfigListInput)
       .output(z.array(misc.BaseConfigFile)),
-    read: proc('Read a base configuration file', authz({ mode: 'any', privilege: 'template.read' }))
+    read: proc(
+      'Read a base configuration file',
+      authz({ mode: 'any', privilege: 'template.read', project: 'input.templateId' }),
+    )
       .input(misc.BaseConfigReadInput)
       .output(misc.BaseConfigFile),
     write: proc(
       'Write a base configuration file',
-      authz({ mode: 'any', privilege: 'template.write' }),
+      authz({ mode: 'any', privilege: 'template.write', project: 'input.templateId' }),
     )
       .input(misc.BaseConfigWriteInput)
       .output(misc.BaseConfigFile),
     delete: proc(
       'Delete a base configuration file',
-      authz({ mode: 'any', privilege: 'template.write' }),
+      authz({ mode: 'any', privilege: 'template.write', project: 'input.templateId' }),
     )
       .input(misc.BaseConfigReadInput)
       .output(Ok),

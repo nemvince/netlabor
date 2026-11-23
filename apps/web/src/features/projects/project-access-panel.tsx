@@ -17,7 +17,6 @@ import { Table, TBody, Td, THead, Th, Tr } from '../../components/table.tsx';
 import { client, orpc } from '../../lib/api.ts';
 import { messageOf } from '../../lib/errors.ts';
 import { queryClient } from '../../lib/query-client.ts';
-import { useMe } from '../auth/use-me.ts';
 import { Button } from '@netlabor/ui/components/button';
 
 const grantSchema = z.object({
@@ -36,11 +35,10 @@ function invalidateGrants() {
 
 /** Project access: grants, revocable share links, and the grant form. */
 export function ProjectAccessPanel({ projectId }: { projectId: string }) {
-  const { can } = useMe();
-  const canReadPeople = can('user.read');
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [ttlHours, setTtlHours] = useState(24);
+  const [userSearch, setUserSearch] = useState('');
   const [createdLink, setCreatedLink] = useState<{ path: string; expiresAt: string } | null>(null);
 
   const grants = useQuery({
@@ -48,18 +46,17 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
     retry: false,
   });
   const users = useQuery({
-    ...orpc.users.list.queryOptions({ input: { limit: 500, offset: 0 } }),
-    enabled: canReadPeople,
+    ...orpc.users.lookup.queryOptions({
+      input: { limit: 50, ...(userSearch.trim() ? { search: userSearch.trim() } : {}) },
+    }),
     retry: false,
   });
   const groups = useQuery({
     ...orpc.groups.list.queryOptions({ input: {} }),
-    enabled: canReadPeople,
     retry: false,
   });
   const roles = useQuery({
     ...orpc.roles.list.queryOptions({ input: {} }),
-    enabled: canReadPeople,
     retry: false,
   });
 
@@ -150,7 +147,9 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
   }
 
   const grantRows = grants.data ?? [];
-  const assignableRoles = (roles.data ?? []).filter((role) => role.name !== 'admin');
+  const assignableRoles = (roles.data ?? []).filter((role) =>
+    (PROJECT_ROLE_NAMES as readonly string[]).includes(role.name),
+  );
   const projectRoleOrder = PROJECT_ROLE_NAMES as readonly string[];
   assignableRoles.sort((left, right) => {
     const leftIndex = projectRoleOrder.indexOf(left.name);
@@ -275,29 +274,25 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
                   <span className="nb-rule-label">{grant.subjectType}</span>
                 </Td>
                 <Td>
-                  {canReadPeople ? (
-                    <Select
-                      aria-label={`Role for ${grant.subjectName}`}
-                      value={grant.roleId}
-                      disabled={pending}
-                      onChange={(event) =>
-                        changeRole.mutate({
-                          projectId,
-                          subjectType: grant.subjectType,
-                          subjectId: grant.subjectId,
-                          roleId: event.target.value,
-                        })
-                      }
-                    >
-                      {assignableRoles.map((role) => (
-                        <option key={role.id} value={role.id}>
-                          {role.name}
-                        </option>
-                      ))}
-                    </Select>
-                  ) : (
-                    grant.roleName
-                  )}
+                  <Select
+                    aria-label={`Role for ${grant.subjectName}`}
+                    value={grant.roleId}
+                    disabled={pending}
+                    onChange={(event) =>
+                      changeRole.mutate({
+                        projectId,
+                        subjectType: grant.subjectType,
+                        subjectId: grant.subjectId,
+                        roleId: event.target.value,
+                      })
+                    }
+                  >
+                    {assignableRoles.map((role) => (
+                      <option key={role.id} value={role.id}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </Select>
                 </Td>
                 <Td align="right">
                   <Button
@@ -326,11 +321,16 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
         <div className="flex items-center gap-1.5 text-[12px] font-medium">
           <UserPlus size={13} aria-hidden /> Grant access
         </div>
-        {canReadPeople ? null : (
-          <Notice tone="info">
-            Loading users, groups, and roles requires the user.read privilege.
-          </Notice>
-        )}
+        {subjectType === 'user' ? (
+          <Field label="Search people" htmlFor="grant-user-search">
+            <Input
+              id="grant-user-search"
+              value={userSearch}
+              placeholder="name or username"
+              onChange={(event) => setUserSearch(event.target.value)}
+            />
+          </Field>
+        ) : null}
         <div className="grid grid-cols-[120px_1fr_170px] gap-2">
           <Field label="Member type" htmlFor="grant-subject-type">
             <Select id="grant-subject-type" disabled={pending} {...form.register('subjectType')}>
@@ -343,11 +343,7 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
             htmlFor="grant-subject-id"
             error={form.formState.errors.subjectId?.message}
           >
-            <Select
-              id="grant-subject-id"
-              disabled={!canReadPeople || pending}
-              {...form.register('subjectId')}
-            >
+            <Select id="grant-subject-id" disabled={pending} {...form.register('subjectId')}>
               <option value="">
                 {subjectType === 'user' ? 'Choose a user' : 'Choose a group'}
               </option>
@@ -359,11 +355,7 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
             </Select>
           </Field>
           <Field label="Role" htmlFor="grant-role" error={form.formState.errors.roleId?.message}>
-            <Select
-              id="grant-role"
-              disabled={!canReadPeople || pending}
-              {...form.register('roleId')}
-            >
+            <Select id="grant-role" disabled={pending} {...form.register('roleId')}>
               <option value="">Choose a role</option>
               {assignableRoles.map((role) => (
                 <option key={role.id} value={role.id}>
@@ -374,7 +366,7 @@ export function ProjectAccessPanel({ projectId }: { projectId: string }) {
           </Field>
         </div>
         <div className="flex items-center justify-end gap-2">
-          <Button type="submit" disabled={!canReadPeople || pending} variant="default" size="xs">
+          <Button type="submit" disabled={pending} variant="default" size="xs">
             {create.isPending ? 'Granting…' : 'Add grant'}
           </Button>
         </div>

@@ -3,6 +3,7 @@
 import { AppError, type LinkFilters } from '@netlabor/contract';
 import { issueTicket } from '@netlabor/shared';
 import type { AppDeps, Implementer } from '../implementer.ts';
+import { clientKey, LIMITS, limiter } from '../limits.ts';
 import {
   captureStatus,
   clearFilters,
@@ -84,6 +85,7 @@ export function linkRoutes(os: Implementer, deps: AppDeps) {
           captureStatus(context, input.linkId),
         ),
         ticket: os.links.capture.ticket.handler(async ({ input, context }) => {
+          limiter.consume(clientKey('ticket', context.request.ip), LIMITS.ticket);
           const link = await getLink(context.db, input.linkId);
           const ticket = issueTicket(
             {

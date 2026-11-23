@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import {
+  BugIcon as Bug,
   CaretDownIcon as ChevronDown,
   CaretRightIcon as ChevronRight,
   CpuIcon as Cpu,
@@ -19,6 +20,7 @@ import {
   SlidersHorizontalIcon as SlidersHorizontal,
   UserIcon as UserRound,
   UsersIcon as Users,
+  UsersThreeIcon as UsersThree,
   WrenchIcon as Wrench,
 } from '@phosphor-icons/react';
 import {
@@ -44,6 +46,7 @@ import { Button } from '@netlabor/ui/components/button';
 type AppPath =
   | '/'
   | '/projects'
+  | '/groups'
   | '/computes'
   | '/library'
   | '/tools'
@@ -66,6 +69,7 @@ interface NavItem {
 const PRIMARY: NavItem[] = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: Network, requires: ['project.read'] },
+  { to: '/groups', label: 'Groups', icon: UsersThree },
   { to: '/computes', label: 'Computes', icon: Server, requires: ['compute.read'] },
   {
     to: '/library',
@@ -172,9 +176,83 @@ function NavSection({
   );
 }
 
+/** Github-style issue forms accept a prefilled title and body; others get the plain link. */
+function reportHref(base: string, version: string, page: string): string {
+  const url = new URL(base);
+  if (!/(^|\.)github\.com$/i.test(url.hostname)) return url.toString();
+  url.pathname = `${url.pathname.replace(/\/$/, '')}/new`;
+  const body = [
+    '### What happened',
+    '',
+    '<!-- what you did and what went wrong -->',
+    '',
+    '### Context',
+    `- version: ${version}`,
+    `- page: ${page}`,
+    `- browser: ${navigator.userAgent}`,
+  ].join('\n');
+  url.searchParams.set('title', 'Bug report: ');
+  url.searchParams.set('body', body);
+  return url.toString();
+}
+
+function useServerInfo(): { issueUrl: string | null; version: string } {
+  const [info, setInfo] = useState<{ issueUrl: string | null; version: string }>({
+    issueUrl: null,
+    version: 'unknown',
+  });
+  useEffect(() => {
+    let active = true;
+    fetch('/version')
+      .then((response) => (response.ok ? response.json() : null))
+      .then((value: { issueUrl?: unknown; version?: unknown } | null) => {
+        if (!active || !value) return;
+        setInfo({
+          issueUrl: typeof value.issueUrl === 'string' ? value.issueUrl : null,
+          version: typeof value.version === 'string' ? value.version : 'unknown',
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+  return info;
+}
+
+/** Auto-created SSO accounts hold the no-privilege `pending` role. */
+function PendingApproval() {
+  return (
+    <div className="flex min-h-full items-center justify-center px-4 py-10">
+      <div className="nb-panel w-full max-w-[460px] p-6">
+        <div className="nb-rule-label" style={{ color: 'var(--color-copper)' }}>
+          account awaiting approval
+        </div>
+        <h1 className="mt-1 text-lg font-semibold tracking-tight">
+          An administrator must let you in
+        </h1>
+        <p className="mt-2 text-[13px]" style={{ color: 'var(--color-ink-dim)' }}>
+          Your single sign-on account was created with no role yet. Once an administrator assigns
+          you a role, this page goes away and your projects appear in the rail.
+        </p>
+        <Button
+          type="button"
+          className="mt-4 justify-center"
+          variant="outline"
+          size="sm"
+          onClick={() => void queryClient.invalidateQueries({ queryKey: orpc.auth.me.key() })}
+        >
+          Check again
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const { me, can } = useMe();
   const navigate = useNavigate();
+  const server = useServerInfo();
   // Progress toasts for OS-image downloads live app-wide, independent of pages.
   useEffect(() => startDownloadTracking(), []);
   const [railCollapsed, setRailCollapsed] = useState(() => {
@@ -297,6 +375,26 @@ export function AppShell({ children }: { children: ReactNode }) {
                       boxShadow: '0 12px 32px rgba(0,0,0,0.45)',
                     }}
                   >
+                    {server.issueUrl ? (
+                      <DropdownMenuItem
+                        render={
+                          <a
+                            href={reportHref(
+                              server.issueUrl,
+                              server.version,
+                              window.location.pathname,
+                            )}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex cursor-pointer items-center gap-2 rounded-[2px] px-2 py-1.5 text-[12.5px] outline-none data-[highlighted]:bg-[var(--color-panel-raised)]"
+                            style={{ color: 'var(--color-ink-dim)' }}
+                          >
+                            <Bug size={13} aria-hidden />
+                            Report a problem
+                          </a>
+                        }
+                      />
+                    ) : null}
                     {me ? (
                       <DropdownMenuItem
                         render={
@@ -342,7 +440,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </aside>
         <main id="nb-main" className="min-w-0 overflow-auto">
-          {children ?? <Outlet />}
+          {me?.roles.includes('pending') ? <PendingApproval /> : (children ?? <Outlet />)}
         </main>
       </div>
       <StatusBar />

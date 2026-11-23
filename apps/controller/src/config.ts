@@ -26,9 +26,13 @@ export interface ControllerConfig {
   maxUploadBytes: number;
   maxNodesPerProject: number;
   allowInsecureAgent: boolean;
+  /** Trust `X-Forwarded-For` for the client address (set behind a reverse proxy). */
+  trustProxy: boolean;
   tlsCert: string | null;
   tlsKey: string | null;
   version: string;
+  /** Where users report bugs; null hides the link. */
+  issueUrl: string | null;
 }
 
 function env(name: string): string | undefined {
@@ -54,6 +58,13 @@ function required(name: string): string {
   const value = env(name);
   if (value === undefined) throw new Error(`${name} is required`);
   return value;
+}
+
+/** `off`/`none`/`-` disables the link; an explicit URL replaces the default. */
+function normalizeIssueUrl(raw: string | undefined): string | null {
+  if (raw === undefined) return 'https://github.com/nemvince/netlabor/issues';
+  if (['off', 'none', '-'].includes(raw.toLowerCase())) return null;
+  return raw;
 }
 
 export function loadControllerConfig(overrides?: Partial<ControllerConfig>): ControllerConfig {
@@ -84,9 +95,11 @@ export function loadControllerConfig(overrides?: Partial<ControllerConfig>): Con
     maxUploadBytes: integerEnv('NB_MAX_UPLOAD_BYTES', 64 * 1024 * 1024 * 1024),
     maxNodesPerProject: integerEnv('NB_MAX_NODES_PER_PROJECT', 500),
     allowInsecureAgent: env('NB_ALLOW_INSECURE_AGENT') === '1',
+    trustProxy: env('NB_TRUST_PROXY') === '1',
     tlsCert: env('NB_TLS_CERT') ?? null,
     tlsKey: env('NB_TLS_KEY') ?? null,
     version: env('NB_VERSION') ?? buildVersion,
+    issueUrl: normalizeIssueUrl(env('NB_ISSUE_URL')),
     ...overrides,
   };
 

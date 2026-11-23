@@ -87,6 +87,8 @@ async function resolveProjectId(
       return fieldOf(input, 'projectId');
     case 'input.id':
       return fieldOf(input, 'id');
+    case 'input.templateId':
+      return lookupProject(context, 'templates', fieldOf(input, 'templateId'));
     case 'node':
       return lookupProject(context, 'nodes', fieldOf(input, 'nodeId') ?? fieldOf(input, 'id'));
     case 'link':

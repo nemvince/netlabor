@@ -97,7 +97,13 @@ properties — they are snapshots of the template at creation time, not live ref
 
 ## Imported appliances
 
-`bun run import:appliances --dir <path>` ingests GNS3 appliance bundles as builtin templates and
-library images. It is idempotent, hashes images into the blob store, maps QEMU options onto
-properties, and never overwrites a user template with the same name. Use `--dry-run` to inspect the
-mapping first.
+`bun run import:appliances [--dir <path>] [--dry-run]` ingests GNS3 appliance bundles as builtin
+templates and library images. It is idempotent, hashes images into the blob store, maps QEMU options
+onto properties, and never overwrites a user template with the same name. Use `--dry-run` to inspect
+the mapping first.
+
+The default directory is `NB_TEMPLATE_DIR`, or `appliances/` in the checkout when unset; the
+checkout path is gitignored, so nothing vendor-supplied enters the repository. In an NFS install set
+`NB_STORAGE_DRIVER=nfs` and `NB_NFS_IMAGE_DIR` before running it, so images land in the shared
+directory the agents read while node disks stay in each agent's `NB_PROJECT_DIR`. The import writes rows directly, so run it on the controller host
+with the same `NB_DATABASE_URL` as the controller, once, and restart nothing.

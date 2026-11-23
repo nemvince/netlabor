@@ -40,7 +40,7 @@ interface ProjectMetaFile {
 }
 
 export function projectDir(config: AgentConfig, projectId: string): string {
-  return path.join(config.stateDir, 'projects', projectId);
+  return path.join(config.projectDir, projectId);
 }
 
 export function nodeDir(config: AgentConfig, projectId: string, nodeId: string): string {
@@ -250,7 +250,7 @@ export async function readProjectMeta(
 /** Agent startup: remove namespaces, sockets, and links left by a dead agent. */
 async function killOrphanProcesses(config: AgentConfig): Promise<number> {
   let killed = 0;
-  const projectsRoot = path.join(config.stateDir, 'projects');
+  const projectsRoot = config.projectDir;
   const runRoot = `${config.runDir}/`;
   for (const entry of await readdir('/proc')) {
     const pid = Number(entry);

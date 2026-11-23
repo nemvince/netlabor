@@ -14,10 +14,12 @@ import { parseJsonColumn } from '@netlabor/db';
 import { decryptSecret, newId } from '@netlabor/shared';
 import type { SQL } from 'bun';
 import type { AppDeps } from '../implementer.ts';
+import { stripHostLevelProperties } from './host-options.ts';
 import { type ImageRequirement, listImages, matchRequiredImage } from './images.ts';
 import { dropNodeLinkDataplanes, ensureProjectLinkDataplanes } from './links.ts';
 import { allocatePort, releaseNodePorts } from './ports.ts';
 import { ensureProjectSlot, requireUnlocked } from './projects.ts';
+import { validateTemplateProperties } from './templates.ts';
 
 interface NodeRecord {
   id: string;
@@ -310,6 +312,7 @@ export async function createNode(
   deps: AppDeps,
   userId: string,
   input: NodeCreateInput,
+  allowHostOptions = true,
 ): Promise<NodeRow> {
   await requireUnlocked(deps.db, input.projectId);
   const project = await deps.db.unsafe<{ id: string; status: string }[]>(
@@ -350,7 +353,12 @@ export async function createNode(
   const templateProperties = template
     ? parseJsonColumn<Record<string, unknown>>(template.properties, {})
     : {};
-  const properties = { ...templateProperties, ...(input.properties ?? {}) };
+  const override = input.properties
+    ? allowHostOptions
+      ? input.properties
+      : stripHostLevelProperties(input.properties)
+    : {};
+  const properties = { ...templateProperties, ...override };
   await resolveTemplateImage(deps, nodeType, template, properties);
   const computeId = await resolveCompute(deps, input.projectId, input.computeId, template);
 
@@ -388,6 +396,7 @@ export async function createNode(
   if (nodeType === 'dynamips' && properties.auxConsole === true) {
     await allocatePort(deps.db, computeId, 'aux', id);
   }
+  const validated = validateTemplateProperties(nodeType, properties);
 
   await deps.db.unsafe(
     `INSERT INTO nodes (id, project_id, compute_id, name, symbol, node_type, template_id, x, y, z, layer,
@@ -407,8 +416,8 @@ export async function createNode(
       input.layer,
       consolePort,
       consoleType,
-      properties.consoleAutoStart !== false,
-      properties,
+      validated.consoleAutoStart !== false,
+      validated,
     ],
   );
 
@@ -513,6 +522,7 @@ export async function updateNode(
     properties?: Record<string, unknown>;
     consoleAutoStart?: boolean;
   },
+  allowHostOptions = true,
 ): Promise<NodeRow> {
   const node = await getNode(deps.db, input.id);
   const project = await deps.db.unsafe<{ locked: boolean }[]>(
@@ -521,15 +531,18 @@ export async function updateNode(
   );
   if (project[0]?.locked) throw new AppError('CONFLICT', 'project is locked');
 
-  const mergedProperties = input.properties
-    ? { ...node.properties, ...input.properties }
-    : node.properties;
+  const override = input.properties
+    ? allowHostOptions
+      ? input.properties
+      : stripHostLevelProperties(input.properties)
+    : undefined;
+  const mergedProperties = override ? { ...node.properties, ...override } : node.properties;
   const touchesEmulator =
-    input.properties !== undefined &&
-    Object.keys(input.properties).some((key) => EMULATOR_KEYS.has(key));
+    override !== undefined && Object.keys(override).some((key) => EMULATOR_KEYS.has(key));
   if (touchesEmulator && node.status !== 'stopped') {
     throw new AppError('NODE_BUSY', 'stop the node before changing emulator properties');
   }
+  const validated = validateTemplateProperties(node.nodeType, mergedProperties);
 
   await deps.db.unsafe(
     `UPDATE nodes SET
@@ -554,7 +567,7 @@ export async function updateNode(
       input.locked ?? null,
       input.symbol ?? null,
       input.consoleAutoStart ?? null,
-      mergedProperties,
+      validated,
     ],
   );
 

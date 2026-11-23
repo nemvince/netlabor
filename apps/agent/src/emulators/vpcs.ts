@@ -11,6 +11,7 @@ import {
   readNodeSpec,
   registerAdapter,
 } from '../dataplane/node.ts';
+import { nodeDir, projectDir } from '../dataplane/project.ts';
 import { startNodeProcess, stopProcess } from '../process.ts';
 import type { ProjectRegistry } from '../state.ts';
 
@@ -166,14 +167,14 @@ export async function setVpcsUdp(
 
   await stopProcess(running.pid);
   await closeConsole(nodeId);
-  const dir = path.join(config.stateDir, 'projects', projectId, 'nodes', nodeId);
+  const dir = nodeDir(config, projectId, nodeId);
   const runtimeState = await spawnVpcs(
     {
       config,
       registry,
       spec: nodeSpec,
       dir,
-      projectDir: path.join(config.stateDir, 'projects', projectId),
+      projectDir: projectDir(config, projectId),
       netns: project.netns,
       projectIp: project.projectIp,
     },

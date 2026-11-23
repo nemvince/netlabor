@@ -26,3 +26,9 @@ export const migration_0008_os_families =
 
 export const migration_0009_auth_lookup_indexes =
   '-- Indexes for the per-request privilege lookup: both tables are queried by\n-- the second column of their primary/unique key, so they were scanned whole.\n\nCREATE INDEX IF NOT EXISTS group_members_user_idx ON group_members(user_id);\n\nCREATE INDEX IF NOT EXISTS project_grants_subject_idx\n  ON project_grants(subject_type, subject_id);\n';
+
+export const migration_0010_group_owners =
+  '-- Self-service groups: the creator owns membership, while administrators keep\n-- the existing ability to manage any group and assign global roles to it.\n\nALTER TABLE groups\n  ADD COLUMN IF NOT EXISTS owner_id uuid REFERENCES users(id) ON DELETE SET NULL;\n\nCREATE INDEX IF NOT EXISTS groups_owner_idx ON groups(owner_id);\n';
+
+export const migration_0011_group_sso_source =
+  '-- Keep IdP-mapped groups distinct from self-service groups with the same name.\n-- A user must never be pulled into a group an administrator created (or later\n-- assigned roles to) just because they reserved its name first.\n\nALTER TABLE groups\n  ADD COLUMN IF NOT EXISTS sso_provider_id uuid REFERENCES oidc_providers(id) ON DELETE SET NULL;\n\nCREATE INDEX IF NOT EXISTS groups_sso_provider_idx ON groups(sso_provider_id);\n';

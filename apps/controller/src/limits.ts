@@ -17,6 +17,7 @@ export const LIMITS = {
   upload: { limit: 2, windowMs: 60_000 },
   websocket: { limit: 120, windowMs: 60_000 },
   ticket: { limit: 60, windowMs: 60_000 },
+  oidc: { limit: 30, windowMs: 60_000 },
 } satisfies Record<string, RateLimitRule>;
 
 export class RateLimiter {
@@ -59,8 +60,7 @@ export function rateLimitsDisabled(): boolean {
   return process.env.NB_DISABLE_RATE_LIMITS === '1';
 }
 
-export function clientKey(request: Request, action: string): string {
-  const forwarded = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  const ip = forwarded ?? request.headers.get('x-real-ip') ?? 'local';
-  return `${action}:${ip}`;
+/** Bucket per resolved client address; the caller never passes forwarded headers here. */
+export function clientKey(action: string, ip: string | null): string {
+  return `${action}:${ip ?? 'unresolved'}`;
 }

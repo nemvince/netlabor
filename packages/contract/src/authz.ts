@@ -40,7 +40,15 @@ export const PRIVILEGES = [
 
 export type Privilege = (typeof PRIVILEGES)[number];
 
-export const ROLE_NAMES = ['admin', 'operator', 'editor', 'owner', 'viewer', 'auditor'] as const;
+export const ROLE_NAMES = [
+  'admin',
+  'operator',
+  'editor',
+  'owner',
+  'viewer',
+  'auditor',
+  'pending',
+] as const;
 export type RoleName = (typeof ROLE_NAMES)[number];
 
 const READ_PRIVILEGES = PRIVILEGES.filter((p) => p.endsWith('.read'));
@@ -62,7 +70,6 @@ export const BUILTIN_ROLES: Record<RoleName, readonly Privilege[]> = {
     'project.read',
     'project.write',
     'project.open',
-    'project.export',
     'node.read',
     'node.create',
     'node.update',
@@ -131,6 +138,8 @@ export const BUILTIN_ROLES: Record<RoleName, readonly Privilege[]> = {
     'user.read',
     'audit.read',
   ],
+  /** Auto-created SSO accounts wait here until an administrator grants a role. */
+  pending: [],
 };
 
 /** Roles assignable globally (owner only exists on project grants). */
@@ -140,6 +149,7 @@ export const GLOBAL_ROLE_NAMES: readonly RoleName[] = [
   'editor',
   'viewer',
   'auditor',
+  'pending',
 ];
 export const PROJECT_ROLE_NAMES: readonly RoleName[] = [
   'operator',
@@ -156,6 +166,7 @@ export type ProjectScopeResolver =
   | 'none'
   | 'input.projectId'
   | 'input.id'
+  | 'input.templateId'
   | 'node'
   | 'link'
   | 'drawing'
@@ -182,6 +193,7 @@ export const AuthzMetaSchema = z.object({
       'none',
       'input.projectId',
       'input.id',
+      'input.templateId',
       'node',
       'link',
       'drawing',

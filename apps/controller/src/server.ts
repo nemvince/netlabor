@@ -14,7 +14,7 @@ import { createAppRouter } from './app.ts';
 import { readCookies } from './auth/principal.ts';
 import type { ControllerConfig } from './config.ts';
 import { isSecureOrigin } from './config.ts';
-import { type Context, createRequestContext } from './context.ts';
+import { clientAddress, type Context, createRequestContext } from './context.ts';
 import { normalizeError } from './errors.ts';
 import type { AppDeps } from './implementer.ts';
 import { clientKey, LIMITS, limiter } from './limits.ts';
@@ -100,18 +100,28 @@ export function startServer(deps: AppDeps, tickets: TicketStore): RunningServer 
     async fetch(request: Request, bunServer: Server<WsData>): Promise<Response | undefined> {
       const url = new URL(request.url);
       recordHttpRequest(request.method, url.pathname);
+      const ip = clientAddress(
+        request,
+        bunServer.requestIP(request)?.address ?? null,
+        config.trustProxy,
+      );
 
       if (url.pathname.startsWith('/ws/')) {
         try {
-          limiter.consume(clientKey(request, 'ws'), LIMITS.websocket);
+          limiter.consume(clientKey('ws', ip), LIMITS.websocket);
         } catch {
           return new Response('too many connections', { status: 429 });
         }
-        const upgraded = await handleWebSocketUpgrade(request, bunServer, {
-          tickets,
-          config,
-          deps,
-        });
+        const upgraded = await handleWebSocketUpgrade(
+          request,
+          bunServer,
+          {
+            tickets,
+            config,
+            deps,
+          },
+          ip,
+        );
         return upgraded ? undefined : new Response('upgrade required', { status: 400 });
       }
 
@@ -126,7 +136,11 @@ export function startServer(deps: AppDeps, tickets: TicketStore): RunningServer 
       }
 
       if (url.pathname === '/version') {
-        return Response.json({ version: config.version, apiVersion: '1' });
+        return Response.json({
+          version: config.version,
+          apiVersion: '1',
+          issueUrl: config.issueUrl,
+        });
       }
       if (url.pathname === '/metrics') {
         return new Response(await renderMetrics(db), {
@@ -136,7 +150,7 @@ export function startServer(deps: AppDeps, tickets: TicketStore): RunningServer 
 
       if (url.pathname === '/rpc/auth/login' && request.method === 'POST') {
         try {
-          limiter.consume(clientKey(request, 'login'), LIMITS.login);
+          limiter.consume(clientKey('login', ip), LIMITS.login);
         } catch (error) {
           const status = error instanceof AppError ? 429 : 500;
           return Response.json(
@@ -150,7 +164,7 @@ export function startServer(deps: AppDeps, tickets: TicketStore): RunningServer 
         request.method === 'POST'
       ) {
         try {
-          limiter.consume(clientKey(request, 'upload'), LIMITS.upload);
+          limiter.consume(clientKey('upload', ip), LIMITS.upload);
         } catch {
           return Response.json(
             { code: 'TOO_MANY_REQUESTS', message: 'upload limit reached' },
@@ -160,7 +174,7 @@ export function startServer(deps: AppDeps, tickets: TicketStore): RunningServer 
       }
 
       if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
-        const context = await createRequestContext(deps, request);
+        const context = await createRequestContext(deps, request, ip);
         const { matched, response } = await openApiHandler.handle(request, {
           context,
           prefix: '/api',
@@ -173,7 +187,7 @@ export function startServer(deps: AppDeps, tickets: TicketStore): RunningServer 
       }
 
       if (url.pathname === '/rpc' || url.pathname.startsWith('/rpc/')) {
-        const context = await createRequestContext(deps, request);
+        const context = await createRequestContext(deps, request, ip);
         const { matched, response } = await rpcHandler.handle(request, { context, prefix: '/rpc' });
         if (matched) {
           for (const [name, value] of context.resHeaders) response.headers.append(name, value);
@@ -183,9 +197,17 @@ export function startServer(deps: AppDeps, tickets: TicketStore): RunningServer 
       }
 
       if (url.pathname === '/mcp') {
-        const context = await createRequestContext(deps, request);
+        const context = await createRequestContext(deps, request, ip);
         const response = await handleMcpRequest(request, { context, router });
         return withSecurityHeaders(response, config);
+      }
+
+      if (url.pathname.startsWith('/auth/oidc/')) {
+        try {
+          limiter.consume(clientKey('oidc', ip), LIMITS.oidc);
+        } catch {
+          return new Response('too many sign-in attempts', { status: 429 });
+        }
       }
 
       const oidcStart = /^\/auth\/oidc\/([0-9a-fA-F-]{36})\/start$/.exec(url.pathname);

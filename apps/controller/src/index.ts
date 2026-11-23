@@ -9,6 +9,7 @@ import { AgentEventSubscriptions } from './services/agent-events.ts';
 import { AgentRegistry } from './services/agents.ts';
 import { autoOpenAndStart } from './services/auto-lifecycle.ts';
 import { bootstrap, waitForDatabase } from './services/bootstrap.ts';
+import { ensureImageStore } from './services/images.ts';
 import { JobService } from './services/jobs.ts';
 import { ensureStagingDir } from './services/uploads.ts';
 import { Maintenance } from './services/maintenance.ts';
@@ -29,6 +30,7 @@ const jobs = new JobService(db, events, logger);
 const deps = { db, config, logger, events, agents, jobs };
 
 await ensureStagingDir(config);
+await ensureImageStore(deps);
 await waitForDatabase(db);
 const releaseLock = await bootstrap(deps);
 

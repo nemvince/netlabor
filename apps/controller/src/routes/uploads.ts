@@ -20,7 +20,7 @@ export function uploadRoutes(os: Implementer) {
         startUpload(context.db, context.config, uploadAuth(context.auth), input),
       ),
       status: os.uploads.status.handler(async ({ input, context }) =>
-        uploadStatus(context.db, input.uploadId),
+        uploadStatus(context.db, uploadAuth(context.auth), input.uploadId),
       ),
       chunk: os.uploads.chunk.handler(async ({ input, context }) => {
         assertSameOrigin(context);
